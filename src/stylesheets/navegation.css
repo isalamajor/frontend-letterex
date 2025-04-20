@@ -1,0 +1,20 @@
+.navegacion a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+.navegacion {
+grid-row-start: 3;
+display: flex;
+gap: 24px;
+}
+
+.navegacion a {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.navegacion img {
+flex-shrink: 0;
+}

@@ -1,0 +1,47 @@
+h3 {
+    font-size: 1.4rem;
+}
+.grid-languages {
+    display: flex;
+    flex-direction: row;
+    column-gap: 5px;
+    margin: 2px 0;
+    margin-bottom: 1rem;
+}
+
+.grid-selected {
+    display: flex;
+    justify-content: flex-end; 
+}
+
+.selected-languages {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    justify-content: flex-end;
+    height: 6rem;
+}
+
+.no-language {
+    text-align: right;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5rem;
+    justify-content: flex-start;
+}
+
+.max-language {
+    color: red;
+    font-size: 100%;
+    font-weight: 350;
+    text-align: center;
+    margin: 0.5rem 0;
+}
+
+.pic-vacio {
+    width: 2rem;
+    height: 3.5rem;
+}
