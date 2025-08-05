@@ -22,7 +22,7 @@ const languagesData = [
 export default function AnimatedForm() {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
-  const [showAlert, setShowAlert] = useState("\n");
+  const [showAlert, setShowAlert] = useState("");
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [username, setUsername] = useState('');
@@ -46,33 +46,40 @@ export default function AnimatedForm() {
 
   const showAlertMessage = (message) => {
     setShowAlert(message);
-
-    // Restablecer la alerta a "" después de 3 segundos
-    setTimeout(() => {
-      setShowAlert("\n");
-    }, 3000); // 3000 ms = 3 segundos
   };
 
   const handleNextStep = () => {
 
-    console.log("test1x");
-    if (currentStep === 1 && (!username.trim() || !password.trim())) {
-      return;
+    showAlertMessage(""); // Limpiar mensaje de alerta al avanzar
+
+    // Usuario y contraseña
+    if (currentStep === 1) {
+      setUsernameAttempt();
     }
-    else if (currentStep === 2 && (!email.trim() || !email.includes("@"))) {
-      return;
-    }
-    else if (currentStep === 3 && confirmationCode.length < 6) {
-      return;
-    }
-  
-    // Si todas las validaciones pasan, avanzar al siguiente paso
-    if (currentStep == 2) {
+    // Email
+    else if (currentStep === 2) {
       setEmailAttempt(email);
+      return;
     }
-    else if (currentStep == 3) {
-      checkCodeAttempt();    
-    } else if (currentStep < 6) {
+    // Código de verificación
+    else if (currentStep === 3 && confirmationCode.length === 6) {
+      checkCodeAttempt();
+      return;   
+    } 
+    // Idiomas hablados
+    else if (currentStep === 4) {
+      if (languagesSpoken.length < 1) {
+        showAlertMessage("Please select at least one language you master");
+        return;
+      }
+      setCurrentStep(currentStep + 1);
+    }
+    // Idiomas aprendidos
+    else if (currentStep === 5) {
+      if (languagesLearning.length < 1) {
+        showAlertMessage("Please select at least one language you are learning");
+        return;
+      }
       setCurrentStep(currentStep + 1);
     }
   };
@@ -108,7 +115,11 @@ export default function AnimatedForm() {
       email: email,
       password: password
     });
-    if (result.status === 0) { router.push("../homepage"); /*logear, recibe user y token*/}
+    if (result.status === 0) { 
+      sessionStorage.setItem("authToken", result.token);  
+      sessionStorage.setItem("userData", JSON.stringify(result.userData)); 
+      router.push("../homepage");
+    }
     else if (result.status > 0) { showAlertMessage(result.message) }
     else { showAlertMessage("Server is having trouble...") }
     console.log(result);
@@ -131,16 +142,41 @@ export default function AnimatedForm() {
     if (result.status === 0) {console.log(result); setShowRegisterForm(false); setShowForm(true);} 
   }
 
-  const setUsernameAttempt = async(username) => {
-    const inUse = await isUsernameInUse(username);
-    if (inUse) {
-      showAlertMessage("This nickname is taken!")
-    } else {
-      setUsername(username)
+  const setUsernameAttempt = async() => {
+    if (!username.trim() || !password.trim()) {
+      return;
     }
+    if (username.length < 5) {
+      showAlertMessage("Username must be at least 5 characters long");
+      return;
+    }
+    if (password.length < 8) {
+      showAlertMessage("Password must be at least 8 characters long");
+      return;
+    }
+    const inUse = await isUsernameInUse(username);
+    if (inUse === -1) {
+      showAlertMessage("Server is having trouble...");
+      return;
+    }
+    if (inUse) {
+      showAlertMessage("This nickname is taken!");
+      return;
+    } 
+    console.log("Username is available: " + username);
+    setUsername(username);
+    setCurrentStep(currentStep + 1);
+    return;
   }
 
   const setEmailAttempt = async(email) => {
+    // Validación básica
+    if (!email.trim() || !email.includes("@")) {
+      showAlertMessage("Please enter a valid email address");
+      return;
+    }
+
+    // Verificar si el email ya está en uso
     const inUse = await isEmailInUse(email);
     console.log("in use: " + inUse);
     if (inUse) {
@@ -148,6 +184,8 @@ export default function AnimatedForm() {
     } else if (inUse === -1) {
       showAlertMessage("Server is having trouble...")
     }
+
+    // Si el email no está en uso, enviar el código de verificación
     else {
       setEmail(email);
       const res = await sendVerificationCode(email);
@@ -166,18 +204,16 @@ export default function AnimatedForm() {
       setCurrentStep(currentStep + 1);
     } else {
       showAlertMessage(res);
-      console.log("Problem validating code: " + res);
     }
   }
 
-  console.log(showRegisterForm);
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <motion.img
-        src="/logofrog.png"
+        src="/logo-frog.png"
         alt="Logo"
         className="w-40"
-        animate={showForm ? {  top: "29%", left: "49%", width: 150 } : showRegisterForm ? {  top: "29%", left: "49%", width: 150 }: { top: "29%", left: "49%", width: 150 }}
+        animate={showForm ? {  top: "29%", left: "49%", width: 150 } : showRegisterForm ? {  top: "29%", left: "49%", width: 200 }: { top: "29%", left: "49%", width: 200 }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
         style={{ position: "absolute", transform: "translate(-50%, -50%)" }}
       />
@@ -234,7 +270,7 @@ export default function AnimatedForm() {
               placeholder="Password"
               onChange={(e) => setPassword(e.target.value)}
             />
-            <p style={{ whiteSpace: "pre-line" }}>{showAlert}</p>
+            <p style={{ whiteSpace: "pre-line" }} className="alert-message">{showAlert}</p>
           </div>
           <div className="back-go">
             <button
@@ -269,16 +305,23 @@ export default function AnimatedForm() {
                     type="text"
                     placeholder="Username"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                      setShowAlert("");
+                    }}
                 />
                 <input
                     className="w-full p-2 mb-2 border rounded form-blank"
                     type="password"
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setShowAlert("");
+                    }}
                 />
               </div>
+              <p style={{ whiteSpace: "pre-line"}} className="alert-message">{showAlert}</p>
             </div>
           )}
 
@@ -292,6 +335,7 @@ export default function AnimatedForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+            <p style={{ whiteSpace: "pre-line"}} className="alert-message">{showAlert}</p>
             </div>
           )}
 
@@ -323,7 +367,7 @@ export default function AnimatedForm() {
             <div className="slide-form">
                 
               <LanguageSelector
-              languagesAvailable={languagesData.filter(lang => !languagesSpoken.includes(lang))}
+              languagesAvailable={languagesData.filter(lang => !languagesLearning.includes(lang) && !languagesSpoken.includes(lang))}
               languagesTaken={languagesSpoken} 
               titleText="Select the languages you master"
               noneText="what will it be?" 
@@ -335,7 +379,7 @@ export default function AnimatedForm() {
           {currentStep === 5 && (
             <div className="slide-form">
               <LanguageSelector
-              languagesAvailable={languagesData.filter(lang => !languagesSpoken.includes(lang))}  
+              languagesAvailable={languagesData.filter(lang => (!languagesLearning.includes(lang) && !languagesSpoken.includes(lang)))}  
               languagesTaken={languagesLearning} 
               titleText="Select the languages you are learning"
               noneText="...or don't choose any" 
@@ -389,6 +433,7 @@ export default function AnimatedForm() {
 
           <div className="mt-4 flex justify-between back-go">
             {currentStep < 7 && (
+            
             <motion.button
               className="p-2 bg-gray-500 text-white rounded btn-animated-form btn-back"
               onClick={handlePrevStep}

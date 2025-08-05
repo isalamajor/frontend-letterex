@@ -1,0 +1,68 @@
+@keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+      background-image: linear-gradient(to right, #57A02D, #004D40, #39c167);
+    }
+    33% {
+      background-position: 50% 50%;
+      background-image: linear-gradient(to right, #004D40, #39c167, #57A02D);
+    }
+    66% {
+      background-position: 100% 50%;
+      background-image: linear-gradient(to right, #39c167, #57A02D, #004D40);
+    }
+    100% {
+      background-position: 0% 50%;
+      background-image: linear-gradient(to right, #57A02D, #004D40, #39c167);
+    }
+  }
+  
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 20s ease-in-out infinite;
+  }
+
+
+@keyframes gradient-shift-dark {
+0% {
+    background-position: 0% 50%;
+    background-image: linear-gradient(to right, #242424, #333333, #4d4d4d);
+}
+33% {
+    background-position: 50% 50%;
+    background-image: linear-gradient(to right, #333333, #4d4d4d, #242424);
+}
+66% {
+    background-position: 100% 50%;
+    background-image: linear-gradient(to right, #4d4d4d, #242424, #333333);
+}
+100% {
+    background-position: 0% 50%;
+    background-image: linear-gradient(to right, #242424, #333333, #4d4d4d);
+}
+}
+  
+  .animate-gradient-dark {
+    background-size: 200% 200%;
+    animation: gradient-shift-dark 20s ease-in-out infinite;
+  }
+
+
+.highlighted-text {
+    position: relative;
+    display: inline-block;
+    z-index: 1;
+}
+
+.highlighted-text::before {
+    content: '';
+    position: absolute;
+    bottom: 0; /* Posición del subrayado */
+    left: 0;
+    width: 100%;
+    height: 0.4em; /* Altura del subrayado */
+    background-color: rgba(255, 223, 0, 0.5); /* Color del subrayador (amarillo con transparencia) */
+    z-index: -1; /* Coloca el subrayado detrás del texto */
+    transform: rotate(-2deg); /* Añade un efecto desenfadado */
+    border-radius: 2px; /* Bordes redondeados para un efecto más natural */
+}
