@@ -2,15 +2,27 @@
 import { useEffect, useRef } from "react";
 import { SidebarDemo } from "@/components/sidebardemo";
 import Link from "next/link";
+import { editLetter } from "@/services/api";
 import { useState } from "react"
-import { parseDate } from "@internationalized/date"
+import { Calendar, parseDate } from "@internationalized/date"
+import { DateField, DateInput } from "@/components/ui/datefield"
 import { Label } from "@/components/ui/field"
 import { getLetterToCorrect } from "@/services/api";
-import { Check, X, Trash, Eye, EyeOff, CirclePlus  } from "lucide-react";
+import { Check, X, Trash  } from "lucide-react";
 import { use } from "react";
+import { LabelSelect } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useId } from "react";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import TextCorrections from "@/components/textCorrections";
 import { updateLetterCorrections, sendLetterBack } from "@/services/api";
+import { send } from "process";
 
 
 interface Correccion {
@@ -49,15 +61,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   const [selectionInfo, setSelectionInfo] = useState<{ text: string, rect: DOMRect | null, startIndex:number, endIndex:number } | null>(null);
   const [corrections, setCorrections] = useState<Correccion[]>([]);
   const [sentBack, setSentBack] = useState(false);
-  const [commentBoxOpen, setCommentBoxOpen] = useState(false);
-  const [comment, setComment] = useState("");
-
-  const handleInput = (e:any) => {
-    const textarea = e.target;
-    textarea.style.height = "auto"; // reset height
-    textarea.style.height = textarea.scrollHeight + "px"; // set height to scrollHeight
-    setComment(e.target.value);
-  };
 
 
   // Dialog
@@ -101,8 +104,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       setDate(parseDate(new Date(letterData.originalLetter.created_at).toISOString().split("T")[0]));
       setCorrections(letterData.corrections || []);
       setSentBack(letterData.sentBack || false);
-      setComment(letterData.comments || "");
-      if (letterData.comments) { setCommentBoxOpen(true); console.log("abierto");}
     })();
   }, [id]);
 
@@ -128,93 +129,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [selectionInfo]);
-
-
-  const addCorrection = () => {
-    if (!selectionInfo || !selectionInfo.text || currentCorrectionText === "") return;
   
-    let { text, startIndex, endIndex } = selectionInfo;
-  
-    // Eliminar espacio al final
-    if (text.endsWith(" ")) {
-      text = text.slice(0, -1);
-      endIndex -= 1;
-    }
-  
-    if (text.length === 0) return;
-  
-    const newCorrection: Correccion = {
-      textOriginal: text,
-      textCorrected: currentCorrectionText,
-      startIndex,
-      endIndex,
-    };
-  
-    setCorrections([...corrections, newCorrection]);
-    setSelectionInfo(null);
-    setcurrentCorrectionText("");
-    setEditingCorrection(null);
-    setValuesChanged(true);
-    console.log("New correction added:", newCorrection);
-  };
-  
-
-  const editCorrection = () => {
-    if (!editingCorrection || !currentCorrectionText) return;
-    const updatedCorrections = corrections.map((correction) => {
-      if (
-        correction.startIndex === editingCorrection.startIndex &&
-        correction.endIndex === editingCorrection.endIndex
-      ) {
-        return {
-          ...correction,
-          textCorrected: currentCorrectionText,
-        };
-      }
-      return correction;
-    });
-    setCorrections(updatedCorrections);
-    setEditingCorrection(null);
-    setcurrentCorrectionText("");
-    setSelectionInfo(null);
-    setValuesChanged(true);
-    console.log("Correction edited:", updatedCorrections);
-  };
-
-
-  const saveCorrectionOnClick = async () => {
-    if (!id) return;
-    if (corrections.length === 0 && (!comment || comment === "")) {
-      openDialog({
-        title: "Add some corrections...",
-        description: "First add some corrections or comments to the letter",
-        primaryActionText: "OK",
-        autoDismiss: false,
-        size: 'md',
-        type: 'error'
-      });
-      return;
-    }
-    try {
-      const response = await updateLetterCorrections(id, corrections, comment);
-      if (response === 0) {
-        console.log("Corrections saved successfully:", response);
-        setValuesChanged(false);
-        openDialog({
-          title: "Corrections saved",
-          description: "Your corrections have been saved successfully.",
-          primaryActionText: "OK",
-          autoDismiss: true,
-          size: 'md',
-          type: 'success'
-        });
-      } else {
-        console.error("Error saving corrections.");
-      }
-    } catch (error) {
-      console.error("Error saving corrections:", error);
-    }
-  }
 
   const sendBackOnClick = async () => {
     if (!id) return;
@@ -253,11 +168,11 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   };
 
   return (
-      <div className="overflow-y-auto custom-scroll p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
+      <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
-        <div className="">
+        <div className="flex gap-2 flex-1">
             <div
-              className=" w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-20"
+              className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-20"
             >
 
               {/* Title field */}
@@ -316,7 +231,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                     });
                   }
                 }}
-                className={`w-full min-h-[30rem] py-10 text-gray-800 outline-none rounded cursor-text text-xl leading-loose
+                className={`w-full h-[70%] p-4 text-gray-800 outline-none rounded cursor-text text-xl leading-loose
                 ${correctionMode && overlapping ? ("selection:bg-red-200") : ("selection:bg-yellow-200") }`}>
                 <TextCorrections
                   ref={textRef}
@@ -354,31 +269,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                     {!sentBack ? '🖍️ Correcting' : '🖍️ Correction'}
                     </p>
                     <div className="flex items-center gap-2">
-                      
-                      { !sentBack && (
-                        <>
-                      <Check className="w-5 h-5 text-green-500 hover:text-white hover:bg-green-500 hover:rounded"
-                      onClick={ () => {
-                        console.log("editingcor:" + editingCorrection);
-                        if (editingCorrection) {
-                          editCorrection();
-                          return;
-                        }
-                        addCorrection();
-                        }}/>
-                      <Trash className="w-5 h-5 p-0.5 text-red-500 cursor-pointer hover:text-white hover:bg-red-500 hover:rounded"
-                        onClick={() => {
-                          if (editingCorrection) {
-                            setCorrections(corrections.filter(c => c !== editingCorrection));
-                            setEditingCorrection(null);
-                            setcurrentCorrectionText("");
-                            setSelectionInfo(null);
-                          }
-                        }}
-                      />
-                      </>
-                      )}
-
                       <X
                         onClick={() => {
                           setSelectionInfo(null);
@@ -400,38 +290,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                 </div>
               )}
 
-            { /* Comment box */}
-
-            <div className="w-full">
-              <div className={`w-full h-[1.7rem] rounded-t-lg text-gray-400 pt-1 pr-2 flex justify-end ${commentBoxOpen && "bg-gray-50"}`}>
-                {commentBoxOpen ? (
-                  <EyeOff onClick={() => setCommentBoxOpen(false)} className="cursor-pointer" />
-                ) : (
-                  <button
-                    onClick={() => setCommentBoxOpen(true)}
-                    className="h-full flex items-center gap-x-2 text-[#7E27A3] hover:text-[#DB5FDE] px-2"
-                  >
-                    {comment ? <Eye className="w-4 h-4"/> : !sentBack && <CirclePlus className="w-4 h-4"/> }
-                    {comment ? 
-                    (<span> Show comments </span>) : !sentBack && (<span> Add comments </span>) }
-                  </button>
-                )}
-              </div>
-              {commentBoxOpen && (
-              <textarea
-                placeholder="You may add general comments here..."
-                value={comment}
-                onChange={handleInput}
-                disabled={sentBack}
-                className={`px-5 pb-4 w-full text-lg text-gray-800 bg-gray-50 rounded-b-lg outline-none
-                  transition-opacity duration-500 ease-in-out resize-none
-                  ${commentBoxOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0 overflow-hidden"}
-                `}
-                />
-              )}
-            </div>
-
-
             {/* Buttons */}
             <div className="flex justify-between h-[5%] col items-center gap-4 mt-4">
               
@@ -443,36 +301,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                 </button>
               </Link>
 
-              <div className="flex flex-row justify-end h-[5%] col items-center gap-4">
-                
-              {!sentBack ? (
-              <>
-                <button onClick={sendBackOnClick}>
-                  <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
-                    📬 Send Back
-                  </div>
-                </button>
-
-                {valuesChanged ? (
-                  <button onClick={saveCorrectionOnClick}>
-                    <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
-                      💾 Save correction
-                    </div>
-                  </button>
-                  ) : (
-                    <div className="text-[#8EBA03] flex items-center gap-2">
-                      Correction saved
-                      <Check className="w-5 h-5" />
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-[#6495ED] flex items-center gap-2">
-                  Letter sent back
-                  <Check className="w-5 h-5" />
-                </div>
-              )}
-              </div>
             </div>
             </div>
         </div>

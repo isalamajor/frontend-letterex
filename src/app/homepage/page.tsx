@@ -21,7 +21,7 @@ const HomepageContent = () => {
   return (
       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         <div className="flex gap-2 h-[15%]">
-          <img src="letter-logo.png" className="h-25 mx-auto mt-4"/>
+          <img src="/letter-logo.png" className="h-25 mx-auto mt-4"/>
         </div>
         <div className="flex gap-2 flex-1 h-[85%]">
             <div

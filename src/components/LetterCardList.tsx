@@ -1,4 +1,5 @@
 
+"use client";
 import { useEffect } from "react";
 import React from "react";
 import LetterCard from "./LetterCard";
@@ -11,7 +12,7 @@ interface LetterCardListProps {
     diary: string;
     title: string;
     language: string;
-    sharedWith: { name: string; avatar: string }[];
+    sharedWith: { nickname: string; avatar: string; correctionSentBack: boolean; correctedLetterId: string }[];
   }[];
 }
 

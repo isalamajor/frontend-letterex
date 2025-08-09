@@ -3,19 +3,79 @@ import axios from "axios";
 const API_URL = 'http://localhost:3090/api';
 
 
-export const getLetterToCorrect = async () => {
+export const sendLetterBack = async (letterId) => {
     const token = sessionStorage.getItem("authToken");
     try {
-        const response = await axios.get(`${API_URL}/corrected/corrections`, {
+        const response = await axios.patch(
+            `${API_URL}/corrected/send-back/${letterId}`,
+            {}, 
+            {
+                headers: {
+                    'Authorization': `${token}`
+                }
+            }
+        );
+        if (response.status === 200) {
+            console.log("Letter sent back successfully:", response.data);
+            return 0;
+        }
+        console.error("Error sending letter back:", response.data.message);
+        return -1;
+    }
+    catch (error) { 
+        if (axios.isAxiosError(error)) {
+            console.error("Axios error:", error.response?.data);
+        } else {
+            console.error("Unknown error:", error);
+        }
+        return -1;
+    }
+};
+
+
+export const updateLetterCorrections = async (letterId, corrections, comments) => {
+    const token = sessionStorage.getItem("authToken");
+    try {
+        const response = await axios.put(`${API_URL}/corrected/update/${letterId}`,
+            {       
+                corrections: corrections,
+                comments: comments
+             },
+            {
+                headers: {
+                    'Authorization': `${token}`
+                }
+            }
+        );
+        if (response.status === 200) {
+            console.log("Corrections updated successfully:", response.data);
+            return 0;
+        }
+        console.error("Error updating corrections:", response.data.message);
+        return -1;
+    }
+    catch (error) { 
+        if (axios.isAxiosError(error)) {
+            console.error("Axios error:", error.response?.data);
+        } else {
+            console.error("Unknown error:", error);
+        }
+        return -1;
+    }
+};
+
+export const getLetterToCorrect = async (correctionId) => {
+    const token = sessionStorage.getItem("authToken");
+    try {
+        const response = await axios.get(`${API_URL}/corrected/correctedLetter/${correctionId}`, {
             headers: {
                 'Authorization': `${token}`
             }
         });
         if (response.status === 200) {
-            console.log("Corrected letter:", response.data.letter);
-            return response.data.letter;
+            return response.data.correctedLetter;
         } else {
-            console.error("Error fetching corrected letter:", response.data);
+            console.error("Error fetching corrected letter:", response.data.message);
             return null;
         }
     } catch (error) {
@@ -254,22 +314,19 @@ export const saveLetter = async (title, content, diary, language, created_at) =>
 export const getUserLetters = async () => {
     const token = sessionStorage.getItem("authToken");
   
-    const response = await fetch(`${API_URL}/letter/list/`, {
-      method: "GET",
+    const response = await axios.get(`${API_URL}/letter/list/`, {
       headers: {
         "Authorization": `${token}`, // Incluir el token en el encabezado
       },
     });
-    
-    const data = await response.json();
-
+    console.log("RESPONSE: " + response.data.letters);
     if (response.status === 200) {
-        return data.letters;
+        return response.data.letters;
 
     }
     console.error("Unauthorized access - token may be invalid or expired.");
     return [];
-  };
+};
 
 export const sendVerificationCode = async (email) => {
     try {

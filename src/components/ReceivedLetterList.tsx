@@ -20,6 +20,7 @@ interface ReceivedLetterListProps {
     };
     sentBack: boolean;
     corrected_at: string;
+    seen: boolean;
   }[];
 }
 
@@ -44,12 +45,14 @@ const ReceivedLetterList = () => {
     <div className="flex flex-col gap-4 max-h-[80%] custom-scroll overflow-y-auto pr-2 ml-4 mr-4">
       {letters.map((letter, index) => (
         <ReceivedLetterCardProps
-          id={letter.originalLetter._id}
+          id={letter._id}
           diary="-"
           created_at={letter.corrected_at}
           title={letter.originalLetter.title}
           language={letter.originalLetter.language}
           sender={letter.sender}
+          sentBack={letter.sentBack}
+          seen={letter.seen}
           key={index}
         />
       ))}

@@ -31,8 +31,8 @@ const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({ friends, sele
         >
         <input
           type="checkbox"
-          disabled={friend.alreadySent}
           defaultChecked={friend.alreadySent}
+          disabled={friend.alreadySent}
           className="w-4 h-4"
           onChange={() => handleToggle(friend._id)}
         />

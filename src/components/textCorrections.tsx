@@ -1,4 +1,7 @@
-const TextCorrections = ({ text, corrections, onCorrectionClick }: {
+import React, { forwardRef } from "react";
+
+
+const TextCorrections = forwardRef<HTMLDivElement, {
     text: string;
     corrections: {
       textOriginal: string;
@@ -6,14 +9,16 @@ const TextCorrections = ({ text, corrections, onCorrectionClick }: {
       startIndex: number;
       endIndex: number;
     }[];
-    onCorrectionClick: (correction: {
-      textOriginal: string;
-      textCorrected: string;
-      startIndex: number;
-      endIndex: number;
-    },
-    rect:DOMRect) => void;
-  }) => {
+    onCorrectionClick: (
+      correction: {
+        textOriginal: string;
+        textCorrected: string;
+        startIndex: number;
+        endIndex: number;
+      },
+      rect: DOMRect
+    ) => void;
+  }>(({ text, corrections, onCorrectionClick }, ref) => {
     // Ordenar por inicio para evitar conflictos
     const ordered = [...corrections].sort((a, b) => a.startIndex - b.startIndex);
     const fragments = [];
@@ -59,9 +64,9 @@ const TextCorrections = ({ text, corrections, onCorrectionClick }: {
     }
   
     return (
-    <p>{fragments}</p>
+    <p ref={ref}>{fragments}</p>
     );
-  };
+});
   
 
 export default TextCorrections;
