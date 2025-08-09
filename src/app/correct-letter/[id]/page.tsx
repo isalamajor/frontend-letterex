@@ -43,6 +43,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   const [overlapping, setOverlapping] = useState<boolean>(false);
   const [valuesChanged, setValuesChanged] = useState(true);
   const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
   const [letterContent, setLetterContent] = useState("");
   const [date, setDate] = useState(() => parseDate(new Date().toISOString().split("T")[0]));
   const [correctionMode, setCorrectionMode] = useState(false);
@@ -96,6 +97,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         console.error("No letter data found for ID:", id);
         return;
       }
+      setAuthor(letterData.sender.nickname || "");
       setTitle(letterData.originalLetter.title || "");
       setLetterContent(letterData.originalLetter.content || "");
       setDate(parseDate(new Date(letterData.originalLetter.created_at).toISOString().split("T")[0]));
@@ -267,7 +269,8 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
               
               
               {/* Date field */}
-              <div className="flex flex-row items-center gap-4 w-[50%] text-black justify-end w-full">
+              <div className="flex flex-col text-black justify-end text-right ">
+              <p>By <span className="font-semibold">{author}</span></p>
                 <p>{date.toString()}</p>
               </div>
 
@@ -316,7 +319,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                     });
                   }
                 }}
-                className={`w-full min-h-[30rem] py-10 text-gray-800 outline-none rounded cursor-text text-xl leading-loose
+                className={`w-full min-h-[30rem] pt-5 pb-10 text-gray-800 outline-none rounded cursor-text text-xl leading-loose
                 ${correctionMode && overlapping ? ("selection:bg-red-200") : ("selection:bg-yellow-200") }`}>
                 <TextCorrections
                   ref={textRef}
