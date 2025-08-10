@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/field"
 import { getLetter } from "@/services/api";
 import { Check } from "lucide-react";
 import { use } from "react";
-import { LabelSelect } from "@/components/ui/label";
 import {
   Select,
   SelectContent,

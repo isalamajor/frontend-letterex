@@ -344,13 +344,13 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                         <div className="flex justify-center items-center gap-4 pt-4">
                         <Button
                           onClick={handlePrimaryAction}
-                          className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                          className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
                           size="default"
                         > Cancel
                         </Button>
                         <Button
                           onClick={handlePrimaryAction}
-                          className={`min-w-[120px] transition-all duration-200 ${currentConfig.buttonClass}`}
+                          className={`min-w-[120px] rounded transition-colors duration-200 bg-[#7E27A3] hover:!bg-[#DB5FDE] `}
                           size="default"
                         > Discover new people
                         </Button>

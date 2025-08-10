@@ -1,11 +1,11 @@
 
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import LetterCard from "./LetterCard";
 import { getUserLetters } from "../services/api";
 import { unique } from "next/dist/build/utils";
-import { BookCopy } from "lucide-react";
+import { BookCopy, BookX } from "lucide-react";
 
 interface LetterCardListProps {
   letters: {
@@ -20,13 +20,15 @@ interface LetterCardListProps {
 
 interface ChildProps {
   orderByDiaryTrigger: number; 
+  searchFilter: string;
 }
 
-const LetterCardList = ({ orderByDiaryTrigger } : ChildProps) => {
-  const [letters, setletters] = React.useState<LetterCardListProps["letters"]>([]);
-  const [diaryOrganised, setDiaryOrganised] = React.useState<boolean>(false);
-  const [diaries, setDiaries] = React.useState<{ diary: string; count: number }[]>([]);
-  const [diarySelected, setDiarySelected] = React.useState<string>("");
+const LetterCardList = ({ orderByDiaryTrigger, searchFilter } : ChildProps) => {
+  const [letters, setletters] = useState<LetterCardListProps["letters"]>([]);
+  const [diaryOrganised, setDiaryOrganised] = useState<boolean>(false);
+  const [diaries, setDiaries] = useState<{ diary: string; count: number }[]>([]);
+  const [diarySelected, setDiarySelected] = useState<string>("");
+  const [filteredLetters, setFilteredLetters] = useState<LetterCardListProps["letters"]>([]);
 
   // Get user letters from the API
   useEffect(() => {
@@ -41,9 +43,9 @@ const LetterCardList = ({ orderByDiaryTrigger } : ChildProps) => {
 
    // Organise letters by diaries on trigger
    useEffect(() => {
-    if (!letters || letters.length < 1) {return}
+    if (!filteredLetters || filteredLetters.length < 1) {return}
      setDiarySelected("");
-     const counts = letters.reduce((acc, letter) => {
+     const counts = filteredLetters.reduce((acc, letter) => {
       const found = acc.find(item => item.diary === letter.diary);
       if (found) {
         found.count += 1;
@@ -56,15 +58,32 @@ const LetterCardList = ({ orderByDiaryTrigger } : ChildProps) => {
     setDiaryOrganised(!diaryOrganised);
    }, [orderByDiaryTrigger]);
 
+   // Filter letters by search text
+   useEffect(() => {
+     const filterLetters = async() => {
+        const q = searchFilter.toLowerCase();
+        const results = letters.filter(letter =>
+          letter.title.toLowerCase().includes(q) ||
+          letter.language.toLowerCase().includes(q) ||
+          letter.diary.toLowerCase().includes(q) ||
+          letter.created_at.toLocaleLowerCase().includes(q)
+        );
+        setFilteredLetters(results);
+     }
+     filterLetters();
+   }, [searchFilter, letters])
+
    const goToEditLetter = (id: string) => (event: React.MouseEvent<HTMLDivElement>) => {
        event.stopPropagation();
        event.preventDefault();
        window.location.href = `/edit-letter/${id}`;
      }
 
-  if (diaryOrganised && letters && letters.length > 0) {
+  if (diaryOrganised && filteredLetters && filteredLetters.length > 0) {
     return(
       <div className="flex flex-row gap-5">
+        
+        {/* Diaries */}
         <div className="flex flex-col gap-y-3 w-[50%]">
           {diaries.map((diary) =>  (  
           <div className="flex flex-row group relative cursor-pointer" onClick={ () => {if (diary.diary === diarySelected) {setDiarySelected("")} else { setDiarySelected(diary.diary)}}}>
@@ -81,9 +100,20 @@ const LetterCardList = ({ orderByDiaryTrigger } : ChildProps) => {
           </div>
           ))}
         </div>
-        {diarySelected ? (
-          <div className="flex flex-col gap-4 custom-scroll h-[60vh] overflow-y-auto w-[50%]">
-          {letters.filter(letter => letter.diary === diarySelected).map((letter, index) => (
+
+        {/* Letters */}
+        {!diarySelected ? (
+          <div className="text-gray-500 bg-white rounded-lg shadow-md flex flex-col gap-y-3 items-center justify-center align-middle p-5 text-center">
+          Select a diary and its letters will appear here
+          <BookCopy className="h-20 w-20" strokeWidth={0.75}></BookCopy>
+          </div>
+        ) : ( filteredLetters.filter(letter => letter.diary === diarySelected).length === 0 ? 
+        <div className="text-gray-500 bg-white rounded-lg shadow-md flex flex-col gap-y-3 items-center justify-center align-middle p-5 text-center">
+          No letters in this diary matching the filter
+          <BookX className="h-20 w-20" strokeWidth={0.75}></BookX>
+        </div> :  
+        <div className="flex flex-col gap-4 custom-scroll h-[60vh] overflow-y-auto w-[50%]">
+          {filteredLetters.filter(letter => letter.diary === diarySelected).map((letter, index) => (
             <div className="flex flex-row group relative cursor-pointer" onClick={ goToEditLetter(letter._id)}>
             <p className="flex rounded-l-lg bg-blue-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
               <span className="block group-hover:hidden transition-opacity duration-900">✉️</span>
@@ -105,19 +135,15 @@ const LetterCardList = ({ orderByDiaryTrigger } : ChildProps) => {
           </div>
           ))}
         </div>
-        ) : ( 
-        <div className="text-gray-500 bg-white rounded-lg shadow-md flex flex-col gap-y-3 items-center justify-center align-middle p-5 text-center">
-          Select a diary and its letters will appear here
-          <BookCopy className="h-20 w-20" strokeWidth={0.75}></BookCopy>
-        </div>)
+        )
         }
       </div>
     )
   }
-  if (letters && letters.length > 0) {
+  if (filteredLetters && filteredLetters.length > 0) {
   return (
     <div className="flex flex-col gap-4 max-h-[80%] custom-scroll overflow-y-auto pr-2">
-      {letters.map((letter, index) => (
+      {filteredLetters.map((letter, index) => (
         <LetterCard
           id={letter._id}
           created_at={letter.created_at}
@@ -133,8 +159,8 @@ const LetterCardList = ({ orderByDiaryTrigger } : ChildProps) => {
   }
   return (
     <div className="text-center text-gray-500 h-[40vh] flex items-center justify-center">
-          No letters found. Start writing your first letter!
-        </div>
+        { !letters || letters.length === 0 ? "No letters found. Start writing your first letter!" : "No letters matching the filter."}
+    </div>
   );
 };
 
