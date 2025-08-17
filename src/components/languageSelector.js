@@ -33,7 +33,7 @@ export default function LanguageSelector({ languagesAvailable, languagesTaken, n
   return (
     <div className="flex flex-col items-center main">
       <h2 className="text-lg font-semibold mb-4">{titleText}</h2>
-      <div className="grid-languages">
+      <div className="grid grid-cols-5 gap-2">
         {availableLanguages.map((lang) => (
           <motion.img
             key={lang.name}
@@ -63,7 +63,7 @@ export default function LanguageSelector({ languagesAvailable, languagesTaken, n
                 key={lang.name}
                 src={lang.image}
                 alt={lang.name}
-                className="w-2 h-2 cursor-pointer rounded-full border border-gray-300 shadow"
+                className="cursor-pointer rounded-full border border-gray-300 shadow w-2 h-2 "
                 style={{ width: "2rem", height: "2rem" }}
                 whileHover={{ scale: 1.1 }}
                 onClick={() => handleDeselectLanguage(lang)}

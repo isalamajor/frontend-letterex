@@ -2,7 +2,83 @@ import axios from "axios";
 
 const API_URL = 'http://localhost:3090/api';
 
+export const getCountCorrectedLetters = async (userId) => {
+    const token = sessionStorage.getItem("authToken");
+    try {
+        let response;
+        if (userId) {
+            response = await axios.get(`${API_URL}/corrected/count/${userId}`,
+                {
+                    headers: {
+                        'Authorization': `${token}`
+                    }
+                }
+        );}
+        else {
+            response = await axios.get(`${API_URL}/corrected/count`,
+                {
+                    headers: {
+                        'Authorization': `${token}`
+                    }
+                }
+        );}
+        
+        if (response.status === 200) {
+            console.log("Num letters:", response.data.count);
+            return response.data.counts;
+        }
+        console.error("Error obtaining letter count:", response.data.message);
+        return -1;
+    }
+    catch (error) { 
+        if (axios.isAxiosError(error)) {
+            console.error("Axios error:", error.response?.data);
+        } else {
+            console.error("Unknown error:", error);
+        }
+        return -1;
+    }
+}
 
+export const getCountLetters = async (userId) => {
+    const token = sessionStorage.getItem("authToken");
+    try {
+        let response;
+        if (userId) {
+            response = await axios.get(`${API_URL}/letter/count/${userId}`,
+                {
+                    headers: {
+                        'Authorization': `${token}`
+                    }
+                }
+        );}
+        else {
+            response = await axios.get(`${API_URL}/letter/count`,
+                {
+                    headers: {
+                        'Authorization': `${token}`
+                    }
+                }
+        );}
+        
+        if (response.status === 200) {
+            console.log("Num letters:", response.data.count);
+            return response.data.counts;
+        }
+        console.error("Error obtaining letter count:", response.data.message);
+        return -1;
+    }
+    catch (error) { 
+        if (axios.isAxiosError(error)) {
+            console.error("Axios error:", error.response?.data);
+        } else {
+            console.error("Unknown error:", error);
+        }
+        return -1;
+    }
+}
+
+ 
 export const sendLetterBack = async (letterId) => {
     const token = sessionStorage.getItem("authToken");
     try {
@@ -179,7 +255,7 @@ export const getUserData = async (id) => {
     const token = sessionStorage.getItem("authToken");
     let response;
     try {
-        if (!id) {
+        if (id) {
             response = await axios.get(`${API_URL}/user/profile/${id}`, {
                 headers: {
                     'Authorization': `${token}`
@@ -407,12 +483,19 @@ export const listUsers = async (token, page = 1) => {
     }
 };
 
-export const updateUser = async (userData, token) => {
+export const updateUser = async (userData) => {
+    // Quitar email y nickname de userData
+    const { email, nickname, ...rest } = userData;
+    const token = sessionStorage.getItem("authToken");
     try {
-        const response = await axios.put(`${API_URL}/user/update`, userData, {
+        const response = await axios.put(`${API_URL}/user/update`, rest, {
             headers: { Authorization: token },
         });
-        return response.data;
+        if (response.status === 200) {
+            return response.data;
+        }
+        console.error("Error updating user:", response.data);
+        return null;
     } catch (error) {
         return handleRequestError(error);
     }

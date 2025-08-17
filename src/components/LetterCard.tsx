@@ -58,7 +58,7 @@ const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, l
                 />
               ))}
             <img
-              src={`/flags/${language}.png`}
+              src={`/flags/${language}.svg`}
               alt={language}
               className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
             />

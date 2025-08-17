@@ -113,9 +113,7 @@ const HomepageContent = () => {
             <div
               className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-6"
             >
-             <h2
-                className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#57A02D] via-[#39c167] to-[#004D40] p-4 transition-transform duration-300 animate-gradient"
-              >
+             <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#57A02D] via-[#39c167] to-[#004D40] p-4 transition-transform duration-300 animate-gradient">
                 Letters written
               </h2>
 

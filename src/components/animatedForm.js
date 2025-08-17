@@ -12,11 +12,18 @@ import ImageUploader from "./imageUploader";
 import { useRouter } from "next/navigation"; 
 
 const languagesData = [
-  { name: "English", image: "/flags/english.png" },
-  { name: "Spanish", image: "/flags/spanish.png" },
-  { name: "French", image: "/flags/french.png" },
-  { name: "Italian", image: "/flags/italian.png" },
-  { name: "Portuguese", image: "/flags/portuguese.png" },
+  { name: "English", image: "/flags/english.svg" },
+  { name: "Spanish", image: "/flags/spanish.svg" },
+  { name: "French", image: "/flags/french.svg" },
+  { name: "Italian", image: "/flags/italian.svg" },
+  { name: "Portuguese", image: "/flags/portuguese.svg" },
+  { name: "German", image: "/flags/german.svg" },
+  { name: "Chinese", image: "/flags/chinese.svg" },
+  { name: "Japanese", image: "/flags/japanese.svg" },
+  { name: "Russian", image: "/flags/russian.svg" },
+  { name: "Arabic", image: "/flags/arabic.svg" },
+  { name: "Hindi", image: "/flags/hindi.svg" },
+  { name: "Turkish", image: "/flags/turkish.svg" },
 ];
 
 export default function AnimatedForm() {
@@ -98,12 +105,6 @@ export default function AnimatedForm() {
       setLanguagesLearning([]);
       setProfileImage(null);
       setShowRegisterForm(false);
-    }
-  };
-
-  const handleAddLanguage = (setLanguageState, languagesList) => {
-    if (languagesList.length < 3) {
-      setLanguageState([...languagesList, '']);
     }
   };
 

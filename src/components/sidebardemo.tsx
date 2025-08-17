@@ -20,7 +20,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
     },
     {
       label: "Profile",
-      href: "#",
+      href: "/my-profile",
       icon: (
         <UserCog className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
@@ -34,7 +34,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
     },
     {
       label: "Logout",
-      href: "#",
+      href: "/",
       icon: (
         <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
@@ -63,7 +63,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
             <SidebarLink
               link={{
                 label: "Letterex",
-                href: "#",
+                href: "/homepage",
                 icon: (
                   <Image
                     src="/logo-frog.png"
