@@ -441,9 +441,39 @@ export const register = async (userData) => {
 export const login = async (credentials) => {
     try {
         const response = await axios.post(`${API_URL}/user/login`, credentials);
-        if (response.data.status >= 0) { return response.data }
+        if (response.data.status >= 0) { 
+            sessionStorage.setItem("authToken", response.data.token);
+            sessionStorage.setItem("userData", JSON.stringify(response.data.userData));
+            if (response.data.userData._id) {
+                SavePPicInSessionStorage(response.data.token, response.data.userData._id);
+            }
+            return response.data 
+        }
     } catch (error) {
         return handleRequestError(error);
+    }
+};
+
+const SavePPicInSessionStorage = async(token, userId) => {
+    try {
+        if (!token || !userId) return;
+        const response = await axios.get(`${API_URL}/user/profile-picture/${userId}`,         
+            {
+                responseType: "blob",
+                headers: { Authorization: token },
+        });
+        console.log("PICTURE: " + response);
+        if (response) {
+            const file = response.data;
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                sessionStorage.setItem("profilePictureBase64", reader.result);
+            };
+        }
+    } catch (error) {
+        console.error("Error fetching profile picture:", error);
+
     }
 };
 
@@ -512,28 +542,42 @@ export const changePassword = async (passwords, token) => {
     }
 };
 
-export const uploadProfilePicture = async (file, token) => {
+export const uploadProfilePicture = async (file) => {
     try {
         const formData = new FormData();
         formData.append("file0", file);
+        const token = sessionStorage.getItem("authToken");
 
-        const response = await axios.post(`${API_URL}/user/profile-picture`, formData, {
+        const response = await axios.put(`${API_URL}/user/profile-picture`, formData, {
             headers: { Authorization: token, "Content-Type": "multipart/form-data" },
         });
-        return response.data;
+        if (response.status === 200) {
+            // Guardar en sessionStorage como base64
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                sessionStorage.setItem("profilePictureBase64", reader.result);
+            };
+            return 0;
+        }
+        return null;
     } catch (error) {
-        return handleRequestError(error);
+        console.log("Error uploading profile picture:", error);
+        return null;
     }
 };
 
-export const getProfilePicture = async (id) => {
+export const getProfilePictureUrl = async (id) => {
     try {
         const response = await axios.get(`${API_URL}/user/profile-picture/${id}`, {
             responseType: "blob",
         });
-        return response.data;
+        if (response.status === 200) {
+            return URL.createObjectURL(response.data);
+        }
+        return null;
     } catch (error) {
-        return handleRequestError(error);
+        return null;
     }
 };
 

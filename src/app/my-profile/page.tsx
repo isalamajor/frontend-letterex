@@ -1,12 +1,13 @@
 "use client";
 import { SidebarDemo } from "@/components/sidebardemo";
 import { useState, useEffect } from "react";
-import { CircleUserRound, Mail, Leaf, SquarePen, Save, Plus, Trash2, FolderUp } from "lucide-react";
-import { getCountLetters, getCountCorrectedLetters } from "@/services/api";
+import { CircleUserRound, Mail, Leaf, SquarePen, Save, Plus, Trash2 } from "lucide-react";
+import { getCountLetters, getCountCorrectedLetters, uploadProfilePicture } from "@/services/api";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { updateUser } from "@/services/api";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
+import { ImageUploader } from "@/components/imageUploader";
 
 const MapNoSSR = dynamic(() => import("@/components/ui/map"), { ssr: false });
 
@@ -64,14 +65,13 @@ const ProfilePageContent = () => {
   const [correctionCounts, setCorrectionCounts] = useState<Record<string, number>>({});
   const [editing, setEditing] = useState(false);
   const [bioUser, setBioUser] = useState<string>("");
-  const [locationUser, setLocationUser] = useState({
-    city: "Madrid",
-    country: "Spain"
-  });
+  const [locationUser, setLocationUser] = useState({ city: "Madrid", country: "Spain" });
   const [languagesLearning, setLanguagesLearning] = useState<string[]>([]);
   const [languagesSpoken, setLanguagesSpoken] = useState<string[]>([]);
   const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
   const [addingLanguage, setAddingLanguage] = useState<"LEARN" | "MASTER" | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [profilePictureLocalUrl, setProfilePictureLocalUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,9 +87,8 @@ const ProfilePageContent = () => {
       }
   
       setUser(userData);
-      console.log("User Data: ", userData);
 
-      // Guardar las learnigLanguage, learnigLanguage2 y learnigLanguage2 en languagesLearning
+      // Guardar las learnigLanguage, learnigLanguage2 y learnigLanguage3 en languagesLearning
       setLanguagesLearning([
         userData.learningLanguage,
         userData.learningLanguage2,
@@ -118,6 +117,13 @@ const ProfilePageContent = () => {
       setBioUser(userData.bio);
       setLocationUser(userData.location);
 
+      // Guardar imagen
+      const profilePictureUrl = sessionStorage.getItem("profilePictureBase64") || "";
+      if (profilePictureUrl) {
+        setProfilePictureLocalUrl(profilePictureUrl);
+        console.log("Profile picture URL:", profilePictureUrl);
+      }
+
       // Obtener contadores de cartas y correcciones
       try {
         const counts = await getCountLetters();
@@ -144,10 +150,7 @@ const ProfilePageContent = () => {
     try {
       // Get user data from state
       if (!location) {
-        setLocationUser({
-          city: user.location.city || "Madrid",
-          country: user.location.country || "Spain"
-        });
+        setLocationUser(user.location || { city: "", country: "" });
       }
       const newUserData = {
         ...user,
@@ -178,6 +181,9 @@ const ProfilePageContent = () => {
       setUser(response.userData);
       setEditing(false);
 
+      // Save image
+      await uploadProfilePicture(imageFile);
+      
       openDialog({
         title: "Profile updated!",
         description: "Your data has been updated successfully 👍🏽",
@@ -200,39 +206,37 @@ const ProfilePageContent = () => {
   };
 
   // Dialog
-      const [dialogConfig, setDialogConfig] = useState<{
-        isOpen: boolean
-        title: string
-        description: string
-        primaryActionText: string
-        autoDismiss: boolean
-        size: 'sm' | 'md' | 'lg'
-        type: DialogType
-      }>({
-        isOpen: false,
-        title: "Payment Successful!",
-        description: "Your payment has been processed successfully. You will receive a confirmation email shortly.",
-        primaryActionText: "View Receipt",
-        autoDismiss: true,
-        size: 'md',
-        type: 'success'
-      })
-    
-      const openDialog = (config: Partial<typeof dialogConfig>) => {
-        setDialogConfig(prev => ({ ...prev, ...config, isOpen: true }))
-      }
-    
-      const closeDialog = () => {
-        setDialogConfig(prev => ({ ...prev, isOpen: false }))
-      }
+  const [dialogConfig, setDialogConfig] = useState<{
+    isOpen: boolean
+    title: string
+    description: string
+    primaryActionText: string
+    autoDismiss: boolean
+    size: 'sm' | 'md' | 'lg'
+    type: DialogType
+  }>({
+    isOpen: false,
+    title: "Payment Successful!",
+    description: "Your payment has been processed successfully. You will receive a confirmation email shortly.",
+    primaryActionText: "View Receipt",
+    autoDismiss: false,
+    size: 'md',
+    type: 'success'
+  })
+
+  const openDialog = (config: Partial<typeof dialogConfig>) => {
+    setDialogConfig(prev => ({ ...prev, ...config, isOpen: true }))
+  }
+
+  const closeDialog = () => {
+    setDialogConfig(prev => ({ ...prev, isOpen: false }))
+  }
+
 
   return (
       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
-        <h1 className="text-5xl font-semibold 
-                    bg-gradient-to-r bg-clip-text text-transparent 
-                    from-[#8EBA03] via-yellow-500 to-[#8EBA03]
-                    animate-text">
+        <h1 className="text-5xl font-semibold bg-gradient-to-r bg-clip-text text-transparent from-[#8EBA03] via-yellow-500 to-[#8EBA03] animate-text">
           Your profile
         </h1>
 
@@ -264,11 +268,14 @@ const ProfilePageContent = () => {
                 }
               </div>
               {/* Primera fila info */}
-              <div className="flex flex-row gap-15 w-full h-[20%] justify-space-around items-start mb-15">
-                <div className="relative h-full">
-                  <img src="default.png" className="rounded-full h-full object-cover"></img>
-                    {editing && 
-                    <FolderUp size={244} className="absolute h-full w-full rounded-full p-10 inset-0 hover:bg-black/50 text-transparent hover:text-white"></FolderUp>}
+              <div className="flex flex-row gap-15 w-full h-[30%] justify-between items-x  mb-5">
+
+                <div className="relative w-[10%] h-[100%] mt-5">
+                  <ImageUploader onImageSelect={(f:File) => setImageFile(f)}
+                    currentPicLocalUrl={profilePictureLocalUrl}
+                    active={editing}
+                    size="150px"
+                  />
                 </div>
 
                 <div className="h-full w-[30%]">
@@ -301,7 +308,7 @@ const ProfilePageContent = () => {
               {/* Segunda fila info */}
               <div className="flex flex-row gap-10 w-full justify-between">
             
-                {/* Bloque izquierda */}
+                {/* Idiomas */}
               <div className="w-[40%]">
                 <div className="flex flex-col gap-10 items-center p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2 mb-3">
                   <div className="flex flex-row gap-15">
@@ -310,7 +317,7 @@ const ProfilePageContent = () => {
                         <div className="flex flex-row gap-3">
                           {languagesLearning.map((lang, index) => (
                             <div key={index} className="relative">
-                            <img src={`/flags/${lang}.svg`} className={`h-10 w-10 rounded-full object-cover`}></img>
+                            <img src={`/flags/${lang}.svg`} className="h-10 w-10 rounded-full object-cover border border-gray-300 shadow"></img>
                               {editing && 
                               <Trash2 className="absolute h-10 w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white"
                               onClick={() => {if (languagesLearning.length <= 1) {return} 
@@ -326,7 +333,7 @@ const ProfilePageContent = () => {
                         <div className="flex flex-row gap-3">
                           {languagesSpoken.map((lang, index) => (
                             <div key={index} className="relative">
-                            <img src={`/flags/${lang}.svg`} className={`h-10 w-10 rounded-full object-cover`}></img>
+                            <img src={`/flags/${lang}.svg`} className="h-10 w-10 rounded-full object-cover border border-gray-300 shadow"></img>
                             {editing && 
                             <Trash2 className="absolute h-10 w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white"
                             onClick={() => { if (languagesSpoken.length <= 1) {return} 
@@ -371,12 +378,11 @@ const ProfilePageContent = () => {
                   <div className="flex flex-row text-xl w-full justify-around">
                     
                     <div className="flex flex-col items-center gap-2">
-                      <p className="text-5xl font-medium">2 ✉️</p>
+                      <p className="text-5xl font-medium">{letterCounts && Object.values(letterCounts).reduce((a, b) => a + b, 0)} ✉️</p>
                       <h2 className="font-bold"> Letters written</h2>
                       <ul className="flex flex-col gap-2 mt-3">
                         { letterCounts && Object.entries(letterCounts).map(([lang, count]) => (
                           <li key={lang} className="flex flex-row gap-3">
-                            {/* Añadir a master o learning languages al clicar */}
                             <img src={`/flags/${lang}.svg`} className="h-7 w-7 rounded-full"></img>
                             {count} in {lang}
                           </li>
@@ -385,7 +391,7 @@ const ProfilePageContent = () => {
                     </div>
                     
                     <div className="flex flex-col items-center gap-2">
-                      <p  className="text-5xl font-medium">3 💌</p>
+                      <p  className="text-5xl font-medium">{correctionCounts && Object.values(correctionCounts).reduce((a, b) => a + b, 0)} 💌</p>
                       <h2 className="font-bold"> Letters corrected</h2>
                       <ul className="flex flex-col gap-2 mt-3">
                         { correctionCounts && Object.entries(correctionCounts).map(([lang, count]) => (
@@ -400,9 +406,17 @@ const ProfilePageContent = () => {
                 </div>}
               </div>
 
-              {/* Bloque derecha   */}  
+              {/* Mapa*/}   
               <div className="w-[60%] h-[90%] flex flex-col items-center p-2 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">
-                <MapNoSSR key={locationUser.country + "_" + editing} selectedCountry={locationUser.country} editing={editing} onCountryChange={(newCountry) => setLocationUser((prev) => ({ ...prev, country: newCountry }))}/>
+                {/* Comprobar que locationUser no es undefined */}
+                <MapNoSSR
+                  key={user._id + "_" + editing}
+                  selectedCountry={locationUser?.country || "No location"}
+                  editing={editing}
+                  onCountryChange={(newCountry) =>
+                    setLocationUser((prev) => ({ ...prev, country: newCountry }))
+                  }
+                />
               </div> 
 
               </div>

@@ -7,8 +7,8 @@ import { RiPlantLine } from "react-icons/ri";
 import { motion } from "framer-motion";
 import TextAnimation from "./textAnimation";
 import LanguageSelector from "./languageSelector";
-import { login, register, isUsernameInUse,sendVerificationCode, isEmailInUse, checkVerificationCode } from "../services/api";
-import ImageUploader from "./imageUploader";
+import { login, register, isUsernameInUse,sendVerificationCode, isEmailInUse, checkVerificationCode, uploadProfilePicture, getPro } from "../services/api";
+import { ImageUploader } from "@/components/imageUploader";
 import { useRouter } from "next/navigation"; 
 
 const languagesData = [
@@ -118,7 +118,13 @@ export default function AnimatedForm() {
     });
     if (result.status === 0) { 
       sessionStorage.setItem("authToken", result.token);  
-      sessionStorage.setItem("userData", JSON.stringify(result.userData)); 
+      sessionStorage.setItem("userData", JSON.stringify(result.userData));
+
+      // Subir imagen
+      if (profileImage) {
+        await uploadProfilePicture(profileImage);   
+      }
+
       router.push("../homepage");
     }
     else if (result.status > 0) { showAlertMessage(result.message) }

@@ -76,7 +76,7 @@ export default function Mapa({ selectedCountry, editing, onCountryChange }: MapP
     return null;
     }
   return (
-    <div className="relative h-[500px] w-full rounded-xl overflow-hidden shadow-lg z-0">
+    <div className="relative h-[500px] w-full rounded-xl overflow-hidden z-0">
       <MapContainer
         center={[20, 0]} // inicial, se ajustará automáticamente
         zoom={2}
@@ -118,7 +118,7 @@ export default function Mapa({ selectedCountry, editing, onCountryChange }: MapP
       </MapContainer>
         {editing ? 
         <div className="absolute top-4 right-4 bg-white text-black p-1 rounded shadow-md z-500">
-          <Combobox placeholder="Select a country" width={256} onChange={(value) => onCountryChange(value)}>
+          <Combobox placeholder="Select a country" value={selectedCountry} width={256} onChange={(value) => onCountryChange(value)}>
             <Combobox.Input />
            <Combobox.List >
             {countries.features.map((country) =>
