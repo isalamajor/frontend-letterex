@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, AlertTriangle, CircleX, Send } from 'lucide-react'
+import { Check, X, AlertTriangle, CircleX, Send, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { getFriendsList } from '@/services/api'
+import { getFriendsList, shareLetter, changePassword, deleteAccount } from '@/services/api'
 import FriendsCheckboxList from '@/components/ui/friendsCheckBoxList'
-import { shareLetter } from '@/services/api'
+import { Switch } from '@/components/ui/switch'
+import { InputPasswords } from '@/components/ui/inputPasswords'
+import { InputPass } from '@/components/ui/inputPass'
 
 interface DialogProps {
   open: boolean;
@@ -84,7 +86,7 @@ const DialogDescription: React.FC<DialogDescriptionProps> = ({ children, classNa
 };
 
 
-export type DialogType = 'success' | 'alert' | 'error' | 'shareLetter'
+export type DialogType = 'success' | 'alert' | 'error' | 'shareLetter' | 'settings'
 
 interface SuccessDialogProps {
   isOpen?: boolean
@@ -112,7 +114,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   onPrimaryAction = () => {},
   autoDismiss = false,
   autoDismissDelay = 3000,
-  showCloseButton = true,
+  showCloseButton = false,
   size = 'md',
   type = 'success', // Default to success
   letterId = '',
@@ -122,9 +124,17 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   const [internalOpen, setInternalOpen] = useState(isOpen)
   const [friendsList, setFriendsList] = useState<Friend[]>([]);
   const [friendsSelected, setFriendsSelected] = useState<string[]>([]);
-  const primaryButtonRef = useRef<HTMLButtonElement>(null)
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
-  const previousActiveElement = useRef<HTMLElement | null>(null)
+  const primaryButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+  const [settingSwitch, setSettingSwitch] = useState<string | null>(null);  
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordChangeMessage, setPasswordChangeMessage] = useState<string | null>(null);
+  const [deleteAccountResult, setDeleteAccountResult] = useState<number | null>(null);
+
+
 
   const sizeClasses = {
     sm: 'max-w-sm',
@@ -165,6 +175,14 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
       descriptionDefault: "They can check your letter and send a correction back :)",
       buttonClass: 'bg-blue-600 text-white hover:bg-blue-700',
     },
+    settings: {
+      icon: Lock,
+      iconBgClass: 'bg-green-100 dark:bg-green-900/20',
+      iconColorClass: 'text-green-600 dark:text-green-400',
+      titleDefault: "Password changed",
+      descriptionDefault: "Your password has been changed successfully :)",
+      buttonClass: 'bg-green-600 text-white hover:bg-green-700',
+    },
   }
 
   const currentConfig = typeConfig[type]
@@ -204,6 +222,34 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
       alert("Failed to share letter. Please try again.");
     }
     
+  }
+
+  const handleChangePassword = async () => {
+    if (password && newPassword && confirmPassword) {
+      const result = await changePassword(password, newPassword);
+      if (result === 0) {
+        setPasswordChangeMessage("Password changed successfully!");
+      } else if (result === -2) {
+        setPasswordChangeMessage("Wrong password.");
+      } else {
+        setPasswordChangeMessage("Failed to change password. Please try again later.");
+      }
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    console.log("password:", password);
+    if (!password) {return;}
+    const result = await deleteAccount(password);
+    setDeleteAccountResult(result);
+    if (result === 0) {
+      setTimeout(() => {
+        window.location.href = "/"; 
+        sessionStorage.clear();
+      }, 2000);
+    } else {
+      setPassword("");
+    }
   }
 
   // Store the previously focused element when dialog opens
@@ -259,7 +305,6 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
 
     if (type === 'shareLetter' && isOpen) {
       fetchFriendsList();
-
     }
   }, [type, isOpen]);
 
@@ -384,7 +429,143 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                 </div>
               )}
 
-              {type !== 'shareLetter' && (
+
+              { type === 'settings' && (             
+                <div className="flex flex-col items-start justify-center gap-2 w-full min-h-[21rem]">
+                  { (!passwordChangeMessage && deleteAccountResult !== 0) && (
+                    <Switch name="full-width" style={{ width: "100%" }} onChange={(value) => setSettingSwitch(value)}>
+                      <Switch.Control
+                        defaultChecked
+                        label="Change password"
+                        size="large"
+                        value="password"
+                    />
+                    <Switch.Control label="Delete account" size="large" value="delete" />
+                  </Switch>
+                  )}
+                    {settingSwitch === "password"
+                      ? (<>
+                        {passwordChangeMessage ? (
+                          <div className='flex justify-center text-center items-center flex-col gap-2 h-full w-full text-black m-2'>
+                            <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ 
+                              delay: 0.1, 
+                              duration: 0.3, 
+                              type: "spring", 
+                              stiffness: 200 
+                            }}
+                            className={`flex items-center justify-center w-16 h-16 rounded-full ${passwordChangeMessage === "Password changed successfully!" ? currentConfig.iconBgClass : "bg-red-100 dark:bg-red-900/20"}`}
+                          >
+                            <IconComponent className={`w-8 h-8 ${passwordChangeMessage === "Password changed successfully!" ? currentConfig.iconColorClass : "text-red-600 dark:text-red-400"}`} />
+                          </motion.div>
+                            <span className='font-semibold text-center'>{passwordChangeMessage}</span>
+                            {passwordChangeMessage === "Wrong password." ? (
+                              <p className='text-center text-sm mb-2'>Your password could not be changed because the current password you entered is incorrect.</p>
+                            ) : null}
+                            <Button onClick={() => setPasswordChangeMessage(null)}>OK</Button>
+                          </div>
+                        ) : (
+                          <>
+                          <div className='flex justify-center items-start flex-col gap-2 h-full w-full text-black m-2'>
+                            {/* Input con ojo para ocultar contraseña*/}
+                            <InputPasswords onSave={(password, NewPassword, ConfirmPassword) => {
+                              setPassword(password);
+                            setNewPassword(NewPassword);
+                            setConfirmPassword(ConfirmPassword);
+                          }}/>
+                        </div>
+                        <div className='flex justify-between items-center flex-row h-full w-full text-black mt-2'>
+                          <Button
+                            onClick={() => { handlePrimaryAction();
+                              setPassword("");
+                              setNewPassword("");
+                              setConfirmPassword("");
+                            }}
+                            className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                            size="default"
+                          > Cancel
+                          </Button>
+                          <Button
+                            onClick={handleChangePassword}
+                            className={`min-w-[120px] bg-lime-500 text-white rounded py-2 px-4 hover:bg-lime-600 transition-colors`}
+                            size="default"
+                          > Save
+                          </Button>
+                        </div>
+                        </>)}</>
+                      )
+                      : (
+                        <div className='flex flex-col gap-2 min-h-[17rem] w-full align-center items-center justify-center mt-2'>
+                          
+                          {deleteAccountResult === 0 ? 
+                          <motion.div
+                            key="delete-success"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ 
+                              delay: 0.1, 
+                              duration: 0.3, 
+                              type: "spring", 
+                              stiffness: 200 
+                            }}
+                            className={`flex items-center justify-center w-30 h-30 rounded-full`}
+                          >
+                            <img src="/logo-frog.png" alt="Success" />
+                          </motion.div>
+                          :
+                          <motion.div
+                            key="delete-fail"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ 
+                              delay: 0.1, 
+                              duration: 0.3, 
+                              type: "spring", 
+                              stiffness: 200 
+                            }}
+                            className={`flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20`}
+                          >
+                            <IconComponent className={`w-8 h-8 text-red-600 dark:text-red-400`}/>
+                          </motion.div> }
+
+                          { deleteAccountResult === -1 ? (  
+                            <>  
+                            <p className='text-red-600 mb-3 font-bold w-[60%] text-center'>An internal error ocurred. Please, try again later.</p>
+                            <Button
+                            onClick={() => { handlePrimaryAction();
+                              setPassword("");
+                              setNewPassword("");
+                              setConfirmPassword("");
+                              setDeleteAccountResult(null);
+                            }}
+                            className={`min-w-[120px] bg-black/90 text-white mb-5 rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                            size="default"
+                          > OK
+                          </Button>
+                          </>
+                          ) : 
+                          (deleteAccountResult === 0) ? (
+                            <p className='text-gray-900 mb-3 font-bold w-[60%] text-center'>Account deleted succesfully. See you soon!</p>
+                          ):(
+                            <><p className='text-black mb-3 font-bold w-[60%] text-center'>Your password is required to perform this action</p>
+                        <InputPass
+                          onChange={(password) => {setPassword(password); setDeleteAccountResult(null);}}
+                          wrongPassword={deleteAccountResult !== null && deleteAccountResult < -1}
+                        />
+                          <Button
+                            onClick={handleDeleteAccount}
+                            className={`min-w-[120px] mt-3 bg-red-500 text-white rounded py-2 px-4 hover:bg-red-600 transition-colors`}
+                            size="default"
+                          > Delete account
+                          </Button></>)}
+                        </div>
+                      )}
+                </div>
+              )}
+
+              {type !== 'shareLetter' && type!=='settings' && (
               <div className="flex flex-col items-center text-center p-6 pt-8 space-y-4">
                 {/* Icon */}
                 <motion.div
@@ -419,7 +600,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                   {/* Description */}
                   <DialogDescription 
                     id="success-dialog-description"
-                    className="text-muted-foreground max-w-sm mx-auto leading-relaxed"
+                    className="text-muted-foreground max-w-sm mx-auto leading-relaxed text-center"
                   >
                     <motion.span
                       initial={{ opacity: 0, y: 10 }}

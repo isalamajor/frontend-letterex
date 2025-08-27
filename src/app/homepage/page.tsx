@@ -72,7 +72,6 @@ const HomepageContent = () => {
       else { 
         setNoReceivedLetters(false);
         setSendersList([...new Set(lettersRecList.map(letter => letter.sender.nickname))]);
-        console.log([...new Set(lettersRecList.map(letter => letter.sender.nickname))])
       }
     };
     

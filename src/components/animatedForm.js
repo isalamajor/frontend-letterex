@@ -5,11 +5,11 @@ import { useState } from "react";
 import { MdOutlineSensorDoor } from "react-icons/md";
 import { RiPlantLine } from "react-icons/ri";
 import { motion } from "framer-motion";
-import TextAnimation from "./textAnimation";
 import LanguageSelector from "./languageSelector";
-import { login, register, isUsernameInUse,sendVerificationCode, isEmailInUse, checkVerificationCode, uploadProfilePicture, getPro } from "../services/api";
+import { login, register, isUsernameInUse,sendVerificationCode, isEmailInUse, checkVerificationCode, uploadProfilePicture } from "../services/api";
 import { ImageUploader } from "@/components/imageUploader";
 import { useRouter } from "next/navigation"; 
+import { Typewriter } from "./ui/typeWriter";
 
 const languagesData = [
   { name: "English", image: "/flags/english.svg" },
@@ -24,6 +24,12 @@ const languagesData = [
   { name: "Arabic", image: "/flags/arabic.svg" },
   { name: "Hindi", image: "/flags/hindi.svg" },
   { name: "Turkish", image: "/flags/turkish.svg" },
+];
+
+const phrases = [
+    "Write about your passions",
+    "Exchange language corrections",
+    "Find people to share and learn"
 ];
 
 export default function AnimatedForm() {
@@ -44,12 +50,6 @@ export default function AnimatedForm() {
   const handleImageUpload = (imageFile) => {
     setProfileImage(imageFile); // Guardar imagen en el estado del padre
   };
-
-  const phrases = [
-    "Write about your passions",
-    "Exchange language corrections",
-    "Find people to share and learn"
-  ];
 
   const showAlertMessage = (message) => {
     setShowAlert(message);
@@ -110,7 +110,7 @@ export default function AnimatedForm() {
 
   const loginAttempt = async() => {
     
-    if (!email) { showAlertMessage("Enter your email"); return }
+    if (!email) { showAlertMessage("Enter your email or nickname"); return }
     else if (!password) { showAlertMessage("...and what's your password?"); return }
     const result = await login({
       email: email,
@@ -228,8 +228,13 @@ export default function AnimatedForm() {
       {!showForm && !showRegisterForm && (
         <div>
           <div className="text text-white text-lg">
-            <h2>Welcome to Letterex</h2>
-            <TextAnimation phrases={phrases} />
+            <h2 className="font-semibold text-2xl">Welcome to Letterex</h2>
+            <Typewriter
+                text={phrases}
+                speed={100}
+                loop={true}
+            />
+
           </div>
           <div className="ctas">
             <motion.button

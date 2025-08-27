@@ -1,7 +1,7 @@
 "use client";
 import { SidebarDemo } from "@/components/sidebardemo";
 import { useState, useEffect } from "react";
-import { CircleUserRound, Mail, Leaf, SquarePen, Save, Plus, Trash2 } from "lucide-react";
+import { CircleUserRound, Mail, Leaf, SquarePen, Save, Plus, Trash2, Settings, Trash } from "lucide-react";
 import { getCountLetters, getCountCorrectedLetters, uploadProfilePicture } from "@/services/api";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -236,7 +236,7 @@ const ProfilePageContent = () => {
   return (
       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
-        <h1 className="text-5xl font-semibold bg-gradient-to-r bg-clip-text text-transparent from-[#8EBA03] via-yellow-500 to-[#8EBA03] animate-text">
+        <h1 className="text-3xl md:text-5xl font-semibold bg-gradient-to-r bg-clip-text text-transparent from-[#8EBA03] via-yellow-500 to-[#8EBA03] animate-text">
           Your profile
         </h1>
 
@@ -249,22 +249,37 @@ const ProfilePageContent = () => {
                 { editing ? 
                 <><button 
                 onClick={() => setEditing(!editing)}
-                className="w-[8%] cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-200 shadow-md py-2 px-4 hover:bg-white flex flex-row gap-2 justify-center items-center mr-2">
+                className="w-auto h-[3rem] cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-200 shadow-md py-2 px-4 hover:bg-white flex flex-row gap-2 justify-center items-center mr-2">
                 Cancel
                 </button>
+
                 <button 
                 onClick={() => SaveOnClick()}
-                className="w-[8%] cursor-pointer text-white border border-lightblack rounded-sm bg-[#8EBA03] shadow-md py-2 px-4 hover:bg-[#7BA102] flex flex-row gap-2 justify-center items-center">
+                className="w-auto h-[3rem] cursor-pointer text-white border border-lightblack rounded-sm bg-[#8EBA03] shadow-md py-2 px-4 hover:bg-[#7BA102] flex flex-row gap-2 justify-center items-center">
                 <Save></Save> 
                 Save
                 </button></>
                 :
+                <>
+                <button 
+                  onClick={() => openDialog({
+                    title: "Settings",
+                    description: "Manage your account settings.",
+                    primaryActionText: "Cancel",
+                    autoDismiss: false,
+                    type: "settings"
+                  })}
+                  className="w-auto h-[3rem] cursor-pointer text-gray-700 hover:text-[#8EBA03] border border-lightblack rounded-sm bg-gray-50 shadow-md py-2 px-4 hover:bg-white flex flex-row gap-2 justify-center items-center mr-2">
+                  <Settings/> 
+                  Settings
+                </button>
                 <button 
                 onClick={() => setEditing(!editing)}
-                className="w-[8%] cursor-pointer text-gray-700 hover:text-[#8EBA03] border border-lightblack rounded-sm bg-gray-50 shadow-md py-2 px-4 hover:bg-white flex flex-row gap-2 justify-center items-center">
-                <SquarePen></SquarePen> 
+                className="w-auto h-[3rem] cursor-pointer text-gray-700 hover:text-[#8EBA03] border border-lightblack rounded-sm bg-gray-50 shadow-md py-2 px-4 hover:bg-white flex flex-row gap-2 justify-center items-center">
+                <SquarePen/> 
                 Edit
                 </button>
+                </>
                 }
               </div>
               {/* Primera fila info */}
@@ -306,118 +321,117 @@ const ProfilePageContent = () => {
               </div>
 
               {/* Segunda fila info */}
-              <div className="flex flex-row gap-10 w-full justify-between">
+              <div className="flex flex-row gap-10 w-full h-[70%] justify-between">
             
                 {/* Idiomas */}
-              <div className="w-[40%]">
-                <div className="flex flex-col gap-10 items-center p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2 mb-3">
-                  <div className="flex flex-row gap-15">
-                    <div className="flex flex-col gap-5">  
-                      <h2 className="font-semibold">Languages learning</h2>
-                        <div className="flex flex-row gap-3">
-                          {languagesLearning.map((lang, index) => (
-                            <div key={index} className="relative">
-                            <img src={`/flags/${lang}.svg`} className="h-10 w-10 rounded-full object-cover border border-gray-300 shadow"></img>
+                <div className="w-[40%] h-[90%]">
+                  <div className="h-[35%] flex flex-col gap-10 items-center p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2 mb-3">
+                    <div className="flex flex-row gap-15">
+                      <div className="flex flex-col gap-5">  
+                        <h2 className="font-semibold">Languages learning</h2>
+                          <div className="flex flex-row gap-3">
+                            {languagesLearning.map((lang, index) => (
+                              <div key={index} className="relative">
+                              <img src={`/flags/${lang}.svg`} className="h-10 w-10 rounded-full object-cover border border-gray-300 shadow"></img>
+                                {editing && 
+                                <Trash2 className="absolute h-10 w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white"
+                                onClick={() => {if (languagesLearning.length <= 1) {return} 
+                                  setLanguagesLearning((prev) => prev.filter((l) => l !== lang)); setAvailableLanguages((prev) => [...prev, lang])}}></Trash2>
+                                }
+                              </div>
+                            ))}
+                          {editing && <Plus onClick={() => {if (addingLanguage === "LEARN") setAddingLanguage(null); else setAddingLanguage("LEARN");}} className={`h-10 w-10 rounded-full bg-gray-200 p-2 ${addingLanguage === "LEARN" ? "bg-lime-300" : ""}`}></Plus>}
+                          </div>
+                      </div> 
+                      <div className="flex flex-col gap-5">
+                        <h2 className="font-semibold">Mastered languages</h2>
+                          <div className="flex flex-row gap-3">
+                            {languagesSpoken.map((lang, index) => (
+                              <div key={index} className="relative">
+                              <img src={`/flags/${lang}.svg`} className="h-10 w-10 rounded-full object-cover border border-gray-300 shadow"></img>
                               {editing && 
                               <Trash2 className="absolute h-10 w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white"
-                              onClick={() => {if (languagesLearning.length <= 1) {return} 
-                                setLanguagesLearning((prev) => prev.filter((l) => l !== lang)); setAvailableLanguages((prev) => [...prev, lang])}}></Trash2>
+                              onClick={() => { if (languagesSpoken.length <= 1) {return} 
+                                setLanguagesSpoken((prev) => prev.filter((l) => l !== lang)); setAvailableLanguages((prev) => [...prev, lang])}}></Trash2>
                               }
-                            </div>
-                          ))}
-                        {editing && <Plus onClick={() => {if (addingLanguage === "LEARN") setAddingLanguage(null); else setAddingLanguage("LEARN");}} className={`h-10 w-10 rounded-full bg-gray-200 p-2 ${addingLanguage === "LEARN" ? "bg-lime-300" : ""}`}></Plus>}
-                        </div>
-                    </div> 
-                    <div className="flex flex-col gap-5">
-                      <h2 className="font-semibold">Mastered languages</h2>
-                        <div className="flex flex-row gap-3">
-                          {languagesSpoken.map((lang, index) => (
-                            <div key={index} className="relative">
-                            <img src={`/flags/${lang}.svg`} className="h-10 w-10 rounded-full object-cover border border-gray-300 shadow"></img>
-                            {editing && 
-                            <Trash2 className="absolute h-10 w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white"
-                            onClick={() => { if (languagesSpoken.length <= 1) {return} 
-                              setLanguagesSpoken((prev) => prev.filter((l) => l !== lang)); setAvailableLanguages((prev) => [...prev, lang])}}></Trash2>
-                            }
-                            </div>
-                          ))}
-                          {editing && <Plus onClick={() => {if (addingLanguage === "MASTER") setAddingLanguage(null); else setAddingLanguage("MASTER");}} className={`h-10 w-10 rounded-full bg-gray-200 p-2 ${addingLanguage === "MASTER" ? "bg-lime-300" : ""}`}></Plus>}
-                        </div>
-                    </div>
-                  </div>
-                  {editing && 
-                  <>
-                  {addingLanguage === "LEARN" && <h2 className="text-lime-600">Adding to learning languages</h2>}
-                  {addingLanguage === "MASTER" && <h2 className="text-lime-600">Adding to mastered languages</h2>}
-                  {!addingLanguage && <h2>Available languages</h2>}
-                    <div className="grid grid-flow-col auto-cols-max gap-2 justify-center">
-                            {availableLanguages.map((lang) => (
-                              <motion.img
-                                key={lang}
-                                src={`/flags/${lang}.svg`}
-                                alt={lang}
-                                className="cursor-pointer rounded-full border border-gray-300 shadow h-10 w-10"
-                                whileHover={{ scale: 1.1 }}
-                                onClick={() => {
-                                    if (!addingLanguage) {return}
-                                    if (addingLanguage === "MASTER" && languagesSpoken.length < 3) {
-                                    setLanguagesSpoken((prev) => [...prev, lang]);setAvailableLanguages((prev) => prev.filter((l) => l !== lang))
-                                  } else if (addingLanguage === "LEARN" && languagesLearning.length < 3) {
-                                    setLanguagesLearning((prev) => [...prev, lang]);
-                                    setAvailableLanguages((prev) => prev.filter((l) => l !== lang))
-                                  } ;
-                                }}
-                              />
+                              </div>
                             ))}
-                    </div></>
-                  }
+                            {editing && <Plus onClick={() => {if (addingLanguage === "MASTER") setAddingLanguage(null); else setAddingLanguage("MASTER");}} className={`h-10 w-10 rounded-full bg-gray-200 p-2 ${addingLanguage === "MASTER" ? "bg-lime-300" : ""}`}></Plus>}
+                          </div>
+                      </div>
+                    </div>
+                    {editing && 
+                    <>
+                    {addingLanguage === "LEARN" && <h2 className="text-lime-600">Adding to learning languages</h2>}
+                    {addingLanguage === "MASTER" && <h2 className="text-lime-600">Adding to mastered languages</h2>}
+                    {!addingLanguage && <h2>Available languages</h2>}
+                      <div className="grid grid-flow-col auto-cols-max gap-2 justify-center">
+                              {availableLanguages.map((lang) => (
+                                <motion.img
+                                  key={lang}
+                                  src={`/flags/${lang}.svg`}
+                                  alt={lang}
+                                  className="cursor-pointer rounded-full border border-gray-300 shadow h-10 w-10"
+                                  whileHover={{ scale: 1.1 }}
+                                  onClick={() => {
+                                      if (!addingLanguage) {return}
+                                      if (addingLanguage === "MASTER" && languagesSpoken.length < 3) {
+                                      setLanguagesSpoken((prev) => [...prev, lang]);setAvailableLanguages((prev) => prev.filter((l) => l !== lang))
+                                    } else if (addingLanguage === "LEARN" && languagesLearning.length < 3) {
+                                      setLanguagesLearning((prev) => [...prev, lang]);
+                                      setAvailableLanguages((prev) => prev.filter((l) => l !== lang))
+                                    } ;
+                                  }}
+                                />
+                              ))}
+                      </div></>
+                    }
+                  </div>
+
+                { !editing && 
+                  <div className="h-[70%] flex flex-col items-center p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">        
+                    <div className="flex flex-row text-xl w-full justify-around">
+                      
+                      <div className="flex flex-col items-center gap-2">
+                        <p className="text-5xl font-medium">{letterCounts && Object.values(letterCounts).reduce((a, b) => a + b, 0)} ✉️</p>
+                        <h2 className="font-bold"> Letters written</h2>
+                        <ul className="flex flex-col gap-2 mt-3">
+                          { letterCounts && Object.entries(letterCounts).map(([lang, count]) => (
+                            <li key={lang} className="flex flex-row gap-3">
+                              <img src={`/flags/${lang}.svg`} className="h-7 w-7 rounded-full"></img>
+                              {count} in {lang}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      
+                      <div className="flex flex-col items-center gap-2">
+                        <p  className="text-5xl font-medium">{correctionCounts && Object.values(correctionCounts).reduce((a, b) => a + b, 0)} 💌</p>
+                        <h2 className="font-bold"> Letters corrected</h2>
+                        <ul className="flex flex-col gap-2 mt-3">
+                          { correctionCounts && Object.entries(correctionCounts).map(([lang, count]) => (
+                            <li key={lang} className="flex flex-row gap-3">
+                              <img src={`/flags/${lang}.svg`} className="h-7 w-7 rounded-full"></img>
+                              {count} in {lang}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div> 
+                  </div>}
                 </div>
 
-              { !editing && 
-                <div className="flex flex-col items-center p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">        
-                  <div className="flex flex-row text-xl w-full justify-around">
-                    
-                    <div className="flex flex-col items-center gap-2">
-                      <p className="text-5xl font-medium">{letterCounts && Object.values(letterCounts).reduce((a, b) => a + b, 0)} ✉️</p>
-                      <h2 className="font-bold"> Letters written</h2>
-                      <ul className="flex flex-col gap-2 mt-3">
-                        { letterCounts && Object.entries(letterCounts).map(([lang, count]) => (
-                          <li key={lang} className="flex flex-row gap-3">
-                            <img src={`/flags/${lang}.svg`} className="h-7 w-7 rounded-full"></img>
-                            {count} in {lang}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    
-                    <div className="flex flex-col items-center gap-2">
-                      <p  className="text-5xl font-medium">{correctionCounts && Object.values(correctionCounts).reduce((a, b) => a + b, 0)} 💌</p>
-                      <h2 className="font-bold"> Letters corrected</h2>
-                      <ul className="flex flex-col gap-2 mt-3">
-                        { correctionCounts && Object.entries(correctionCounts).map(([lang, count]) => (
-                          <li key={lang} className="flex flex-row gap-3">
-                            <img src={`/flags/${lang}.svg`} className="h-7 w-7 rounded-full"></img>
-                            {count} in {lang}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div> 
-                </div>}
-              </div>
-
-              {/* Mapa*/}   
-              <div className="w-[60%] h-[90%] flex flex-col items-center p-2 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">
-                {/* Comprobar que locationUser no es undefined */}
-                <MapNoSSR
-                  key={user._id + "_" + editing}
-                  selectedCountry={locationUser?.country || "No location"}
-                  editing={editing}
-                  onCountryChange={(newCountry) =>
-                    setLocationUser((prev) => ({ ...prev, country: newCountry }))
-                  }
-                />
-              </div> 
+                {/* Mapa   */}
+                <div className="w-[60%] h-[90%] flex flex-col items-center p-2 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">
+                  <MapNoSSR
+                    key={user._id + "_" + editing}
+                    selectedCountry={locationUser?.country || "No location"}
+                    editing={editing}
+                    onCountryChange={(newCountry) =>
+                      setLocationUser((prev) => ({ ...prev, country: newCountry }))
+                    }
+                  /> 
+                </div> 
 
               </div>
             </div>
