@@ -14,7 +14,7 @@ interface LetterCardListProps {
     diary: string;
     title: string;
     language: string;
-    sharedWith: { nickname: string; avatar: string; correctionSentBack: boolean; correctedLetterId: string }[];
+    sharedWith: { nickname: string; image: string; correctionSentBack: boolean; correctedLetterId: string }[];
   }[];
 }
 
@@ -123,7 +123,7 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter } : ChildProps) => {
               <div className="flex flex-row justify-between">
                 <div className="flex flex-row gap-2 text-gray-500 items-center">
                   <img
-                  src={`/flags/${letter.language}.png`}
+                  src={`/flags/${letter.language}.svg`}
                   className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600"
                   />
                   <p>{letter.language}</p>

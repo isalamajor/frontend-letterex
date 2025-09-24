@@ -9,7 +9,7 @@ interface LetterCardProps {
   diary: string;
   title: string;
   language: string;
-  sharedWith: { nickname: string; avatar: string; correctionSentBack: boolean; correctedLetterId: string }[];
+  sharedWith: { nickname: string; image: string; correctionSentBack: boolean; correctedLetterId: string }[];
 }
 
 
@@ -52,8 +52,8 @@ const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, l
               {(sharedWith || []).map((user, index) => (
                 <img
                   key={index}
-                  src={user.avatar}
-                  alt={user.avatar}
+                  src={`http://localhost:3090/uploads/profile_pictures//${user.image}`}
+                  alt={user.image}
                   className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
                 />
               ))}
@@ -100,11 +100,11 @@ const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, l
                   }
                   </button>
 
-                  <Tooltip
+                  {/*<Tooltip
                     id={btnId}
                     className="!z-[9999]"
                     data-tooltip-variant="dark"
-                  ></Tooltip>
+                  ></Tooltip>*/}
                 </div>
               );
             })

@@ -3,6 +3,32 @@ import axios from "axios";
 const API_URL = 'http://localhost:3090/api';
 
 
+export const getDiaries = async () => {
+    const token = sessionStorage.getItem("authToken");
+    try {
+        const response = await axios.get(`${API_URL}/letter/diaries`, {
+            headers: {
+                'Authorization': `${token}`
+            }
+        });
+        if (response.status === 200) {
+            console.log("Diaries API:", response.data.diaries);
+            return response.data.diaries;
+        }
+        console.error("Error obtaining diaries:", response.data.message);
+        return -1;
+    }
+    catch (error) {
+        console.error("Error obtaining diaries:", error.message);
+        if (axios.isAxiosError(error)) {
+            console.error("Axios error:", error.response?.data);
+        } else {
+            console.error("Unknown error:", error);
+        }
+        return -1;
+    }
+}
+
 
 export const declineFriendRequest = async (senderId) => {
     const token = sessionStorage.getItem("authToken");
@@ -538,12 +564,10 @@ export const getUserLetters = async () => {
         "Authorization": `${token}`, // Incluir el token en el encabezado
       },
     });
-    console.log("RESPONSE: " + response.data.letters);
     if (response.status === 200) {
         return response.data.letters;
 
     }
-    console.error("Unauthorized access - token may be invalid or expired.");
     return [];
 };
 
@@ -551,7 +575,6 @@ export const sendVerificationCode = async (email) => {
     try {
         console.log(email);
         const response = await axios.post(`${API_URL}/user/verificate-email/${email}`);
-        console.log("RESPONSE: " + response.data.status);
         if (response.data.code === 0) { return 0}
         return -1;
     } catch (error) {
@@ -561,20 +584,20 @@ export const sendVerificationCode = async (email) => {
 
 export const checkVerificationCode = async (email, code) => {
     try {
-        console.log(email + " " + code);
-        const response = await axios.post(`${API_URL}/user/check-code`, { email: email, code: code });
-        console.log("RESPONSE: " + response.data.code);
-        if (response.data.code === 0) { return 0 }
-        return response.data.message;
-    } catch (error) {
-        return handleRequestError(error);
-    }
+    const response = await axios.post(`${API_URL}/user/check-code`, { email: email, code: code }, {
+        validateStatus: status => status >= 200 && status < 500
+    });
+    console.log("RESPONSE checkVerificationCode: " + response.data.code + " " + response.data.message);
+    if (response.data.code === 0) { return 0 }
+    return response.data.message;
+} catch (error) {
+    return handleRequestError(error);
+}
 };
 
 export const register = async (userData) => {
     try {
         const response = await axios.post(`${API_URL}/user/register`, userData);
-        console.log("RESPONSE: " + response.data);
         if (response.data.status >= 0) { return response.data }
     } catch (error) {
         return handleRequestError(error);
@@ -608,7 +631,6 @@ const SavePPicInSessionStorage = async(token, userId) => {
                 responseType: "blob",
                 headers: { Authorization: token },
         });
-        console.log("PICTURE: " + response);
         if (response) {
             const file = response.data;
             const reader = new FileReader();
@@ -619,7 +641,6 @@ const SavePPicInSessionStorage = async(token, userId) => {
         }
     } catch (error) {
         console.error("Error fetching profile picture:", error);
-
     }
 };
 

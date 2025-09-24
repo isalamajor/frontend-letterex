@@ -15,8 +15,9 @@ interface ReceivedLetterListProps {
       created_at: string;
     };
     sender: {
+      _id: string;
       nickname: string;
-      avatar: string;
+      image: string;
     };
     sentBack: boolean;
     corrected_at: string;
@@ -27,10 +28,11 @@ interface ReceivedLetterListProps {
 interface ChildProps {
   orderBySender: string; 
   searchFilter: string;
+  showOnlyPending?: boolean;
 }
   
 
-const ReceivedLetterList = ({ orderBySender, searchFilter } : ChildProps) => {
+const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending } : ChildProps) => {
   const [letters, setletters] = useState<ReceivedLetterListProps["letters"]>([]);
   const [diaryOrganised, setDiaryOrganised] = useState<boolean>(false);
   const [senderSelected, setSenderSelected] = useState<string>("");
@@ -46,17 +48,6 @@ const ReceivedLetterList = ({ orderBySender, searchFilter } : ChildProps) => {
      fetchletters();
    }, []);
    
-  // Organise letters by sender on trigger
-  /*useEffect(() => {
-    console.log("HIJO: ", orderBySender);
-    if (!filteredLetters || filteredLetters.length < 1) {return}
-    const lettersReduced = filteredLetters.filter(
-      (letter) => letter.sender.nickname === orderBySender
-    );
-
-    setFilteredLetters(lettersReduced);
-    setDiaryOrganised(!diaryOrganised);
-  }, [orderBySender]);*/
    
   // Filter letters by search text
   useEffect(() => {
@@ -74,11 +65,17 @@ const ReceivedLetterList = ({ orderBySender, searchFilter } : ChildProps) => {
         ? results.filter((letter) => letter.sender.nickname === orderBySender)
         : results;
         console.log("lettersReduced ", lettersReduced)
-        setFilteredLetters(lettersReduced);
+        if (showOnlyPending) {
+          const lettersPending = letters.filter(letter => !letter.sentBack);
+          setFilteredLetters(lettersPending);
+        } else {
+          setFilteredLetters(lettersReduced);
+        }
+
     }
     filteredLetters();
-  }, [searchFilter, letters, orderBySender])
-   
+  }, [searchFilter, letters, orderBySender, showOnlyPending])
+
 
   if (filteredLetters && filteredLetters.length > 0) {
   return (

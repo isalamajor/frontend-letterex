@@ -15,20 +15,14 @@ interface Friend {
 
 const FriendCard: React.FC<Friend> = ({ _id, nickname, image, lettersExchanged }) => {
 
-  const goToCorrection = (correctedLetterId: string) => (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    event.preventDefault(); 
-    window.location.href = `/view-correction/${correctedLetterId}`;
-  };
-
-  const goToEditLetter = (id: string) => (event: React.MouseEvent<HTMLDivElement>) => {
+  const goToProfile = (id: string) => (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
     event.preventDefault();
-    window.location.href = `/edit-letter/${id}`;
+    window.location.href = `/profile/${id}`;
   }
 
   return (
-      <div className="px-8 pt-4 rounded-lg bg-white hover:bg-gradient-to-r hover:from-indigo-100 hover:via-purple-100 hover:to-pink-100 border border-gray-200 shadow-md w-full flex flex-row gap-4">
+      <div className="px-8 pt-4 rounded-lg bg-white hover:bg-gradient-to-r hover:from-indigo-100 hover:via-purple-100 hover:to-pink-100 border border-gray-200 shadow-md w-full flex flex-row gap-4" onClick={goToProfile(_id)}>
         <img
             src={`http://localhost:3090/uploads/profile_pictures/${image}`}
             alt={image}
@@ -43,7 +37,6 @@ const FriendCard: React.FC<Friend> = ({ _id, nickname, image, lettersExchanged }
             ✉️ {lettersExchanged} letters exchanged
           </p>
         </div>
-
       </div>
   );
 };

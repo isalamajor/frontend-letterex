@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/field"
+import { Switch } from "@/components/ui/switch";
 
 export default function Home() {
   return (
@@ -59,7 +59,8 @@ const HomepageContent = () => {
   const [searchFilterReceived, setSearchFilterReceived] = useState<string>("");
   const [language, setLanguage] = useState("");
   const [languageList, setLanguageList] = useState<string[]>([]);
-  
+  const [showOnlyPending, setShowOnlyPending] = useState<boolean>(false);
+
   useEffect(() => {
     const fetchletters = async () => {
       const response = await getUserLetters();
@@ -116,11 +117,12 @@ const HomepageContent = () => {
                 Letters written
               </h2>
 
-              <div className="flex justify-between gap-2">
+              <div className={`flex gap-2 ${noLetters ? "justify-end" : "justify-between"}`}>
+                { !noLetters &&
                 <div className="flex flex-row gap-2 cursor-pointer border border-lightblack text-gray-700 rounded-sm py-2 px-4 mb-4 bg-gray-50">
                   <Search className="text-gray-500"></Search>
                   <input placeholder="Search a letter..." className="w-full outline-none" value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)}></input>
-                </div>
+                </div> }
                 <div> 
                   {!noLetters && 
                   <button className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 mb-4 hover:bg-gray-50"
@@ -146,11 +148,21 @@ const HomepageContent = () => {
               > Letters received </h2>
               {!noReceivedLetters &&
               <div className="flex flex-row justify-between">
+                 
                 <div className="flex flex-row gap-2 cursor-pointer border border-lightblack text-gray-700  rounded-sm py-2 px-4 mb-4 bg-gray-50">
                   <Search className="text-gray-500"></Search>
                   <input placeholder="Search a letter..." className="w-full outline-none" value={searchFilterReceived} onChange={(e) => setSearchFilterReceived(e.target.value)}></input>
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
+                  <Switch name="full-width" style={{ width: "40%" }} onChange={(value) => setShowOnlyPending(value === "pending")}>
+                      <Switch.Control
+                        defaultChecked
+                        label="All"
+                        size="large"
+                        value="all"
+                    />
+                    <Switch.Control label="Pending" size="large" value="pending" />
+                  </Switch>
                   {/* Sender select*/}
                   <div className="space-y-2 min-w-[200px]">
                   <Select 
@@ -166,23 +178,11 @@ const HomepageContent = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    {/* <Select 
-                    value={language} 
-                    onValueChange={(lang) => {setLanguage(lang)}}>
-                      <SelectTrigger className="text-black bg-white h-10 rounded-md ring-transparent">
-                        <SelectValue placeholder="(None)"/>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {languageList.map((lang) => (
-                          <SelectItem key={lang} value={lang}>{lang}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select> */}
                   </div>
                 </div>
               </div>
               }
-              <ReceivedLetterList orderBySender={filterSenders} searchFilter={searchFilterReceived}></ReceivedLetterList>
+              <ReceivedLetterList orderBySender={filterSenders} searchFilter={searchFilterReceived} showOnlyPending={showOnlyPending}></ReceivedLetterList>
             </div>
         </div>
       </div>

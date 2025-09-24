@@ -58,8 +58,10 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     textarea.style.height = "auto"; // reset height
     textarea.style.height = textarea.scrollHeight + "px"; // set height to scrollHeight
     setComment(e.target.value);
+    setValuesChanged(true);
   };
 
+  
 
   // Dialog
     const [dialogConfig, setDialogConfig] = useState<{
@@ -257,9 +259,8 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   return (
       <div className="overflow-y-auto custom-scroll p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
-        <div className="">
             <div
-              className=" w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-20"
+              className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-20"
             >
 
               {/* Title field */}
@@ -280,7 +281,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
               <button onClick={() => setCorrectionMode(!correctionMode)} className= {correctionMode ? "text-red-500" : "text-black"}>
               🖍️ Correct 
               </button>
-  }
+              }
 
               {/* Letter content field */}
               
@@ -295,7 +296,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
 
                     // Crea un rango desde el inicio del contenedor hasta el inicio de la selección
                     const preRange = document.createRange();
-                    console.log("2:", textRef.current);
                     if (!textRef.current) return;
                     preRange.setStart(textRef.current, 0);
                     preRange.setEnd(range.startContainer, range.startOffset);
@@ -319,7 +319,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                     });
                   }
                 }}
-                className={`w-full min-h-[30rem] pt-5 pb-10 text-gray-800 outline-none rounded cursor-text text-xl leading-loose
+                className={`w-full min-h-[55vh] pt-5 pb-10 text-gray-900 outline-none rounded cursor-text leading-loose
                 ${correctionMode && overlapping ? ("selection:bg-red-200") : ("selection:bg-yellow-200") }`}>
                 <TextCorrections
                   ref={textRef}
@@ -450,11 +450,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                 
               {!sentBack ? (
               <>
-                <button onClick={sendBackOnClick}>
-                  <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
-                    📬 Send Back
-                  </div>
-                </button>
 
                 {valuesChanged ? (
                   <button onClick={saveCorrectionOnClick}>
@@ -463,10 +458,17 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                     </div>
                   </button>
                   ) : (
+                    <>
+                    <button onClick={sendBackOnClick}>
+                      <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
+                        📬 Send Back
+                      </div>
+                    </button>
                     <div className="text-[#8EBA03] flex items-center gap-2">
                       Correction saved
                       <Check className="w-5 h-5" />
                     </div>
+                    </>
                   )}
                 </>
               ) : (
@@ -476,7 +478,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                 </div>
               )}
               </div>
-            </div>
             </div>
         </div>
         <SuccessDialog

@@ -1,7 +1,7 @@
 "use client"; 
 
 import "../stylesheets/animatedForm.css";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { MdOutlineSensorDoor } from "react-icons/md";
 import { RiPlantLine } from "react-icons/ri";
 import { motion } from "framer-motion";
@@ -10,6 +10,7 @@ import { login, register, isUsernameInUse,sendVerificationCode, isEmailInUse, ch
 import { ImageUploader } from "@/components/imageUploader";
 import { useRouter } from "next/navigation"; 
 import { Typewriter } from "./ui/typeWriter";
+import { InputPass } from "./ui/inputPass";
 
 const languagesData = [
   { name: "English", image: "/flags/english.svg" },
@@ -34,7 +35,7 @@ const phrases = [
 
 export default function AnimatedForm() {
   const router = useRouter();
-  const [showForm, setShowForm] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
   const [showAlert, setShowAlert] = useState("");
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -45,6 +46,7 @@ export default function AnimatedForm() {
   const [languagesSpoken, setLanguagesSpoken] = useState([]);
   const [languagesLearning, setLanguagesLearning] = useState([]);
   const [profileImage, setProfileImage] = useState(null);
+  const inputRefs = useRef([]); // Referencias a los inputs del código de confirmación
 
 
   const handleImageUpload = (imageFile) => {
@@ -96,7 +98,8 @@ export default function AnimatedForm() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     } else {
-      setShowForm(false);
+      setShowLoginForm(false);
+      setShowRegisterForm(false);
       setUsername('');
       setPassword('');
       setEmail('');
@@ -104,8 +107,8 @@ export default function AnimatedForm() {
       setLanguagesSpoken([]);
       setLanguagesLearning([]);
       setProfileImage(null);
-      setShowRegisterForm(false);
     }
+    showAlertMessage('');
   };
 
   const loginAttempt = async() => {
@@ -146,7 +149,7 @@ export default function AnimatedForm() {
       picture: profileImage || null
     })
 
-    if (result.status === 0) {console.log(result); setShowRegisterForm(false); setShowForm(true);} 
+    if (result.status === 0) {console.log(result); setShowRegisterForm(false); setShowLoginForm(true);} 
   }
 
   const setUsernameAttempt = async() => {
@@ -220,12 +223,13 @@ export default function AnimatedForm() {
         src="/logo-frog.png"
         alt="Logo"
         className="w-40"
-        animate={showForm ? {  top: "29%", left: "49%", width: 150 } : showRegisterForm ? {  top: "29%", left: "49%", width: 200 }: { top: "29%", left: "49%", width: 200 }}
+        href="/"
+        animate={showLoginForm ? {  top: "30%", left: "50%", width: 150 } : showRegisterForm ? {  top: "29%", left: "49%", width: 150 }: { top: "29%", left: "49%", width: 200 }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
         style={{ position: "absolute", transform: "translate(-50%, -50%)" }}
       />
 
-      {!showForm && !showRegisterForm && (
+      {!showLoginForm && !showRegisterForm && (
         <div>
           <div className="text text-white text-lg">
             <h2 className="font-semibold text-2xl">Welcome to Letterex</h2>
@@ -239,7 +243,7 @@ export default function AnimatedForm() {
           <div className="ctas">
             <motion.button
               className="btn-animated-form primary"
-              onClick={() => {setShowForm(true); setShowRegisterForm(false);}}
+              onClick={() => {setShowLoginForm(true); setShowRegisterForm(false);}}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -251,7 +255,7 @@ export default function AnimatedForm() {
               className="btn-animated-form secondary"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              onClick={() => {setShowForm(false); setShowRegisterForm(true);}}
+              onClick={() => {setShowLoginForm(false); setShowRegisterForm(true);}}
             >
               <RiPlantLine />
               Register
@@ -261,9 +265,9 @@ export default function AnimatedForm() {
       )}
 
       {/* Formulario de inicio de sesión */}
-      {showForm && (
+      {showLoginForm && (
         <motion.div
-          className="mt-10 bg-white p-6 rounded-lg shadow-lg w-80"
+          className="mt-10 bg-white p-6 rounded-lg shadow-lg w-80  w-[22rem]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -276,17 +280,22 @@ export default function AnimatedForm() {
               placeholder="Email/Username"
               onChange={(e) => setEmail(e.target.value)}
             />
-            <input
-              className="w-full p-2 mb-2 border rounded form-blank"
-              type="email"
-              placeholder="Password"
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            
+            <InputPass
+                  styles="w-full p-0 mb-2 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(pass) => {
+                    setPassword(pass);
+                    setShowAlert("");
+                  }}
+                  label={false}
+                />
             <p style={{ whiteSpace: "pre-line" }} className="alert-message">{showAlert}</p>
           </div>
           <div className="back-go">
             <button
-              onClick={() => setShowForm(false)}
+              onClick={() => handlePrevStep()}
               className="w-full p-2 bg-green-500 text-white rounded btn-animated-form btn-back"
             >
               ← Back
@@ -313,24 +322,28 @@ export default function AnimatedForm() {
               <h2 className="text-lg font-semibold mb-4">Create your account</h2>
               <div className="form-register">
                 <input
-                    className="w-full p-2 mb-2 border rounded form-blank"
+                    className="p-2 mb-2 border rounded form-blank w-[17rem]"
                     type="text"
                     placeholder="Username"
                     value={username}
+                    maxLength={20}
                     onChange={(e) => {
-                      setUsername(e.target.value);
+                      const filtered = e.target.value.replace(/[^a-zA-Z0-9_]/g, "");
+                      setUsername(filtered);
                       setShowAlert("");
                     }}
                 />
-                <input
-                    className="w-full p-2 mb-2 border rounded form-blank"
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setShowAlert("");
-                    }}
+                <InputPass
+                  styles=" w-[17rem] p-2 mb-2 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(pass) => {
+                    setPassword(pass);
+                    setShowAlert("");
+                  }}
+                  label={false}
+                  maxLength={20}
+                  type="login"
                 />
               </div>
               <p style={{ whiteSpace: "pre-line"}} className="alert-message">{showAlert}</p>
@@ -338,8 +351,8 @@ export default function AnimatedForm() {
           )}
 
           {currentStep === 2 && (
-            <div className="slide-form">
-              <h2 className="text-lg font-semibold mb-4">Enter an email 📫</h2>
+            <div className="p-3 pb-0">
+              <h2 className="text-lg font-semibold w-[20rem]">Enter an email 📫</h2>
               <input
                 className="w-full p-2 mb-2 border rounded form-blank"
                 type="email"
@@ -352,38 +365,66 @@ export default function AnimatedForm() {
           )}
 
           {currentStep === 3 && (
-            <div className="slide-form">
+            <div className="flex flex-col p-4 gap-2 w-auto pb-0">
               <h3 className="text-lg font-semibold mb-4 text-center">Check your mailbox📬</h3>
-              <h4 className="text-lg font-semibold mb-4">We sent you a verification code...</h4>
+              <h4 className="text-lg mb-2">We sent you a verification code...</h4>
               <div className="flex gap-2 justify-center code">
                 {[...Array(6)].map((_, index) => (
                   <input
                     key={index}
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength="1"
                     className="form-blank form-blank-code"
                     value={confirmationCode[index] || ''}
+                    ref={el => inputRefs.current[index] = el}
                     onChange={(e) => {
+                      showAlertMessage("");
+                      const val = e.target.value.replace(/[^0-9]/g, "");
                       const newCode = confirmationCode.split('');
-                      newCode[index] = e.target.value;
+                      newCode[index] = val;
                       setConfirmationCode(newCode.join(''));
+                      // Solo avanza si se ha escrito un número
+                      if (val && index < 5) {
+                        inputRefs.current[index + 1]?.focus();
+                      }
+                      // Si es el último input, salta al botón
+                      if (val && index === 5) {
+                        document.querySelector('.btn-animated-form.btn-go')?.focus();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      // Solo retrocede si se pulsa Backspace y el input está vacío
+                      if (e.key === "Backspace" && !confirmationCode[index] && index > 0) {
+                        setTimeout(() => inputRefs.current[index - 1]?.focus(), 0);
+                      }
+                    }}
+                    onPaste={(e) => {
+                      const paste = e.clipboardData.getData('Text').replace(/[^0-9]/g, "");
+                      if (paste.length === 6) {
+                        setConfirmationCode(paste);
+                        // Opcional: mover el foco al último input
+                        setTimeout(() => inputRefs.current[5]?.focus(), 0);
+                        e.preventDefault();
+                      }
                     }}
                   />
                 ))}
               </div>
+            <p className="alert-message">{showAlert}</p>
             </div>
           )}
 
 
           {currentStep === 4 && (
             <div className="slide-form">
-                
               <LanguageSelector
               languagesAvailable={languagesData.filter(lang => !languagesLearning.includes(lang) && !languagesSpoken.includes(lang))}
               languagesTaken={languagesSpoken} 
               titleText="Select the languages you master"
               noneText="what will it be?" 
-              tooManyText="Three is enough don't be cocky!"
+              tooManyText="Three is enough, don't be cocky!"
               onSelectionChange={(selected) => setLanguagesSpoken(selected)}></LanguageSelector>
             </div>
           )}
@@ -394,7 +435,7 @@ export default function AnimatedForm() {
               languagesAvailable={languagesData.filter(lang => (!languagesLearning.includes(lang) && !languagesSpoken.includes(lang)))}  
               languagesTaken={languagesLearning} 
               titleText="Select the languages you are learning"
-              noneText="...or don't choose any" 
+              noneText="...choose at least one" 
               tooManyText="Why so ambitious? Let's set a goal of 3 languages"
               onSelectionChange={(selected) => setLanguagesLearning(selected)}></LanguageSelector>
               
@@ -402,10 +443,10 @@ export default function AnimatedForm() {
           )}
 
           {currentStep === 6 && (
-            <div className="slide-form">
+            <div className="flex flex-col gap-2 px-5 pt-4 w-[22rem]">
               <h2 className="text-lg font-semibold mb-4">{username}, this is your account</h2>
-              <p> 📫 {email} </p>
-              <div className="two-columns-profile">
+              <p className="text-center w-full"> 📫 {email} </p>
+              <div className="flex flex-row justify-between items-center w-full mt-1">
                 <div className="languages-profile">
                   <strong>Mastering</strong> 
                   <div className="languages-list-profile">
@@ -417,7 +458,6 @@ export default function AnimatedForm() {
                       className="cursor-pointer rounded-full border border-gray-300 shadow"
                       style={{ width: "2rem", height: "2rem" }}
                       whileHover={{ scale: 1.1 }}
-                      onClick={() => handleSelectLanguage(lang)}
                     />
                     )))} 
                   </div>
@@ -431,7 +471,6 @@ export default function AnimatedForm() {
                       className="cursor-pointer rounded-full border border-gray-300 shadow"
                       style={{ width: "2rem", height: "2rem" }}
                       whileHover={{ scale: 1.1 }}
-                      onClick={() => handleSelectLanguage(lang)}
                     />
                     )))}
                   </div> 

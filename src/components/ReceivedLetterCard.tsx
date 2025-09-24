@@ -8,7 +8,7 @@ interface ReceivedLetterCardProps {
   diary: string;
   title: string;
   language: string;
-  sender: { nickname: string; avatar: string };
+  sender: { _id: string, nickname: string; image: string };
   sentBack: boolean;
   seen: boolean
 }
@@ -47,12 +47,12 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({ id, created_at,
           {/* Usuario que la manda e Idioma */}
           <div className="flex items-center gap-2">
           <img
-              src={sender.avatar}
+              src={`http://localhost:3090/uploads/profile_pictures//${sender.image}`}
               alt={sender.nickname}
               className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
             />
             <img
-              src={`/flags/${language}.png`}
+              src={`/flags/${language}.svg`}
               alt={language}
               className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
             />

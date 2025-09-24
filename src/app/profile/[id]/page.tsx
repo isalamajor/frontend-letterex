@@ -1,11 +1,12 @@
 "use client";
 import { SidebarDemo } from "@/components/sidebardemo";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
+import { useRouter } from "next/router";
 import { CircleUserRound, Mail, Leaf, SquarePen, Save, Plus, Trash2, Settings, Trash } from "lucide-react";
 import { getCountLetters, getCountCorrectedLetters, uploadProfilePicture } from "@/services/api";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { updateUser } from "@/services/api";
+import { updateUser, getUserData } from "@/services/api";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { ImageUploader } from "@/components/imageUploader";
 
@@ -46,11 +47,12 @@ const languagesData = [
 ];
 
 
-export default function Home() {
+export default function Home({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   return (
     <div className="page-container">
       <SidebarDemo>
-        <ProfilePageContent/>
+        <ProfilePageContent id={id}/>
       </SidebarDemo>
     </div>
   );
@@ -58,8 +60,7 @@ export default function Home() {
 
 
 
-const ProfilePageContent = () => {
-  const id = "profile-dialog";
+export const ProfilePageContent = ({ id }: { id: string }) => {
   const [user, setUser] = useState<User>({} as User);
   const [letterCounts, setLetterCounts] = useState<Record<string, number>>({});
   const [correctionCounts, setCorrectionCounts] = useState<Record<string, number>>({});
@@ -72,18 +73,32 @@ const ProfilePageContent = () => {
   const [addingLanguage, setAddingLanguage] = useState<"LEARN" | "MASTER" | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [profilePictureLocalUrl, setProfilePictureLocalUrl] = useState<string | null>(null);
+  const [myProfile, setMyProfile] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
+      let userData;
+      let profilePictureUrl;
 
-      // Get languages from sessionStorage
-      const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-  
-      // If userData is not available, redirect to login
-      if (Object.keys(userData).length === 0) {
-        console.error("User data not found in sessionStorage.");
-        window.location.href = "/";
-        return;
+      console.log("USER ID: ", id);
+      if (id !== "yours") {
+        // Fetch user data by ID
+        userData = await getUserData(id);
+        console.log(userData);
+        profilePictureUrl = `http://localhost:3090/uploads/profile_pictures/${userData.image}`;
+        setMyProfile(false);
+      } else {
+        // Get languages from sessionStorage
+        userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+        profilePictureUrl = sessionStorage.getItem("profilePictureBase64") || "";
+        setMyProfile(true);
+      
+        // If userData is not available, redirect to login
+        if (Object.keys(userData).length === 0) {
+          console.error("User data not found in sessionStorage.");
+          window.location.href = "/";
+          return;
+        }
       }
   
       setUser(userData);
@@ -118,7 +133,6 @@ const ProfilePageContent = () => {
       setLocationUser(userData.location);
 
       // Guardar imagen
-      const profilePictureUrl = sessionStorage.getItem("profilePictureBase64") || "";
       if (profilePictureUrl) {
         setProfilePictureLocalUrl(profilePictureUrl);
         console.log("Profile picture URL:", profilePictureUrl);
@@ -126,13 +140,13 @@ const ProfilePageContent = () => {
 
       // Obtener contadores de cartas y correcciones
       try {
-        const counts = await getCountLetters();
+        const counts = await getCountLetters(id === "yours" ? null : id);
         console.log("Letter counts per language:", counts);
         if (counts !== -1) {
           setLetterCounts(counts);
         }
 
-        const countsCorrections = await getCountCorrectedLetters();
+        const countsCorrections = await getCountCorrectedLetters(id === "yours" ? null : id);
         console.log("Letter corrected counts per language:", countsCorrections);
         if (countsCorrections !== -1) {
           setCorrectionCounts(countsCorrections);
@@ -236,8 +250,8 @@ const ProfilePageContent = () => {
   return (
       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
-        <h1 className="text-3xl md:text-5xl font-semibold bg-gradient-to-r bg-clip-text text-transparent from-[#8EBA03] via-yellow-500 to-[#8EBA03] animate-text">
-          Your profile
+        <h1 className="h-[7%] text-3xl md:text-5xl font-semibold bg-gradient-to-r bg-clip-text text-transparent from-[#8EBA03] via-yellow-500 to-[#8EBA03] animate-text">
+          { id !== "yours" ? `${user.nickname}` : "Your profile"}
         </h1>
 
         <div className="flex gap-2 flex-1 h-[85%] text-xl">
@@ -245,11 +259,13 @@ const ProfilePageContent = () => {
             <div
               className="h-full w-full rounded-lg bg-gray-50 px-15 py-10 text-black flex flex-col"
             >
-              <div className="h-[6%] flex justify-end">
-                { editing ? 
-                <><button 
-                onClick={() => setEditing(!editing)}
-                className="w-auto h-[3rem] cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-200 shadow-md py-2 px-4 hover:bg-white flex flex-row gap-2 justify-center items-center mr-2">
+              {/* Botones Edit */}
+              { id === "yours" && (
+                <div className="h-[6%] flex justify-end">
+                  { editing ? 
+                  <><button 
+                  onClick={() => setEditing(!editing)}
+                  className="w-auto h-[3rem] cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-200 shadow-md py-2 px-4 hover:bg-white flex flex-row gap-2 justify-center items-center mr-2">
                 Cancel
                 </button>
 
@@ -281,7 +297,7 @@ const ProfilePageContent = () => {
                 </button>
                 </>
                 }
-              </div>
+              </div>)}
               {/* Primera fila info */}
               <div className="flex flex-row gap-15 w-full h-[30%] justify-between items-x  mb-5">
 
@@ -325,7 +341,7 @@ const ProfilePageContent = () => {
             
                 {/* Idiomas */}
                 <div className="w-[40%] h-[90%]">
-                  <div className="h-[35%] flex flex-col gap-10 items-center p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2 mb-3">
+                  <div className="flex flex-col gap-10 items-center p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2 mb-3">
                     <div className="flex flex-row gap-15">
                       <div className="flex flex-col gap-5">  
                         <h2 className="font-semibold">Languages learning</h2>
@@ -389,8 +405,8 @@ const ProfilePageContent = () => {
                   </div>
 
                 { !editing && 
-                  <div className="h-[70%] flex flex-col items-center p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">        
-                    <div className="flex flex-row text-xl w-full justify-around">
+                  <div className="h-[70%] flex flex-col p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">        
+                    <div className={`flex flex-row text-xl w-full justify-around h-full ${letterCounts && Object.values(letterCounts).reduce((a, b) => a + b, 0) < 1 && correctionCounts && Object.values(correctionCounts).reduce((a, b) => a + b, 0) < 1 ? "items-center" : "items-start"}`}>
                       
                       <div className="flex flex-col items-center gap-2">
                         <p className="text-5xl font-medium">{letterCounts && Object.values(letterCounts).reduce((a, b) => a + b, 0)} ✉️</p>
@@ -421,7 +437,7 @@ const ProfilePageContent = () => {
                   </div>}
                 </div>
 
-                {/* Mapa   */}
+                {/* Mapa */}
                 <div className="w-[60%] h-[90%] flex flex-col items-center p-2 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">
                   <MapNoSSR
                     key={user._id + "_" + editing}
@@ -431,7 +447,7 @@ const ProfilePageContent = () => {
                       setLocationUser((prev) => ({ ...prev, country: newCountry }))
                     }
                   /> 
-                </div> 
+                </div>
 
               </div>
             </div>
@@ -450,7 +466,7 @@ const ProfilePageContent = () => {
           onPrimaryAction={() => {
             console.log('Primary action clicked for type:', dialogConfig.type)
           }}
-          letterId={id}
+          letterId={"dialog-profile"}
           sharedWith={[]}
           onShareSuccess={() => {}}
         />

@@ -8,10 +8,13 @@ import { useId, useState, useEffect } from "react";
 interface InputPassProps {
   onChange: (password: string) => void;
   wrongPassword: boolean;
+  styles?: string;
+  label?: boolean;
+  type?: string;
 }
 
 
-function InputPass({ onChange, wrongPassword }: InputPassProps) {
+function InputPass({ onChange, wrongPassword, styles, label = true, type }: InputPassProps) {
   const id = useId();
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [markRed, setMarkRed] = useState<boolean>(false);
@@ -23,12 +26,13 @@ function InputPass({ onChange, wrongPassword }: InputPassProps) {
   const toggleVisibility = () => setIsVisible((prevState) => !prevState);
 
   return (
-    <div className="space-y-2 min-w-[300px] text-black">
-      <Label htmlFor={id}>Enter password</Label>
+    <div className="space-y-2 min-w-[200px] text-black">
+      {label && <Label htmlFor={id}>Enter password</Label>}
       <div className="relative">
         <Input1
           id={id}
-          className={`w-full p-2 border rounded text-black/80 bg-white ${markRed ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-gray-300"}`}
+          className={`${styles ? styles : `w-full p-2 border rounded text-black/80 bg-white ${markRed ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-gray-300"}`}
+          `}
           placeholder="Password"
           type={isVisible ? "text" : "password"}
           onChange={(e) => {setMarkRed(false);
@@ -42,11 +46,12 @@ function InputPass({ onChange, wrongPassword }: InputPassProps) {
           aria-label={isVisible ? "Hide password" : "Show password"}
           aria-pressed={isVisible}
           aria-controls="password"
+          tabIndex={-1}
         >
           {isVisible ? (
-            <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+            <EyeOff size={styles ? 20 : 16} strokeWidth={2} style={{ marginRight: styles ? 15 : 0 }} aria-hidden="true" />
           ) : (
-            <Eye size={16} strokeWidth={2} aria-hidden="true" />
+            <Eye size={styles ? 20 : 16} strokeWidth={2} style={{  marginRight: styles ? 15 : 0 }} aria-hidden="true" />
           )}
         </button>
       </div>

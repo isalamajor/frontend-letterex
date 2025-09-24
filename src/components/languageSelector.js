@@ -33,7 +33,7 @@ export default function LanguageSelector({ languagesAvailable, languagesTaken, n
   return (
     <div className="flex flex-col items-center main">
       <h2 className="text-lg font-semibold mb-4">{titleText}</h2>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-7 gap-2 h-[5rem]">
         {availableLanguages.map((lang) => (
           <motion.img
             key={lang.name}
@@ -48,16 +48,14 @@ export default function LanguageSelector({ languagesAvailable, languagesTaken, n
       </div>
 
       {selectedLanguages.length === 0 && (
-        <div>
-          <h2 className="text-lg font-semibold mb-2 no-language">{noneText}</h2>
-          <div className="pic-vacio"></div>
+        <div className="h-[5rem]">
+          <h2 className="text-lg font-semibold mt-2">{noneText}</h2>
         </div>
       )}
       {selectedLanguages.length > 0 && (
-        <div className="selected-languages">
-          {!maxReached && <h2 className="text-lg font-semibold mb-2">Here they are :)</h2>}
-          {maxReached && <h3 className="text-lg font-semibold mb-2">{tooManyText}</h3>}
-          <div className="grid-languages grid-selected">
+        <div className="flex flex-col justify-end h-[5rem] w-full text-right">
+          <h2 className="text-lg font-semibold mt-2 mb-2 max-w-[22rem]">{ maxReached ? tooManyText : "Here they are :)"}</h2>
+          <div className="flex flex-row gap-2 justify-end">
             {selectedLanguages.map((lang) => (
               <motion.img
                 key={lang.name}

@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, AlertTriangle, CircleX, Send, Lock } from 'lucide-react'
+import { Check, X, AlertTriangle, CircleX, Send, Lock, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getFriendsList, shareLetter, changePassword, deleteAccount } from '@/services/api'
 import FriendsCheckboxList from '@/components/ui/friendsCheckBoxList'
 import { Switch } from '@/components/ui/switch'
 import { InputPasswords } from '@/components/ui/inputPasswords'
 import { InputPass } from '@/components/ui/inputPass'
+import { on } from 'events'
 
 interface DialogProps {
   open: boolean;
@@ -86,7 +87,7 @@ const DialogDescription: React.FC<DialogDescriptionProps> = ({ children, classNa
 };
 
 
-export type DialogType = 'success' | 'alert' | 'error' | 'shareLetter' | 'settings'
+export type DialogType = 'success' | 'alert' | 'error' | 'shareLetter' | 'settings' | 'newDiary'
 
 interface SuccessDialogProps {
   isOpen?: boolean
@@ -102,7 +103,9 @@ interface SuccessDialogProps {
   type?: DialogType
   letterId?: string
   sharedWith?: string[]
-  onShareSuccess?: () => void
+  onShareSuccess?: (shareLetterResult: number) => void
+  onNewDiaryCreated?: (diaryName: string) => void
+  prevNewDiaryName?: string
 }
 
 export const SuccessDialog: React.FC<SuccessDialogProps> = ({
@@ -119,7 +122,9 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   type = 'success', // Default to success
   letterId = '',
   sharedWith = [],
-  onShareSuccess = () => {}
+  onShareSuccess = (shareLetterResult: number) => {},
+  onNewDiaryCreated = (diaryName) => {},
+  prevNewDiaryName = ""
 }) => {
   const [internalOpen, setInternalOpen] = useState(isOpen)
   const [friendsList, setFriendsList] = useState<Friend[]>([]);
@@ -133,6 +138,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordChangeMessage, setPasswordChangeMessage] = useState<string | null>(null);
   const [deleteAccountResult, setDeleteAccountResult] = useState<number | null>(null);
+  const [newDiaryName, setNewDiaryName] = useState<string>("");
 
 
 
@@ -183,12 +189,21 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
       descriptionDefault: "Your password has been changed successfully :)",
       buttonClass: 'bg-green-600 text-white hover:bg-green-700',
     },
+    newDiary: {
+      icon: BookOpen,
+      iconBgClass: 'bg-purple-100 dark:bg-purple-900/20',
+      iconColorClass: 'text-purple-600 dark:text-purple-400',
+      titleDefault: "New Diary Created",
+      descriptionDefault: "Your new diary has been created successfully.",
+      buttonClass: 'bg-purple-600 text-white hover:bg-purple-700',
+    },
   }
 
   const currentConfig = typeConfig[type]
   const IconComponent = currentConfig.icon
 
   const handleClose = useCallback(() => {
+    setFriendsSelected([])
     setInternalOpen(false)
     onClose()
     
@@ -200,28 +215,17 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
 
   const handlePrimaryAction = useCallback(() => {
     onPrimaryAction()
+    if (newDiaryName) onNewDiaryCreated(newDiaryName)
     handleClose()
   }, [onPrimaryAction, handleClose])
 
+
   const handleShareLetter = async() => {
-    if (friendsSelected.length === 0) {
-      alert("Please select at least one friend to share the letter with.")
-      return
-    }
-    // Implement share letter logic here
-    console.log("Sharing letter with friends:", friendsSelected);
-    
+    if (friendsSelected.length === 0) { return; }
     const shareLetterResult = await shareLetter(letterId, friendsSelected);
-    if (shareLetterResult === 0) {
-      alert("Letter shared successfully!");
       if (onShareSuccess) {
-        onShareSuccess();
+        onShareSuccess(shareLetterResult);
       }
-      handleClose();
-    } else {
-      alert("Failed to share letter. Please try again.");
-    }
-    
   }
 
   const handleChangePassword = async () => {
@@ -296,7 +300,12 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
           ...friend,
           alreadySent: sharedWith.includes(friend._id)
         }));
-        setFriendsList(friendsWithStatus); 
+        setFriendsList(friendsWithStatus);
+        // Add alreadySent friends to selected
+        const alreadySentFriends = friendsWithStatus
+          .filter((friend: Friend) => friend.alreadySent)
+          .map((friend: Friend) => friend._id);
+        setFriendsSelected(prev => [...prev, ...alreadySentFriends]);
         console.log("Fetched friends list:", friends);
       } catch (error) {
         console.error("Error fetching friends list:", error);
@@ -305,6 +314,8 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
 
     if (type === 'shareLetter' && isOpen) {
       fetchFriendsList();
+    } else if (type === 'newDiary' && isOpen && prevNewDiaryName) {
+      setNewDiaryName(prevNewDiaryName);
     }
   }, [type, isOpen]);
 
@@ -360,26 +371,23 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
               }}
               className="relative"
             >
-              {/* Close button */}
-              {showCloseButton && (
-                <button
-                  ref={closeButtonRef}
-                  onClick={handleClose}
-                  className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
-                  aria-label="Close dialog"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+            {/* Close button */}
+            {showCloseButton && (
+              <button
+                ref={closeButtonRef}
+                onClick={handleClose}
+                className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+                aria-label="Close dialog"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
 
-              { type === 'shareLetter' && (
-                
-              <div className="flex flex-col items-center text-center p-6 pt-8 space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Share with friends
+            { type === 'shareLetter' && (
+              <div className="flex flex-col items-center text-center space-y-4">
+                  <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300">
+                    Share with friends (choose at most 2)
                   </h3>
-                    
-    
                     
                     {friendsList.length === 0 ? (
                       <div>
@@ -387,18 +395,18 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                           First add some friends to share with!
                         </p>
                         <div className="flex justify-center items-center gap-4 pt-4">
-                        <Button
-                          onClick={handlePrimaryAction}
-                          className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
-                          size="default"
-                        > Cancel
-                        </Button>
-                        <Button
-                          onClick={handlePrimaryAction}
-                          className={`min-w-[120px] rounded transition-colors duration-200 bg-[#7E27A3] hover:!bg-[#DB5FDE] `}
-                          size="default"
-                        > Discover new people
-                        </Button>
+                          <Button
+                            onClick={handlePrimaryAction}
+                            className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
+                            size="default"
+                          > Cancel
+                          </Button>
+                          <Button
+                            onClick={handlePrimaryAction}
+                            className={`min-w-[120px] rounded transition-colors duration-200 bg-[#7E27A3] hover:!bg-[#DB5FDE] `}
+                            size="default"
+                          > Discover new people
+                          </Button>
                         </div>
                       </div>
                     )
@@ -410,243 +418,236 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                       setSelected={setFriendsSelected}
                       />
                       <div className="flex justify-center items-center gap-4 pt-4">
-                      <Button
-                          onClick={handlePrimaryAction}
-                          className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
-                          size="default"
-                        > Cancel
-                      </Button>
-                      <Button
-                          onClick={handleShareLetter}
-                          className={`min-w-[120px] bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
-                          size="default"
-                        > Share 📩
-                      </Button>
+                        <Button
+                            onClick={handlePrimaryAction}
+                            className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                            size="default"
+                          > Cancel
+                        </Button>
+                        <Button
+                            onClick={handleShareLetter}
+                            className={`min-w-[120px] bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                            size="default"
+                          > Share 📩
+                        </Button>
                       </div>
                       </div>
                     )
                       }
                 </div>
-              )}
+            )}
 
 
-              { type === 'settings' && (             
-                <div className="flex flex-col items-start justify-center gap-2 w-full min-h-[21rem]">
-                  { (!passwordChangeMessage && deleteAccountResult !== 0) && (
-                    <Switch name="full-width" style={{ width: "100%" }} onChange={(value) => setSettingSwitch(value)}>
-                      <Switch.Control
-                        defaultChecked
-                        label="Change password"
-                        size="large"
-                        value="password"
-                    />
-                    <Switch.Control label="Delete account" size="large" value="delete" />
-                  </Switch>
-                  )}
-                    {settingSwitch === "password"
-                      ? (<>
-                        {passwordChangeMessage ? (
-                          <div className='flex justify-center text-center items-center flex-col gap-2 h-full w-full text-black m-2'>
-                            <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ 
-                              delay: 0.1, 
-                              duration: 0.3, 
-                              type: "spring", 
-                              stiffness: 200 
-                            }}
-                            className={`flex items-center justify-center w-16 h-16 rounded-full ${passwordChangeMessage === "Password changed successfully!" ? currentConfig.iconBgClass : "bg-red-100 dark:bg-red-900/20"}`}
-                          >
-                            <IconComponent className={`w-8 h-8 ${passwordChangeMessage === "Password changed successfully!" ? currentConfig.iconColorClass : "text-red-600 dark:text-red-400"}`} />
-                          </motion.div>
-                            <span className='font-semibold text-center'>{passwordChangeMessage}</span>
-                            {passwordChangeMessage === "Wrong password." ? (
-                              <p className='text-center text-sm mb-2'>Your password could not be changed because the current password you entered is incorrect.</p>
-                            ) : null}
-                            <Button onClick={() => setPasswordChangeMessage(null)}>OK</Button>
-                          </div>
-                        ) : (
-                          <>
-                          <div className='flex justify-center items-start flex-col gap-2 h-full w-full text-black m-2'>
-                            {/* Input con ojo para ocultar contraseña*/}
-                            <InputPasswords onSave={(password, NewPassword, ConfirmPassword) => {
-                              setPassword(password);
-                            setNewPassword(NewPassword);
-                            setConfirmPassword(ConfirmPassword);
-                          }}/>
-                        </div>
-                        <div className='flex justify-between items-center flex-row h-full w-full text-black mt-2'>
-                          <Button
-                            onClick={() => { handlePrimaryAction();
-                              setPassword("");
-                              setNewPassword("");
-                              setConfirmPassword("");
-                            }}
-                            className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
-                            size="default"
-                          > Cancel
-                          </Button>
-                          <Button
-                            onClick={handleChangePassword}
-                            className={`min-w-[120px] bg-lime-500 text-white rounded py-2 px-4 hover:bg-lime-600 transition-colors`}
-                            size="default"
-                          > Save
-                          </Button>
-                        </div>
-                        </>)}</>
-                      )
-                      : (
-                        <div className='flex flex-col gap-2 min-h-[17rem] w-full align-center items-center justify-center mt-2'>
-                          
-                          {deleteAccountResult === 0 ? 
+            { type === 'settings' && (             
+              <div className="flex flex-col items-start justify-center gap-2 w-full min-h-[21rem]">
+                { (!passwordChangeMessage && deleteAccountResult !== 0) && (
+                  <Switch name="full-width" style={{ width: "100%" }} onChange={(value) => setSettingSwitch(value)}>
+                    <Switch.Control
+                      defaultChecked
+                      label="Change password"
+                      size="large"
+                      value="password"
+                  />
+                  <Switch.Control label="Delete account" size="large" value="delete" />
+                </Switch>
+                )}
+                  {settingSwitch === "password"
+                    ? (<>
+                      {passwordChangeMessage ? (
+                        <div className='flex justify-center text-center items-center flex-col gap-2 h-full w-full text-black m-2'>
                           <motion.div
-                            key="delete-success"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ 
-                              delay: 0.1, 
-                              duration: 0.3, 
-                              type: "spring", 
-                              stiffness: 200 
-                            }}
-                            className={`flex items-center justify-center w-30 h-30 rounded-full`}
-                          >
-                            <img src="/logo-frog.png" alt="Success" />
-                          </motion.div>
-                          :
-                          <motion.div
-                            key="delete-fail"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ 
-                              delay: 0.1, 
-                              duration: 0.3, 
-                              type: "spring", 
-                              stiffness: 200 
-                            }}
-                            className={`flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20`}
-                          >
-                            <IconComponent className={`w-8 h-8 text-red-600 dark:text-red-400`}/>
-                          </motion.div> }
-
-                          { deleteAccountResult === -1 ? (  
-                            <>  
-                            <p className='text-red-600 mb-3 font-bold w-[60%] text-center'>An internal error ocurred. Please, try again later.</p>
-                            <Button
-                            onClick={() => { handlePrimaryAction();
-                              setPassword("");
-                              setNewPassword("");
-                              setConfirmPassword("");
-                              setDeleteAccountResult(null);
-                            }}
-                            className={`min-w-[120px] bg-black/90 text-white mb-5 rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
-                            size="default"
-                          > OK
-                          </Button>
-                          </>
-                          ) : 
-                          (deleteAccountResult === 0) ? (
-                            <p className='text-gray-900 mb-3 font-bold w-[60%] text-center'>Account deleted succesfully. See you soon!</p>
-                          ):(
-                            <><p className='text-black mb-3 font-bold w-[60%] text-center'>Your password is required to perform this action</p>
-                        <InputPass
-                          onChange={(password) => {setPassword(password); setDeleteAccountResult(null);}}
-                          wrongPassword={deleteAccountResult !== null && deleteAccountResult < -1}
-                        />
-                          <Button
-                            onClick={handleDeleteAccount}
-                            className={`min-w-[120px] mt-3 bg-red-500 text-white rounded py-2 px-4 hover:bg-red-600 transition-colors`}
-                            size="default"
-                          > Delete account
-                          </Button></>)}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ 
+                            delay: 0.1, 
+                            duration: 0.3, 
+                            type: "spring", 
+                            stiffness: 200 
+                          }}
+                          className={`flex items-center justify-center w-16 h-16 rounded-full ${passwordChangeMessage === "Password changed successfully!" ? currentConfig.iconBgClass : "bg-red-100 dark:bg-red-900/20"}`}
+                        >
+                          <IconComponent className={`w-8 h-8 ${passwordChangeMessage === "Password changed successfully!" ? currentConfig.iconColorClass : "text-red-600 dark:text-red-400"}`} />
+                        </motion.div>
+                          <span className='font-semibold text-center'>{passwordChangeMessage}</span>
+                          {passwordChangeMessage === "Wrong password." ? (
+                            <p className='text-center text-sm mb-2'>Your password could not be changed because the current password you entered is incorrect.</p>
+                          ) : null}
+                          <Button onClick={() => setPasswordChangeMessage(null)}>OK</Button>
                         </div>
-                      )}
-                </div>
-              )}
+                      ) : (
+                        <>
+                        <div className='flex justify-center items-start flex-col gap-2 h-full w-full text-black m-2'>
+                          {/* Input con ojo para ocultar contraseña*/}
+                          <InputPasswords onSave={(password, NewPassword, ConfirmPassword) => {
+                            setPassword(password);
+                          setNewPassword(NewPassword);
+                          setConfirmPassword(ConfirmPassword);
+                        }}/>
+                      </div>
+                      <div className='flex justify-between items-center flex-row h-full w-full text-black mt-2'>
+                        <Button
+                          onClick={() => { handlePrimaryAction();
+                            setPassword("");
+                            setNewPassword("");
+                            setConfirmPassword("");
+                          }}
+                          className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                          size="default"
+                        > Cancel
+                        </Button>
+                        <Button
+                          onClick={handleChangePassword}
+                          className={`min-w-[120px] bg-lime-500 text-white rounded py-2 px-4 hover:bg-lime-600 transition-colors`}
+                          size="default"
+                        > Save
+                        </Button>
+                      </div>
+                      </>)}</>
+                    )
+                    : (
+                      <div className='flex flex-col gap-2 min-h-[17rem] w-full align-center items-center justify-center mt-2'>
+                        
+                        {deleteAccountResult === 0 ? 
+                        <motion.div
+                          key="delete-success"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ 
+                            delay: 0.1, 
+                            duration: 0.3, 
+                            type: "spring", 
+                            stiffness: 200 
+                          }}
+                          className={`flex items-center justify-center w-30 h-30 rounded-full`}
+                        >
+                          <img src="/logo-frog.png" alt="Success" />
+                        </motion.div>
+                        :
+                        <motion.div
+                          key="delete-fail"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ 
+                            delay: 0.1, 
+                            duration: 0.3, 
+                            type: "spring", 
+                            stiffness: 200 
+                          }}
+                          className={`flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20`}
+                        >
+                          <IconComponent className={`w-8 h-8 text-red-600 dark:text-red-400`}/>
+                        </motion.div> }
 
-              {type !== 'shareLetter' && type!=='settings' && (
-              <div className="flex flex-col items-center text-center p-6 pt-8 space-y-4">
-                {/* Icon */}
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ 
-                    delay: 0.1, 
-                    duration: 0.3, 
-                    type: "spring", 
-                    stiffness: 200 
-                  }}
-                  className={`flex items-center justify-center w-16 h-16 rounded-full ${currentConfig.iconBgClass}`}
-                >
-                  <IconComponent className={`w-8 h-8 ${currentConfig.iconColorClass}`} />
-                </motion.div>
-
-                {/* Title */}
-                <DialogHeader className="space-y-2 display-inline-flex items-center justify-center">
-                  <DialogTitle 
-                    id="success-dialog-title"
-                    className="text-xl font-semibold text-black"
-                  >
-                    <motion.span
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2, duration: 0.3 }}
-                    >
-                      {displayTitle}
-                    </motion.span>
-                  </DialogTitle>
-
-                  {/* Description */}
-                  <DialogDescription 
-                    id="success-dialog-description"
-                    className="text-muted-foreground max-w-sm mx-auto leading-relaxed text-center"
-                  >
-                    <motion.span
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3, duration: 0.3 }}
-                    >
-                      {displayDescription}
-                    </motion.span>
-                  </DialogDescription>
-                </DialogHeader>
-
-                {/* Primary Action Button */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.3 }}
-                  className="pt-2"
-                >
-                  <Button
-                    onClick={handlePrimaryAction}
-                    className={`min-w-[120px] focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all duration-200 ${currentConfig.buttonClass}`}
-                    size="default"
-                  >
-                    {displayPrimaryActionText}
-                  </Button>
-                </motion.div>
-
-                {/* Auto-dismiss indicator 
-                {autoDismiss && autoDismissDelay > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.3 }}
-                    className="text-xs text-muted-foreground"
-                  >
-                    Auto-closing in {Math.ceil(autoDismissDelay / 1000)} seconds
-                  </motion.div>
-                )}*/}
+                        { deleteAccountResult === -1 ? (  
+                          <>  
+                          <p className='text-red-600 mb-3 font-bold w-[60%] text-center'>An internal error ocurred. Please, try again later.</p>
+                          <Button
+                          onClick={() => { handlePrimaryAction();
+                            setPassword("");
+                            setNewPassword("");
+                            setConfirmPassword("");
+                            setDeleteAccountResult(null);
+                          }}
+                          className={`min-w-[120px] bg-black/90 text-white mb-5 rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                          size="default"
+                        > OK
+                        </Button>
+                        </>
+                        ) : 
+                        (deleteAccountResult === 0) ? (
+                          <p className='text-gray-900 mb-3 font-bold w-[60%] text-center'>Account deleted succesfully. See you soon!</p>
+                        ):(
+                          <><p className='text-black mb-3 font-bold w-[60%] text-center'>Your password is required to perform this action</p>
+                      <InputPass
+                        onChange={(password) => {setPassword(password); setDeleteAccountResult(null);}}
+                        wrongPassword={deleteAccountResult !== null && deleteAccountResult < -1}
+                      />
+                        <Button
+                          onClick={handleDeleteAccount}
+                          className={`min-w-[120px] mt-3 bg-red-500 text-white rounded py-2 px-4 hover:bg-red-600 transition-colors`}
+                          size="default"
+                        > Delete account
+                        </Button></>)}
+                      </div>
+                    )}
               </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </DialogContent>
-    </Dialog>
-  )
+            )}
+
+            {type !== 'shareLetter' && type!=='settings' && (
+            <div className="flex flex-col items-center text-center p-6 pt-8 space-y-4">
+              {/* Icon */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  delay: 0.1, 
+                  duration: 0.3, 
+                  type: "spring", 
+                  stiffness: 200 
+                }}
+                className={`flex items-center justify-center w-16 h-16 rounded-full ${currentConfig.iconBgClass}`}
+              >
+                <IconComponent className={`w-8 h-8 ${currentConfig.iconColorClass}`} />
+              </motion.div>
+
+              {/* Title */}
+              <DialogHeader className="space-y-2 display-inline-flex items-center justify-center">
+                <DialogTitle 
+                  id="success-dialog-title"
+                  className="text-xl font-semibold text-black"
+                >
+                  <motion.span
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.3 }}
+                  >
+                    {displayTitle}
+                  </motion.span>
+                </DialogTitle>
+
+                {/* Description */}
+                <DialogDescription 
+                  id="success-dialog-description"
+                  className="text-muted-foreground max-w-sm mx-auto leading-relaxed text-center"
+                >
+                  <motion.span
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.3 }}
+                  >
+                    {displayDescription}
+                  </motion.span>
+                </DialogDescription>
+              </DialogHeader>
+
+              { type === 'newDiary' &&
+                  <input className="text-gray-900 border border-gray-300 focus:ring-2 focus:ring-purple-500 rounded-md p-2" placeholder="Diary name" value={newDiaryName} onChange={(e) => setNewDiaryName(e.target.value)} />
+
+              }
+
+              {/* Primary Action Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.3 }}
+                className="pt-2"
+              >
+                <Button
+                  onClick={handlePrimaryAction}
+                  className={`min-w-[120px] focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all duration-200 ${currentConfig.buttonClass}`}
+                  size="default"
+                >
+                  {displayPrimaryActionText}
+                </Button>
+              </motion.div>
+            </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </DialogContent>
+  </Dialog>
+)
 }
 
 

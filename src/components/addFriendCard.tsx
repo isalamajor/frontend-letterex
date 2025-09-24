@@ -39,8 +39,14 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({ _id, nickname, image, mas
     }
   };
 
+  const goToProfile = (id: string) => (event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation();
+      event.preventDefault();
+      window.location.href = `/profile/${id}`;
+  }
+
   return (
-      <div className="px-6 pt-4 rounded-lg bg-white hover:bg-gray-50 border border-gray-200 shadow-md w-full flex flex-row justify-between gap-4">
+      <div className="px-6 pt-4 rounded-lg bg-white hover:bg-gray-50 border border-gray-200 shadow-md w-full flex flex-row justify-between gap-4" onClick={goToProfile(_id)}>
         <div className="flex flex-row gap-7 items-center">
         <img
             src={`http://localhost:3090/uploads/profile_pictures/${image}`}

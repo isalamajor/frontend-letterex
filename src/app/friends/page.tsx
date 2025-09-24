@@ -7,6 +7,20 @@ import FriendCard from "@/components/friendCard";
 import AddFriendCard from "@/components/addFriendCard";
 import { MessageCircleDashed, Frown, Ghost, Search } from "lucide-react";
 import FriendRequestCard from "@/components/friendRequestCard";
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
+
+
+const ITEMS_PER_PAGE = 4;
+
+function PaginationRounded() {
+  return (
+    <Stack spacing={2}>
+      <Pagination count={10} shape="rounded" />
+      <Pagination count={10} variant="outlined" shape="rounded" />
+    </Stack>
+  );
+}
 
 interface FriendList {
   friends: {
@@ -66,6 +80,7 @@ const SocialPageContent = () => {
   const [nonFriendsFiltered, setNonFriendsFiltered] = useState<NonAddedList["users"]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequestList["senders"]>([]);
   const [searchFilter, setSearchFilter] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Dialog
   const [dialogConfig, setDialogConfig] = useState<{
@@ -168,12 +183,20 @@ const SocialPageContent = () => {
                       My friends
                     </h2>
                     {friends.length > 0 ? (
-                     <div className="grid grid-cols-2 gap-4 mb-[2%] h-[88%] overflow-auto custom-scroll">
-                      {friends.length > 0 && friends.map(friend => (
-                         <div key={friend._id} className="col-span-1"> 
-                          <FriendCard {...friend} />
-                        </div>
-                      ))}
+                     <div className="flex flex-col h-[88%]">
+                      <div className="grid grid-cols-2 gap-2  mt-[2%] h-[80%] overflow-auto custom-scroll">
+                        {friends
+                        .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+                        .map(friend => (
+                          <div key={friend._id} className="col-span-1"> 
+                            <FriendCard {...friend} />
+                          </div>
+                        ))}
+                      </div>
+                      {friends.length > ITEMS_PER_PAGE && (
+                        <Pagination count={Math.ceil(friends.length / ITEMS_PER_PAGE)} variant="outlined" shape="rounded" 
+                        onChange={(event, page) => setCurrentPage(page)} size="large" />
+                      )}
                     </div>
                       ) :
                     <div className="flex h-[80%] overflow-auto items-center gap-2 justify-center w-full pb-15">

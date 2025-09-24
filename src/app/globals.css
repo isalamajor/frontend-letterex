@@ -309,6 +309,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  .ql-editor {
+    @apply font-sans;
+  }
 }
 
 @layer components {

@@ -1,72 +1,153 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useMemo } from "react";
 
+interface Correction {
+  textOriginal: string;
+  textCorrected: string;
+  startIndex: number;
+  endIndex: number;
+}
 
 const TextCorrections = forwardRef<HTMLDivElement, {
-    text: string;
-    corrections: {
-      textOriginal: string;
-      textCorrected: string;
-      startIndex: number;
-      endIndex: number;
-    }[];
-    onCorrectionClick: (
-      correction: {
-        textOriginal: string;
-        textCorrected: string;
-        startIndex: number;
-        endIndex: number;
-      },
-      rect: DOMRect
-    ) => void;
-  }>(({ text, corrections, onCorrectionClick }, ref) => {
-    // Ordenar por inicio para evitar conflictos
-    const ordered = [...corrections].sort((a, b) => a.startIndex - b.startIndex);
-    const fragments = [];
-    let currentIndex = 0;
-
+  text: string;
+  corrections: Correction[];
+  onCorrectionClick: (correction: Correction, rect: DOMRect) => void;
+}>(({ text, corrections, onCorrectionClick }, ref) => {
   
-    for (const correcion of ordered) {
-      const { textCorrected, startIndex, endIndex } = correcion;
-  
-      // Añadir text antes de la corrección
-      if (currentIndex < startIndex) {
-        fragments.push(
-          <span key={currentIndex}>{text.slice(currentIndex, startIndex)}</span>
+  const processedContent = useMemo(() => {
+    if (!text) return '';
+    
+    // Función para extraer texto plano manteniendo orden
+    const extractPlainText = (html: string): { text: string; map: Array<{ plainIndex: number; htmlIndex: number; }> } => {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      
+      const walker = document.createTreeWalker(
+        tempDiv,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+      
+      let plainText = '';
+      const indexMap = [];
+      let node;
+      
+      while (node = walker.nextNode()) {
+        const nodeText = node.textContent || '';
+        const nodeStart = html.indexOf(nodeText, 
+          indexMap.length > 0 ? indexMap[indexMap.length - 1].htmlIndex : 0
         );
+        
+        for (let i = 0; i < nodeText.length; i++) {
+          indexMap.push({
+            plainIndex: plainText.length + i,
+            htmlIndex: nodeStart + i
+          });
+        }
+        plainText += nodeText;
       }
-  
-      // Añadir text corregido subrayado en rojo
-      fragments.push(
-        <span
-          id={`correction-${startIndex}-${endIndex}`}
-          key={startIndex}
-          className="underline decoration-red-500 decoration-2 hover:bg-yellow-200 cursor-pointer"
-          title={`${textCorrected}`}
-          onClick={() => {
-            const element = document.getElementById(`correction-${startIndex}-${endIndex}`);
-            if (!element) return;
-            const rect = element.getBoundingClientRect()
-            onCorrectionClick(correcion, rect)
-          }}
-        >
-          {text.slice(startIndex, endIndex)}
-        </span>
-      );
-  
-      currentIndex = endIndex;
+      
+      return { text: plainText, map: indexMap };
+    };
+
+    // Función para insertar corrección en HTML preservando estructura
+    const insertCorrectionInHtml = (html: string, correction: Correction, plainToHtmlMap: Array<{ plainIndex: number; htmlIndex: number; }>) => {
+      const { textOriginal, textCorrected, startIndex, endIndex } = correction;
+      
+      // Encontrar posiciones HTML correspondientes
+      const startHtmlIndex = plainToHtmlMap.find(m => m.plainIndex === startIndex)?.htmlIndex;
+      const endHtmlIndex = plainToHtmlMap.find(m => m.plainIndex === endIndex - 1)?.htmlIndex;
+      
+      if (startHtmlIndex === undefined || endHtmlIndex === undefined) {
+        return html; // No se pudo mapear, devolver HTML original
+      }
+      
+      // Buscar el texto original en el HTML
+      let searchStart = startHtmlIndex;
+      let actualStart = -1;
+      
+      // Buscar hacia atrás y adelante para encontrar el texto exacto
+      for (let offset = 0; offset <= 50; offset++) {
+        // Buscar hacia atrás
+        if (searchStart - offset >= 0) {
+          const index = html.indexOf(textOriginal, searchStart - offset);
+          if (index !== -1 && index <= startHtmlIndex + 10) {
+            actualStart = index;
+            break;
+          }
+        }
+        
+        // Buscar hacia adelante
+        if (searchStart + offset < html.length) {
+          const index = html.indexOf(textOriginal, searchStart + offset);
+          if (index !== -1 && index <= startHtmlIndex + 50) {
+            actualStart = index;
+            break;
+          }
+        }
+      }
+      
+      if (actualStart === -1) {
+        return html; // No se encontró el texto
+      }
+      
+      const beforeHtml = html.substring(0, actualStart);
+      const afterHtml = html.substring(actualStart + textOriginal.length);
+      
+      const correctionSpan = `<span 
+        id="correction-${startIndex}-${endIndex}"
+        class="underline decoration-red-500 decoration-2 hover:bg-yellow-200 cursor-pointer relative"
+        title="Sugerencia: ${textCorrected.replace(/"/g, '&quot;')}"
+        data-correction="${encodeURIComponent(JSON.stringify(correction))}"
+      >${textOriginal}</span>`;
+      
+      return beforeHtml + correctionSpan + afterHtml;
+    };
+
+    // Procesar el HTML
+    const { text: plainText, map } = extractPlainText(text);
+    let processedHtml = text;
+    
+    // Ordenar correcciones de atrás hacia adelante para mantener índices
+    const orderedCorrections = [...corrections].sort((a, b) => b.startIndex - a.startIndex);
+    
+    // Aplicar cada corrección
+    for (const correction of orderedCorrections) {
+      if (correction.startIndex < plainText.length && correction.endIndex <= plainText.length) {
+        processedHtml = insertCorrectionInHtml(processedHtml, correction, map);
+      }
     }
-  
-    // Añadir el resto del text
-    if (currentIndex < text.length) {
-      fragments.push(
-        <span key={currentIndex}>{text.slice(currentIndex)}</span>
-      );
+    
+    return processedHtml;
+  }, [text, corrections]);
+
+  const handleClick = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement;
+    const correctionElement = target.closest('[data-correction]');
+    
+    if (correctionElement) {
+      const correctionData = correctionElement.getAttribute('data-correction');
+      if (correctionData) {
+        try {
+          const correction = JSON.parse(decodeURIComponent(correctionData));
+          const rect = correctionElement.getBoundingClientRect();
+          onCorrectionClick(correction, rect);
+        } catch (error) {
+          console.error('Error parsing correction data:', error);
+        }
+      }
     }
-  
-    return (
-    <p ref={ref}>{fragments}</p>
-    );
+  };
+
+  return (
+    <div 
+      ref={ref}
+      onClick={handleClick}
+      dangerouslySetInnerHTML={{ __html: processedContent }}
+      className="prose prose-sm max-w-none [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-3 [&_strong]:font-bold [&_em]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600"
+    />
+  );
 });
-  
+
+TextCorrections.displayName = 'TextCorrections';
 
 export default TextCorrections;

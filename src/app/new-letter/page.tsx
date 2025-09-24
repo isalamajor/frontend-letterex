@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SidebarDemo } from "@/components/sidebardemo";
 import { useRouter } from 'next/navigation'
 import Link from "next/link";
@@ -10,11 +10,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react"
 import { parseDate } from "@internationalized/date"
 import { DateField, DateInput } from "@/components/ui/datefield"
 import { Label } from "@/components/ui/field"
-import { saveLetter } from "@/services/api";
+import { getDiaries, saveLetter } from "@/services/api";
+import { SuccessDialog, DialogType } from "@/components/ui/dialog";
+import { BookOpen, Edit } from "lucide-react";
+import Quill from 'quill';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+import 'react-quill-new/dist/quill.bubble.css';
+
+
+const Delta = Quill.import('delta');
+
 
 
 export default function Home() {
@@ -38,7 +47,13 @@ const NewLetterPageContent = () => {
   const [title, setTitle] = useState(""); 
   const [letterContent, setLetterContent] = useState(""); 
   const [diaryList, setDiaryList] = useState<string[]>(["English Diary", "Spanish Tales", "First Notebook"]);
-  const [indexNewDiary, setIndexNewDiary] = useState(-1);
+  const [diaryAddedPreviously, setDiaryAddedPreviously] = useState<boolean>(false);
+
+
+  const [range, setRange] = useState();
+  const [lastChange, setLastChange] = useState();
+  const [readOnly, setReadOnly] = useState(false);
+
 
   // Estados para manejar errores
   const [titleError, setTitleError] = useState(false);
@@ -49,6 +64,32 @@ const NewLetterPageContent = () => {
   
   const router = useRouter()
   
+  // Dialog
+  const [dialogConfig, setDialogConfig] = useState<{
+    isOpen: boolean
+    title: string
+    description: string
+    primaryActionText: string
+    autoDismiss: boolean
+    size: 'sm' | 'md' | 'lg'
+    type: DialogType
+  }>({
+    isOpen: false,
+    title: "Payment Successful!",
+    description: "Your payment has been processed successfully. You will receive a confirmation email shortly.",
+    primaryActionText: "View Receipt",
+    autoDismiss: true,
+    size: 'md',
+    type: 'success'
+  })
+  
+  const openDialog = (config: Partial<typeof dialogConfig>) => {
+    setDialogConfig(prev => ({ ...prev, ...config, isOpen: true }))
+  }
+
+  const closeDialog = () => {
+    setDialogConfig(prev => ({ ...prev, isOpen: false }))
+  }
 
   const handleTitleChange = (event: any) => {
     setTitleError(false);
@@ -71,10 +112,6 @@ const NewLetterPageContent = () => {
     return; 
   };
 
-  const handleLetterContentChange = (event: any) => {
-    setContentError(false);
-    setLetterContent(event.target.value);
-  };
 
   // Función para guardar la carta
   const SaveLetterOnClick = async () => {
@@ -126,8 +163,16 @@ const NewLetterPageContent = () => {
       userData.learningLanguage3
     ].filter((lang) => lang !== null);
 
+    const fetchDiaries = async () => {
+      const res = await getDiaries();
+      if (Array.isArray(res)) {
+        setDiaryList(res);
+      }
+    };
+
+    fetchDiaries();
     setLanguageList(learningLanguages);
-  }, []);
+    }, []);
 
 
   return (
@@ -143,7 +188,7 @@ const NewLetterPageContent = () => {
                 type="text"
                 value={title}
                 onChange={handleTitleChange}
-                className={`placeholder-gray-400 text-center text-2xl font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03] ${
+                className={`placeholder-gray-500 text-center text-2xl font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03] ${
                   titleError ? "placeholder-red-500" : "border-none"
                 }`}
                 placeholder="Title of the letter! Edit this, ganster..."
@@ -177,6 +222,20 @@ const NewLetterPageContent = () => {
                     {diaryList.map((diary) => (
                       <SelectItem key={diary} value={diary}>{diary}</SelectItem>
                     ))}
+                    <div key="new" className="flex justify-center items-center hover:bg-gray-100 w-full text-sm bg-white h-8 rounded-md ring-transparent text-[#8EBA03]" onClick={
+                      (e) => { 
+                        e.preventDefault();
+                        openDialog({
+                          title: "Create New Diary",
+                          description: "Enter a name for your new diary.",
+                          primaryActionText: "OK",
+                          size: 'md',
+                          type: 'newDiary',
+                          autoDismiss: false
+                      })
+                    }}>
+                      <BookOpen className="mr-2" size={15} /> Create new diary
+                    </div>
                   </SelectContent>
                 </Select>
               </div>
@@ -200,19 +259,34 @@ const NewLetterPageContent = () => {
               </div>
 
 
-              {/* Letter content field */}
+              {/* Letter content field 
               <textarea
                 value={letterContent}
                 onChange={handleLetterContentChange}
                 placeholder="Write your letter here..."
-                className={`w-full h-[70%] p-4 text-lg text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-neutral-800 rounded-lg border ${
+                className={`w-full h-[10%] p-4 text-lg text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-neutral-800 rounded-lg border ${
                   contentError ? "border-red-500 placeholder-red-500" : "border-neutral-300"
                 } outline-none resize-none`}
               />
+              <div 
+              className="h-[55vh] border rounded-md bg-white text-black
+              rounded-md p-2 space-y-1 ring-transparent">
+              <ReactQuill theme="snow" value={value} onChange={setValue}
+              className="h-[48vh]"
+              />
+              </div>
+              */}
+              
+              <div 
+              className="h-[55vh] border rounded-md bg-white text-black
+              rounded-md p-2 space-y-1 ring-transparent">
+              <ReactQuill theme="bubble" value={letterContent} onChange={(content) => {setLetterContent(content); setContentError(false);}}
+              />
+              </div>
 
             {/* Buttons */}
             <div className="flex justify-between h-[5%] col items-center gap-4 mt-4">
-              <Link href={"/homepage"}>
+                <Link href={"/homepage"}>
                   <button>
                       <div className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
                       Back
@@ -220,22 +294,42 @@ const NewLetterPageContent = () => {
                   </button>
                 </Link>
                 <div className="flex flex-row justify-end h-[5%] col items-center gap-4 mt-4 ">
-                <button>
-                  <Link href={"/"}>
-                  <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors">
-                  📬 Send Letter
+                  <button onClick={() => {SaveLetterOnClick()}}>
+                    <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
+                      💾 Save Letter
                     </div>
-                  </Link>
-                </button>
-                <button onClick={() => {SaveLetterOnClick()}}>
-                  <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
-                  💾 Save Letter
-                  </div>
-                </button>
+                  </button>
               </div>
             </div>
             </div>
         </div>
+        <SuccessDialog
+          isOpen={dialogConfig.isOpen}
+          onClose={closeDialog}
+          title={dialogConfig.title}
+          description={dialogConfig.description}
+          primaryActionText={dialogConfig.primaryActionText}
+          autoDismiss={dialogConfig.autoDismiss}
+          autoDismissDelay={2000}
+          size={dialogConfig.size}
+          type={dialogConfig.type}
+          onNewDiaryCreated={
+            (diaryName) => {
+              if (diaryAddedPreviously) {
+                // Cambiar el último añadido por el nuevo
+                setDiaryList((prev) => {
+                  const newList = [...prev];
+                  newList[diaryList.length - 1] = diaryName;
+                  return newList;
+                });
+              } else {
+                setDiaryList((prev) => [...prev, diaryName]);
+                setDiaryAddedPreviously(true);
+              }
+              setDiary(diaryName);
+            }
+          }
+        />
       </div>
   );
 }

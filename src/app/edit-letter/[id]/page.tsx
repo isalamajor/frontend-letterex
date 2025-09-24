@@ -7,7 +7,7 @@ import { useState } from "react"
 import { Calendar, parseDate } from "@internationalized/date"
 import { DateField, DateInput } from "@/components/ui/datefield"
 import { Label } from "@/components/ui/field"
-import { getLetter } from "@/services/api";
+import { getLetter, getDiaries } from "@/services/api";
 import { Check } from "lucide-react";
 import { use } from "react";
 import {
@@ -17,8 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useId } from "react";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.bubble.css';
 
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
@@ -52,6 +53,16 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   const [dateError, setDateError] = useState(false);
   const [contentError, setContentError] = useState(false);
   const [languageError, setLanguageError] = useState(false);
+
+  const modulesQuill = {
+    toolbar: [
+      ["bold", "italic"], // negrita y cursiva
+      [{ header: 1 }, { header: 2 }], // encabezados
+      ["blockquote"], // citas
+      [{ align: [] }], // alineación (izquierda, centro, derecha, justificado)
+      // 👆 quitamos "link"
+    ],
+  };
 
   // Dialog
     const [dialogConfig, setDialogConfig] = useState<{
@@ -163,8 +174,26 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     console.log("Saving letter:", { title, date, letterContent });
   };
 
-  const handleShareSuccess = async  () => {
+  const handleShareSuccess = async (result: number) => {
     // Fetch letter data again to get its uploaded version
+    if (result === 0) {
+      openDialog({
+        title: "Letter Shared",
+        description: "Your letter has been shared successfully!",
+        primaryActionText: "OK",
+        size: 'md',
+        type: 'success'
+      });
+    } else {
+      openDialog({
+        title: "Error Sharing Letter",
+        description: "There was an error sharing your letter.",
+        primaryActionText: "OK",
+        size: 'md',
+        type: 'error'
+      });
+    }
+
     const letterData = await getLetter(id);
       console.log("Letter data:", letterData);
       if (!letterData) {
@@ -200,6 +229,12 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
         userData.learningLanguage2,
         userData.learningLanguage3
       ].filter((lang) => lang !== null);
+      const fetchDiaries = async () => {
+        const res = await getDiaries();
+        if (Array.isArray(res)) {
+          setDiaryList(res);
+        }
+      };
 
       setDate(parseDate(new Date(letterData.created_at).toISOString().split("T")[0]));
       setDiary(letterData.diary || "");
@@ -207,7 +242,8 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       setTitle(letterData.title || "");
       setLetterContent(letterData.content || "");
       setLanguageList(learningLanguages || []);
-      setSharedWith(letterData.sharedWith || []);
+      setSharedWith(letterData.sharedWith || []);  
+      fetchDiaries();
     })();
   }, [id]);
 
@@ -288,14 +324,14 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
               {!valuesChanged && sharedWith.length > 0 && (
                 <div className="text-[#6495ED] m-4">
-                  You cannot modify a letter once it has been sent.
+                  You cannot modify a letter once it has been sent
                 </div>
               )}
 
               </div>
 
 
-              {/* Letter content field */}
+              {/* Letter content field 
               <textarea
                 value={letterContent}
                 disabled={sharedWith.length > 0}
@@ -304,7 +340,12 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                 className={`w-full h-[70%] p-4 text-lg text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-neutral-800 rounded-lg border ${
                   contentError ? "border-red-500 placeholder-red-500" : "border-neutral-300"
                 } outline-none resize-none`}
-              />
+              />*/}
+              
+              <div className="h-[55vh] border rounded-md bg-white rounded-md p-2 space-y-1 ring-transparent text-gray-900">
+                <ReactQuill theme="bubble" value={letterContent} onChange={(content) => {setLetterContent(content); setContentError(false);}}
+                modules={modulesQuill} readOnly={sharedWith.length > 0}/>
+              </div>
 
             {/* Buttons */}
             <div className="flex justify-between h-[5%] col items-center gap-4 mt-4">
@@ -366,7 +407,8 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           }}
           letterId={id}
           sharedWith={sharedWith}
-          onShareSuccess={handleShareSuccess}
+          onShareSuccess={(shareLetterResult) => {handleShareSuccess(shareLetterResult)
+          }}
         />
       </div>
   );

@@ -179,11 +179,6 @@ h2 {
   margin-bottom: 1rem;
 }
 
-.two-columns-profile {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
 
 
 .alert-message {

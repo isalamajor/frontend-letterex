@@ -1,4 +1,6 @@
+import { m } from 'framer-motion';
 import * as React from 'react';
+import { useEffect } from 'react';  
 
 interface Friend {
   _id: string;
@@ -14,30 +16,43 @@ interface FriendsCheckboxListProps {
 }
 
 const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({ friends, selected, setSelected }) => {
+  const maxSelectable = 2 - friends.filter(friend => friend.alreadySent).length;
+
   const handleToggle = (friendId: string) => {
-    setSelected((prev) =>
-      prev.includes(friendId)
-        ? prev.filter((id) => id !== friendId)
-        : [...prev, friendId]
-    );
+    if (maxSelectable === 1) {
+      if (selected.includes(friendId)) {
+        setSelected([]);
+      } else {
+        setSelected([friendId]);
+      }
+    } else if (selected.includes(friendId)) {
+      setSelected(prev => prev.filter(id => id !== friendId));
+    } else {
+      if (selected.length === 2) {
+        setSelected(prev => [prev[0], friendId]);
+      } else {
+        setSelected(prev => [...prev, friendId]);
+      }
+    }
   };
+
 
   return (
     <ul className="space-y-2">
       {friends.map((friend) => (
         <label
-        key={friend._id}
-        className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+          key={friend._id}
+          className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
         >
-        <input
-          type="checkbox"
-          defaultChecked={friend.alreadySent}
-          disabled={friend.alreadySent}
-          className="w-4 h-4"
-          onChange={() => handleToggle(friend._id)}
-        />
-        {friend.nickname}
-      </label>
+          <input
+            type="checkbox"
+            checked={selected.includes(friend._id) || friend.alreadySent}
+            disabled={friend.alreadySent || maxSelectable === 0}
+            className="w-4 h-4"
+            onChange={() => handleToggle(friend._id)}
+          />
+          {friend.nickname}
+        </label>
       ))}
     </ul>
   );
