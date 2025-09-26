@@ -2,6 +2,63 @@ import axios from "axios";
 
 const API_URL = 'http://localhost:3090/api';
 
+/*
+List of functions:
+
+DIARIES:
+- getDiaries() - Get user's diaries
+
+FRIEND REQUESTS:
+- declineFriendRequest(senderId) - Decline a friend request
+- acceptFriendRequest(senderId) - Accept a friend request  
+- getFriendRequests() - Get pending friend requests
+- sendFollowRequest(receiverId) - Send follow request to user
+
+FRIENDS:
+- getNonFriends() - Get users who are not friends
+- getFriends() - Get user's friends list
+- getFriendsList(id) - Get friends list for specific user
+
+COUNTERS:
+- getCountCorrectedLetters(userId?) - Get count of corrected letters
+- getCountLetters(userId?) - Get count of letters written
+
+CORRECTIONS:
+- sendLetterBack(letterId) - Send corrected letter back to author
+- updateLetterCorrections(letterId, corrections, comments) - Update letter corrections
+- getLetterToCorrect(correctionId) - Get letter to correct by ID
+- getReceivedLetters() - Get received letters for correction
+
+LETTERS:
+- shareLetter(letterId, sharedWith) - Share letter with friends
+- getLetter(id) - Get specific letter by ID
+- editLetter(id, title, content, diary, language, created_at, sharedWith) - Edit existing letter
+- saveLetter(title, content, diary, language, created_at) - Save new letter
+- getUserLetters() - Get user's letters
+
+AUTHENTICATION:
+- sendVerificationCode(email) - Send verification code to email
+- checkVerificationCode(email, code) - Verify email code
+- register(userData) - Register new user
+- login(credentials) - Login user
+- isUsernameInUse(username) - Check if username is taken
+- isEmailInUse(email) - Check if email is taken
+
+PROFILE:
+- getUserData(id?) - Get user data (own or by ID)
+- getProfile(id, token) - Get user profile
+- listUsers(token, page?) - List all users with pagination
+- updateUser(userData) - Update user profile
+- changePassword(currentPass, newPass) - Change user password
+- uploadProfilePicture(file) - Upload profile picture
+- getProfilePictureUrl(id) - Get profile picture URL
+- deleteAccount(password) - Delete user account
+
+UTILS:
+- handleRequestError(error) - Handle axios errors
+- SavePPicInSessionStorage(token, userId) - Save profile pic in session storage
+*/
+
 
 export const getDiaries = async () => {
     const token = sessionStorage.getItem("authToken");
@@ -249,6 +306,7 @@ export const getCountLetters = async (userId) => {
 
  
 export const sendLetterBack = async (letterId) => {
+    return 0;
     const token = sessionStorage.getItem("authToken");
     try {
         const response = await axios.patch(

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, AlertTriangle, CircleX, Send, Lock, BookOpen } from 'lucide-react'
+import { Check, X, AlertTriangle, CircleX, Send, Lock, BookOpen, MailQuestionMark, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getFriendsList, shareLetter, changePassword, deleteAccount } from '@/services/api'
 import FriendsCheckboxList from '@/components/ui/friendsCheckBoxList'
@@ -87,7 +87,7 @@ const DialogDescription: React.FC<DialogDescriptionProps> = ({ children, classNa
 };
 
 
-export type DialogType = 'success' | 'alert' | 'error' | 'shareLetter' | 'settings' | 'newDiary'
+export type DialogType = 'success' | 'alert' | 'error' | 'shareLetter' | 'settings' | 'newDiary' | 'askConfirmation';
 
 interface SuccessDialogProps {
   isOpen?: boolean
@@ -106,6 +106,7 @@ interface SuccessDialogProps {
   onShareSuccess?: (shareLetterResult: number) => void
   onNewDiaryCreated?: (diaryName: string) => void
   prevNewDiaryName?: string
+  onConfirmationPositive?: () => void | Promise<void> 
 }
 
 export const SuccessDialog: React.FC<SuccessDialogProps> = ({
@@ -124,7 +125,8 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   sharedWith = [],
   onShareSuccess = (shareLetterResult: number) => {},
   onNewDiaryCreated = (diaryName) => {},
-  prevNewDiaryName = ""
+  prevNewDiaryName = "",
+  onConfirmationPositive = () => {}
 }) => {
   const [internalOpen, setInternalOpen] = useState(isOpen)
   const [friendsList, setFriendsList] = useState<Friend[]>([]);
@@ -197,6 +199,14 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
       descriptionDefault: "Your new diary has been created successfully.",
       buttonClass: 'bg-purple-600 text-white hover:bg-purple-700',
     },
+    askConfirmation: {
+      icon: MailQuestionMark ,
+      iconBgClass: 'bg-yellow-100 dark:bg-yellow-900/20',
+      iconColorClass: 'text-yellow-600 dark:text-yellow-400',
+      titleDefault: "Are you sure you want to perform this action?",
+      descriptionDefault: "Please confirm your action.",
+      buttonClass: 'bg-yellow-600 text-white hover:bg-yellow-700',
+    }
   }
 
   const currentConfig = typeConfig[type]
@@ -388,7 +398,15 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                   <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300">
                     Share with friends (choose at most 2)
                   </h3>
-                    
+                  <h4 className="text-xs text-gray-500 mx-15">
+                    ⚠️ 
+                    Note that{" "}
+                    <span className="bg-yellow-300/40">
+                      you won’t be able to modify
+                    </span>{" "}
+                    the letter after sharing it.
+                  </h4>
+
                     {friendsList.length === 0 ? (
                       <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -573,7 +591,72 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
               </div>
             )}
 
-            {type !== 'shareLetter' && type!=='settings' && (
+            { type === 'askConfirmation' && (
+              <div className="flex flex-col items-center text-center p-6 pt-8 space-y-4">
+
+                  {/* Icon */}
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{
+                      delay: 0.1,
+                      duration: 0.3,
+                      type: "spring",
+                      stiffness: 200
+                    }}
+                    className={`flex items-center justify-center w-16 h-16 rounded-full ${currentConfig.iconBgClass}`}
+                  >
+                    <IconComponent className={`w-8 h-8 ${currentConfig.iconColorClass}`} />
+                  </motion.div>
+                  {/* Title */}
+                  <DialogHeader className="space-y-2 display-inline-flex items-center justify-center">
+                    <DialogTitle
+                      id="success-dialog-title"
+                      className="text-xl font-semibold text-black text-center mx-10"
+                    >
+                      <motion.span
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.3 }}
+                      >
+                        {displayTitle}
+                      </motion.span>
+                    </DialogTitle>
+                    {/* Cancel & Confirm Buttons */}
+                    <DialogDescription
+                      id="success-dialog-description"
+                      className="text-muted-foreground max-w-sm mx-auto leading-relaxed text-center text-sm"
+                    >
+                      <motion.span
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.3 }}
+                      >
+                        {displayDescription}
+                      </motion.span>
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex justify-center items-center gap-4 pt-2">
+                    <Button
+                        onClick={handlePrimaryAction}
+                        className={`min-w-[120px] bg-gray-300 text-black rounded py-2 px-4 hover:bg-gray-400 transition-colors`}
+                        size="default"
+                      > Cancel
+                    </Button>
+                    <Button
+                        onClick={() => {
+                          handlePrimaryAction();
+                          if (onConfirmationPositive) onConfirmationPositive();
+                        }}
+                        className={`min-w-[120px] bg-yellow-500 text-white rounded py-2 px-4 hover:bg-red-600 transition-colors`}
+                        size="default"
+                      > Confirm
+                    </Button>
+                  </div>
+                </div>
+            )}
+
+            {type !== 'shareLetter' && type!=='settings' && type!=='askConfirmation' && (
             <div className="flex flex-col items-center text-center p-6 pt-8 space-y-4">
               {/* Icon */}
               <motion.div

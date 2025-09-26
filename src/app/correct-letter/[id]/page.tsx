@@ -6,7 +6,7 @@ import { useState } from "react"
 import { parseDate } from "@internationalized/date"
 import { Label } from "@/components/ui/field"
 import { getLetterToCorrect } from "@/services/api";
-import { Check, X, Trash, Eye, EyeOff, CirclePlus  } from "lucide-react";
+import { Check, X, Trash, Eye, EyeOff, SquareDashed  } from "lucide-react";
 import { use } from "react";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import TextCorrections from "@/components/textCorrections";
@@ -41,7 +41,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   const [currentCorrectionText, setcurrentCorrectionText] = useState<string>("");
   const [editingCorrection, setEditingCorrection] = useState<Correccion | null>(null);
   const [overlapping, setOverlapping] = useState<boolean>(false);
-  const [valuesChanged, setValuesChanged] = useState(true);
+  const [valuesChanged, setValuesChanged] = useState(false);
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [letterContent, setLetterContent] = useState("");
@@ -72,6 +72,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       autoDismiss: boolean
       size: 'sm' | 'md' | 'lg'
       type: DialogType
+      onConfirmationPositive?: () => void | Promise<void>
     }>({
       isOpen: false,
       title: "Payment Successful!",
@@ -79,7 +80,8 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       primaryActionText: "View Receipt",
       autoDismiss: true,
       size: 'md',
-      type: 'success'
+      type: 'success',
+      onConfirmationPositive: undefined
     })
   
     const openDialog = (config: Partial<typeof dialogConfig>) => {
@@ -187,6 +189,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
 
 
   const saveCorrectionOnClick = async () => {
+    setCorrectionMode(false);
     if (!id) return;
     if (corrections.length === 0 && (!comment || comment === "")) {
       openDialog({
@@ -221,29 +224,42 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   }
 
   const sendBackOnClick = async () => {
+    setCorrectionMode(false);
     if (!id) return;
+    const sendBack = async () => {
+          closeDialog();
+          const response = await sendLetterBack(id);
+          if (response === 0) {
+            setSentBack(true);
+            openDialog({
+              title: "Letter sent back",
+              description: "The letter has been sent back successfully.",
+              primaryActionText: "OK",
+              autoDismiss: true,
+              size: 'md',
+              type: 'success'
+            });
+          } else {
+            openDialog({
+              title: "Fail to send back",
+              description: "There was an error sending letter back :(",
+              primaryActionText: "OK",
+              autoDismiss: true,
+              size: 'md',
+              type: 'error'
+            });
+          }
+    }
     try {
-      const response = await sendLetterBack(id);
-      if (response === 0) {
-        setSentBack(true);
-        openDialog({
-          title: "Letter sent back",
-          description: "The letter has been sent back successfully.",
-          primaryActionText: "OK",
-          autoDismiss: true,
-          size: 'md',
-          type: 'success'
-        });
-      } else {
-        openDialog({
-          title: "Fail to send back",
-          description: "There was an error sending letter back :(",
-          primaryActionText: "OK",
-          autoDismiss: true,
-          size: 'md',
-          type: 'error'
-        })
-      }
+      openDialog({
+        title: "Are you sure you want to send back the letter?",
+        description: "Once you send it back, you won't be able to make any more changes.",
+        primaryActionText: "Send Back",
+        autoDismiss: false,
+        size: 'md',
+        type: 'askConfirmation',
+        onConfirmationPositive: sendBack
+      });
     } catch (error) {
       openDialog({
         title: "Fail to send back",
@@ -252,7 +268,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         autoDismiss: true,
         size: 'md',
         type: 'error'
-      })
+      });
     }
   };
 
@@ -260,7 +276,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       <div className="overflow-y-auto custom-scroll p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
             <div
-              className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-20"
+              className="h-auto w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-20"
             >
 
               {/* Title field */}
@@ -278,8 +294,9 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
               {/* Correcting tools */}
               
               { !sentBack &&
-              <button onClick={() => setCorrectionMode(!correctionMode)} className= {correctionMode ? "text-red-500" : "text-black"}>
-              🖍️ Correct 
+              <button onClick={() => setCorrectionMode(!correctionMode)} className={`flex flex-row gap-1 py-1 px-2 border rounded-md bg-white  ${correctionMode ? "text-gray-600" : "text-red-500"} `}>
+              {correctionMode ? <SquareDashed className="text-gray-600" size={22}/> : "🖍️"}
+              <p>Correct</p>
               </button>
               }
 
@@ -319,8 +336,13 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                     });
                   }
                 }}
-                className={`w-full min-h-[55vh] pt-5 pb-10 text-gray-900 outline-none rounded cursor-text leading-loose
-                ${correctionMode && overlapping ? ("selection:bg-red-200") : ("selection:bg-yellow-200") }`}>
+                className={`w-full min-h-[50vh] pt-5 pb-10 text-gray-900 outline-none rounded cursor-text leading-loose
+                  mt-8 p-4 h-64 ${
+                  correctionMode ? "cursor-none" : "cursor-auto"
+                }
+                ${correctionMode && overlapping ? ("selection:bg-red-200") : ("selection:bg-yellow-200") }`
+                }>
+
                 <TextCorrections
                   ref={textRef}
                   text={letterContent}
@@ -336,6 +358,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                     }
                     )}}
                 />
+
               </div>
 
               {selectionInfo && selectionInfo.rect && (
@@ -405,33 +428,16 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
 
             { /* Comment box */}
 
-            <div className="w-full">
-              <div className={`w-full h-[1.7rem] rounded-t-lg text-gray-400 pt-1 pr-2 flex justify-end ${commentBoxOpen && "bg-gray-50"}`}>
-                {commentBoxOpen ? (
-                  <EyeOff onClick={() => setCommentBoxOpen(false)} className="cursor-pointer" />
-                ) : (
-                  <button
-                    onClick={() => setCommentBoxOpen(true)}
-                    className="h-full flex items-center gap-x-2 text-[#7E27A3] hover:text-[#DB5FDE] px-2"
-                  >
-                    {comment ? <Eye className="w-4 h-4"/> : !sentBack && <CirclePlus className="w-4 h-4"/> }
-                    {comment ? 
-                    (<span> Show comments </span>) : !sentBack && (<span> Add comments </span>) }
-                  </button>
-                )}
-              </div>
-              {commentBoxOpen && (
+            <div className="w-full my-3">
               <textarea
-                placeholder="You may add general comments here..."
+                placeholder={sentBack ? "No additional comments" : "You may add general comments here..."}
                 value={comment}
                 onChange={handleInput}
                 disabled={sentBack}
-                className={`px-5 pb-4 w-full text-lg text-gray-800 bg-gray-50 rounded-b-lg outline-none
-                  transition-opacity duration-500 ease-in-out resize-none
-                  ${commentBoxOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0 overflow-hidden"}
-                `}
+                className="px-5 py-4 w-full text-lg text-gray-800 bg-gray-50 rounded-lg outline-none
+                  resize-none
+                  opacity-100"
                 />
-              )}
             </div>
 
 
@@ -450,8 +456,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                 
               {!sentBack ? (
               <>
-
-                {valuesChanged ? (
+                {valuesChanged || (corrections.length === 0 && !comment) ? (
                   <button onClick={saveCorrectionOnClick}>
                     <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
                       💾 Save correction
@@ -496,7 +501,76 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           letterId={id}
           sharedWith={[]}
           onShareSuccess={() => {}}
+          onConfirmationPositive={dialogConfig.onConfirmationPositive}
         />
+        
+                {correctionMode && <EmojiCursor />}
       </div>
+  );
+}
+
+
+/*
+function EmojiCursor() {
+  // Este div sigue al mouse
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    setPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  return (
+    <div
+      onMouseMove={handleMouseMove}
+      className="fixed pointer-events-none z-50 text-red-500"
+      style={{
+        left: position.x,
+        top: position.y,
+        transform: "translate(-50%, -50%)",
+        fontSize: "24px",
+      }}
+    >
+      🖍️
+    </div>
+  );
+}*/
+
+function EmojiCursor() {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setPosition({ x: e.clientX, y: e.clientY });
+      setIsVisible(true);
+    };
+
+    const handleMouseLeave = () => {
+      setIsVisible(false);
+    };
+
+    // Añadir el listener al documento completo
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  if (!isVisible) return null;
+
+  return (
+    <div
+      className="fixed pointer-events-none z-[9999] text-red-500 select-none"
+      style={{
+        left: position.x + 3, // Offset para que no tape el cursor
+        top: position.y - 20,
+        fontSize: "20px",
+      }}
+    >
+      🖍️
+    </div>
   );
 }

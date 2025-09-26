@@ -21,6 +21,7 @@ interface ReceivedLetterListProps {
     };
     sentBack: boolean;
     corrected_at: string;
+    received_at: string;
     seen: boolean;
   }[];
 }
@@ -29,10 +30,11 @@ interface ChildProps {
   orderBySender: string; 
   searchFilter: string;
   showOnlyPending?: boolean;
+  refresh: number;
 }
   
 
-const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending } : ChildProps) => {
+const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending, refresh } : ChildProps) => {
   const [letters, setletters] = useState<ReceivedLetterListProps["letters"]>([]);
   const [diaryOrganised, setDiaryOrganised] = useState<boolean>(false);
   const [senderSelected, setSenderSelected] = useState<string>("");
@@ -46,7 +48,8 @@ const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending } : C
        setletters(response);
      };
      fetchletters();
-   }, []);
+     console.log("Letters state updated: ", refresh);
+   }, [refresh]);
    
    
   // Filter letters by search text
@@ -74,7 +77,7 @@ const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending } : C
 
     }
     filteredLetters();
-  }, [searchFilter, letters, orderBySender, showOnlyPending])
+  }, [searchFilter, letters, orderBySender, showOnlyPending, refresh]);
 
 
   if (filteredLetters && filteredLetters.length > 0) {
@@ -85,6 +88,7 @@ const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending } : C
           id={letter._id}
           diary="-"
           created_at={letter.corrected_at}
+          received_at={letter.received_at}
           title={letter.originalLetter.title}
           language={letter.originalLetter.language}
           sender={letter.sender}

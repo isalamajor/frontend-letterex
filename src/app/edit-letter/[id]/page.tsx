@@ -21,6 +21,12 @@ import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.bubble.css';
 
+// Struct con los datos de la letter
+interface SharedWithUsers {
+    id: string; 
+    nickname: string;
+    image: string;
+}[];
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -46,7 +52,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   const [letterContent, setLetterContent] = useState(""); 
   const [diaryList, setDiaryList] = useState<string[]>(["English Diary", "Spanish Tales", "new"]);
   const [indexNewDiary, setIndexNewDiary] = useState(-1);
-  const [sharedWith, setSharedWith] = useState<string[]>([]);
+  const [sharedWith, setSharedWith] = useState<SharedWithUsers[]>([]);
 
   // Estados para manejar errores
   const [titleError, setTitleError] = useState(false);
@@ -60,7 +66,6 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       [{ header: 1 }, { header: 2 }], // encabezados
       ["blockquote"], // citas
       [{ align: [] }], // alineación (izquierda, centro, derecha, justificado)
-      // 👆 quitamos "link"
     ],
   };
 
@@ -200,9 +205,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
         console.error("No letter data found for ID:", id);
         return;
       }
-      
       setSharedWith(letterData.sharedWith || []);
-
   }
 
   useEffect(() => {
@@ -242,7 +245,8 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       setTitle(letterData.title || "");
       setLetterContent(letterData.content || "");
       setLanguageList(learningLanguages || []);
-      setSharedWith(letterData.sharedWith || []);  
+      setSharedWith(letterData.sharedWith || []);
+      console.log("NEW letter data: ", letterData);
       fetchDiaries();
     })();
   }, [id]);
@@ -269,64 +273,84 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
               />
               
               <div className="flex flex-row gap-2 justify-between items-end">
-              
-              {/* Date field */}
-              <div className="flex flex-row items-center gap-4 w-[50%]">
-                <DateField
-                className={"w-[150px] rounded-md p-2 space-y-1 ring-transparent"}
-                value={date}
-                isDisabled={sharedWith.length > 0}
-                onChange={handleDateChange}
-                >
-                {dateError && <Label className="text-red-500">Date missing</Label>}
-                {!dateError && <Label className="text-black">Date</Label>}
-                <DateInput className={`bg-white text-black  ${
-                  dateError ? "border-red-500" : "border-neutral-300"
-                }`}/>
-                </DateField>
+                
+                {/* Date field */}
+                <div className="flex flex-row items-center gap-4 w-[50%]">
+                  <DateField
+                  className={"w-[150px] rounded-md p-2 space-y-1 ring-transparent"}
+                  value={date}
+                  isDisabled={sharedWith.length > 0}
+                  onChange={handleDateChange}
+                  >
+                  {dateError && <Label className="text-red-500">Date missing</Label>}
+                  {!dateError && <Label className="text-black">Date</Label>}
+                  <DateInput className={`bg-white text-black  ${
+                    dateError ? "border-red-500" : "border-neutral-300"
+                  }`}/>
+                  </DateField>
 
-              {/* Diary select */}
-              <div className="space-y-2 min-w-[200px]">
-                <Label className="text-black" htmlFor={id}>Select diary</Label>
-                <Select 
-                value={diary} 
-                disabled={sharedWith.length > 0}
-                onValueChange={(diary) => {handleDiaryChange(diary)}}>
-                  <SelectTrigger id={id} className="text-black bg-white h-10 rounded-md ring-transparent">
-                    <SelectValue placeholder="(None)"/>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {diaryList.map((diary) => (
-                      <SelectItem key={diary} value={diary}>{diary}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Language select */}
-              <div className="space-y-2 min-w-[200px]">
-                <Label className="text-black" htmlFor={id}>Select language</Label>
-                <Select 
-                value={language} 
-                disabled={sharedWith.length > 0}
-                onValueChange={(lang) => {handleLanguageChange(lang)}}>
-                  <SelectTrigger id={id} className="text-black bg-white h-10 rounded-md ring-transparent">
-                    <SelectValue placeholder="(None)"/>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languageList.map((lang) => (
-                      <SelectItem key={lang} value={lang}>{lang}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              </div>
-
-              {!valuesChanged && sharedWith.length > 0 && (
-                <div className="text-[#6495ED] m-4">
-                  You cannot modify a letter once it has been sent
+                {/* Diary select */}
+                <div className="space-y-2 min-w-[200px]">
+                  <Label className="text-black" htmlFor={id}>Select diary</Label>
+                  <Select 
+                  value={diary} 
+                  disabled={sharedWith.length > 0}
+                  onValueChange={(diary) => {handleDiaryChange(diary)}}>
+                    <SelectTrigger id={id} className="text-black bg-white h-10 rounded-md ring-transparent">
+                      <SelectValue placeholder="(None)"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {diaryList.map((diary) => (
+                        <SelectItem key={diary} value={diary}>{diary}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
+
+                {/* Language select */}
+                <div className="space-y-2 min-w-[200px]">
+                  <Label className="text-black" htmlFor={id}>Select language</Label>
+                  <Select 
+                  value={language} 
+                  disabled={sharedWith.length > 0}
+                  onValueChange={(lang) => {handleLanguageChange(lang)}}>
+                    <SelectTrigger id={id} className="text-black bg-white h-10 rounded-md ring-transparent">
+                      <SelectValue placeholder="(None)"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languageList.map((lang) => (
+                        <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                </div>
+
+                  { sharedWith && sharedWith[0] && 
+                    <div className="text-[#6495ED] m-4 flex flex-row gap-2 items-center">
+                      <span className="text-gray-600">Shared with</span>
+                      <div key={sharedWith[0].id} className="flex items-center gap-1">
+                          <img
+                            src={`http://localhost:3090/uploads/profile_pictures//${sharedWith[0].image}`}
+                            alt={sharedWith[0].nickname}
+                            className="w-5 h-5 rounded-full border border-gray-300"
+                          />
+                          {sharedWith[0].nickname}
+                      </div>
+                      {sharedWith[1] && 
+                        <div key={sharedWith[1].id} className="flex items-center gap-1">
+                          <span className="text-gray-600">and</span>
+                          <img
+                            src={`http://localhost:3090/uploads/profile_pictures//${sharedWith[1].image}`}
+                            alt={sharedWith[1].nickname}
+                            className="w-5 h-5 rounded-full border border-gray-300"
+                          />
+                          {sharedWith[1].nickname}
+                        </div>
+                      }
+
+                    </div>
+                  }
 
               </div>
 
@@ -406,7 +430,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
             console.log('Primary action clicked for type:', dialogConfig.type)
           }}
           letterId={id}
-          sharedWith={sharedWith}
+          sharedWith={sharedWith.map(user => user.nickname)}
           onShareSuccess={(shareLetterResult) => {handleShareSuccess(shareLetterResult)
           }}
         />

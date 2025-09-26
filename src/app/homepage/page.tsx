@@ -6,7 +6,7 @@ import { SidebarDemo } from "@/components/sidebardemo";
 import { getUserLetters, getReceivedLetters } from "../../services/api";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { motion } from "framer-motion";
 
 export default function Home() {
   return (
@@ -57,9 +58,8 @@ const HomepageContent = () => {
   const [noReceivedLetters, setNoReceivedLetters] =  useState<boolean>(true); 
   const [searchFilter, setSearchFilter] = useState<string>("");
   const [searchFilterReceived, setSearchFilterReceived] = useState<string>("");
-  const [language, setLanguage] = useState("");
-  const [languageList, setLanguageList] = useState<string[]>([]);
   const [showOnlyPending, setShowOnlyPending] = useState<boolean>(false);
+  const [rotation, setRotation] = useState(0); // Spin Icon Refresh
 
   useEffect(() => {
     const fetchletters = async () => {
@@ -75,25 +75,9 @@ const HomepageContent = () => {
         setSendersList([...new Set(lettersRecList.map(letter => letter.sender.nickname))]);
       }
     };
-    
-    // Get languages from sessionStorage
-    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-
-    // If userData is not available, redirect to login
-    if (userData === "{}") {
-      console.error("User data not found in sessionStorage.");
-      window.location.href = "/"; 
-      return;
-    }  
-    const learningLanguages = [
-      userData.learningLanguage,
-      userData.learningLanguage2,
-      userData.learningLanguage3
-    ].filter((lang) => lang !== null);
 
     fetchletters();
     fetchReceivedLetters();
-    setLanguageList(learningLanguages);
   }, []);
 
 
@@ -144,8 +128,20 @@ const HomepageContent = () => {
             <div
               className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8"
             >
-              <h2 className="text-right text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] py-4 transition-transform duration-300 animate-gradient-dark"
-              > Letters received </h2>
+              <div className="flex flex-row justify-between items-center">
+                <RefreshCw
+                  size={25}
+                  onClick={() => setRotation(rotation + 360)}
+                  style={{
+                    transform: `rotate(${rotation}deg)`,
+                    transition: "transform 0.6s ease-in-out",
+                  }}
+                  className="cursor-pointer select-none text-gray-500 active:text-yellow-300"
+                />
+                <h2 className="text-right text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] py-4 transition-transform duration-300 animate-gradient-dark"> 
+                  Letters received 
+                </h2>
+              </div>
               {!noReceivedLetters &&
               <div className="flex flex-row justify-between">
                  
@@ -172,7 +168,7 @@ const HomepageContent = () => {
                         <SelectValue placeholder="🙋 (Select a friend)"/>
                       </SelectTrigger>
                       <SelectContent>
-                        {filterSenders !== "" && <SelectItem key={"None"} value={"None"} className="text-gray-400"> (Clear selection)</SelectItem>}
+                        {filterSenders !== "" && <SelectItem key={"None"} value={"None"} className="text-gray-500"> (Clear selection)</SelectItem>}
                         {sendersList.map((sender) => (
                           <SelectItem key={sender} value={sender}>{sender}</SelectItem>
                         ))}
@@ -182,7 +178,7 @@ const HomepageContent = () => {
                 </div>
               </div>
               }
-              <ReceivedLetterList orderBySender={filterSenders} searchFilter={searchFilterReceived} showOnlyPending={showOnlyPending}></ReceivedLetterList>
+              <ReceivedLetterList orderBySender={filterSenders} searchFilter={searchFilterReceived} showOnlyPending={showOnlyPending} refresh={rotation}></ReceivedLetterList>
             </div>
         </div>
       </div>
