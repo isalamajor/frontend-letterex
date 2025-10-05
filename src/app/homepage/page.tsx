@@ -3,10 +3,10 @@ import LetterCard from "@/components/LetterCard";
 import LetterCardList from "@/components/LetterCardList";
 import ReceivedLetterList from "@/components/ReceivedLetterList";
 import { SidebarDemo } from "@/components/sidebardemo";
-import { getUserLetters, getReceivedLetters } from "../../services/api";
+import { getUserLetters, getReceivedLetters, deleteLetters } from "../../services/api";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, Trash2, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
+import { SuccessDialog, DialogType } from "@/components/ui/dialog";
+import { get } from "http";
 
 export default function Home() {
   return (
@@ -60,8 +62,15 @@ const HomepageContent = () => {
   const [searchFilterReceived, setSearchFilterReceived] = useState<string>("");
   const [showOnlyPending, setShowOnlyPending] = useState<boolean>(false);
   const [rotation, setRotation] = useState(0); // Spin Icon Refresh
+  const [deleteLettersMode, setDeleteLettersMode] = useState(false);
+  const [resetSelection, setResetSelection] = useState(false);
+  const [deleteClicked, setDeleteClicked] = useState(false);
+  const [reFetchLetters, setReFetchLetters] = useState(false);
+  const [toDeleteLetters, setToDeleteLetters] = useState<string[]>([]);
 
   useEffect(() => {
+
+    setDeleteLettersMode(false);
     const fetchletters = async () => {
       const response = await getUserLetters();
       if (!response || response.length === 0) { setNoLetters(true)} else { setNoLetters(false) }
@@ -87,6 +96,79 @@ const HomepageContent = () => {
     else { setFilterSenders(newSender) }
   }
 
+  
+  const receiveDataAndDelete = async () => {
+    if (toDeleteLetters.length < 1) return; 
+    let deletedCount = 0; 
+    console.log("Array of letters to delete:", toDeleteLetters);
+    if (deleteLettersMode) {
+      // Delete
+      openDialog({
+        title: "Are you sure you want to delete the selected letters?",
+        description: "This action cannot be undone.",
+        type: "askConfirmation",
+        primaryActionText: "Cancel",
+        autoDismiss: false,
+        onConfirmationPositive: async () => {
+          console.log("LettersToDelete: ", toDeleteLetters);
+          deletedCount = await deleteLetters(toDeleteLetters);
+          setDeleteLettersMode(false);
+          setResetSelection(!resetSelection);
+          closeDialog();
+          if (deletedCount < 0) {
+            openDialog({
+              title: "Error",
+              description: "An error occurred while deleting the letters.",
+              type: "error",
+              primaryActionText: "Ok",
+              autoDismiss: true,
+              autoDismissDelay: 10000
+            });
+          } else {
+            setResetSelection(!resetSelection);
+            setReFetchLetters(!reFetchLetters);
+            closeDialog();
+            setSearchFilter("");
+          }
+        }
+      });
+    } else {
+      setDeleteLettersMode(true);
+    }
+  } 
+
+  // Dialog
+  const [dialogConfig, setDialogConfig] = useState<{
+    isOpen: boolean
+    title: string
+    description: string
+    primaryActionText: string
+    autoDismiss: boolean
+    size: 'sm' | 'md' | 'lg'
+    type: DialogType
+    onConfirmationPositive?: () => void
+    autoDismissDelay: number
+  }>({
+    isOpen: false,
+    title: "Payment Successful!",
+    description: "Your payment has been processed successfully. You will receive a confirmation email shortly.",
+    primaryActionText: "View Receipt",
+    autoDismiss: true,
+    size: 'md',
+    type: 'success',
+    onConfirmationPositive: undefined,
+    autoDismissDelay: 10000
+  })
+
+  const openDialog = (config: Partial<typeof dialogConfig>) => {
+    setDialogConfig(prev => ({ ...prev, ...config, isOpen: true }))
+  }
+
+  const closeDialog = () => {
+    setDialogConfig(prev => ({ ...prev, isOpen: false }))
+  }
+  
+
   return (
       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         <div className="flex gap-2 h-[15%]">
@@ -97,8 +179,8 @@ const HomepageContent = () => {
             <div
               className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-6"
             >
-             <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#57A02D] via-[#39c167] to-[#004D40] p-4 transition-transform duration-300 animate-gradient">
-                Letters written
+              <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#57A02D] via-[#39c167] to-[#004D40] p-4 transition-transform duration-300 animate-gradient">
+                  Letters written
               </h2>
 
               <div className={`flex gap-2 ${noLetters ? "justify-end" : "justify-between"}`}>
@@ -107,7 +189,7 @@ const HomepageContent = () => {
                   <Search className="text-gray-500"></Search>
                   <input placeholder="Search a letter..." className="w-full outline-none" value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)}></input>
                 </div> }
-                <div> 
+                <div className="flex justify-end"> 
                   {!noLetters && 
                   <button className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 mb-4 hover:bg-gray-50"
                   onClick={() =>{setOrderDiariesEvent(orderDiariesEvent + 1); }}>
@@ -119,9 +201,28 @@ const HomepageContent = () => {
                       💌 New
                     </button>
                   </Link>
+                  {!noLetters && 
+                  <>
+                  { deleteLettersMode &&
+                    <>
+                    <button className="cursor-pointer text-white border border-lightblack rounded-sm bg-red-500 shadow-md p-2 ml-2 mb-4 hover:bg-red-700" onClick={receiveDataAndDelete}>
+                      <Trash2></Trash2>
+                    </button>
+                    <button className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 shadow-md p-2 ml-2 mb-4 hover:bg-gray-50" onClick={() => {setDeleteLettersMode(false); setResetSelection(!resetSelection);}}>
+                      <X></X>
+                    </button>
+                    </>
+                  }  
+                  { !noLetters &&  !deleteLettersMode &&
+                    <button className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 shadow-md p-2 ml-2 mb-4 hover:bg-gray-50" onClick={() => setDeleteLettersMode(true)}>
+                      <Trash2></Trash2>
+                    </button>
+                  }   
+                  </>}
                 </div>
               </div>
-              <LetterCardList orderByDiaryTrigger={orderDiariesEvent} searchFilter={searchFilter}></LetterCardList>
+              <LetterCardList orderByDiaryTrigger={orderDiariesEvent} searchFilter={searchFilter} deleteMode={deleteLettersMode} resetSelection={resetSelection} 
+               onDeleteListChange={(ids)=> {setToDeleteLetters(ids); console.log("Padre recibe: ", ids)}} reFetchLetters={reFetchLetters}></LetterCardList>
             </div>
 
             {/* Letters received */}
@@ -181,6 +282,18 @@ const HomepageContent = () => {
               <ReceivedLetterList orderBySender={filterSenders} searchFilter={searchFilterReceived} showOnlyPending={showOnlyPending} refresh={rotation}></ReceivedLetterList>
             </div>
         </div>
+        <SuccessDialog
+          isOpen={dialogConfig.isOpen}
+          onClose={closeDialog}
+          title={dialogConfig.title}
+          description={dialogConfig.description}
+          primaryActionText={dialogConfig.primaryActionText}
+          autoDismiss={dialogConfig.autoDismiss}
+          size={dialogConfig.size}
+          type={dialogConfig.type}
+          onConfirmationPositive={dialogConfig.onConfirmationPositive}
+          autoDismissDelay={dialogConfig.autoDismissDelay}
+        />
       </div>
   );
 };

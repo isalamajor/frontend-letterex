@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Checkbox } from "react-aria-components";
 import {Tooltip} from 'react-tooltip';
+
 
 interface LetterCardProps {
   id: string;
@@ -10,11 +12,22 @@ interface LetterCardProps {
   title: string;
   language: string;
   sharedWith: { nickname: string; image: string; correctionSentBack: boolean; correctedLetterId: string }[];
+  resetSelection?: boolean;
+  deleteMode: boolean;
+  onSelectionChange: (letterId: string) => void;
 }
 
 
 
-const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, language, sharedWith }) => {
+const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, language, sharedWith, deleteMode, onSelectionChange }) => {
+
+  const [isSelected, setIsSelected] = useState(false);
+
+  // Si cambia el modo delete, resetea la selección
+  useEffect(() => {
+    setIsSelected(false);
+  }, [deleteMode]);
+
 
   const goToCorrection = (correctedLetterId: string) => (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -30,8 +43,8 @@ const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, l
 
   return (
     <div className="block w-full relative w-full max-w-5xl group">
-      <div className="px-8 py-4 rounded-lg bg-gray-50 shadow-md relative 
-      group w-full max-w-5xl transition-all duration-300 group-hover:w-[80%]" onClick={goToEditLetter(id)}>
+      <div className={`px-8 py-4 rounded-lg bg-gray-50 shadow-md relative 
+      group max-w-5xl transition-all duration-300 group-hover:w-[80%] ${deleteMode ? "w-[80%]" : "w-full"}`} onClick={goToEditLetter(id)}>
         {/* Fecha y Diario */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-s text-gray-500 dark:text-gray-400 mb-2">{created_at.slice(0, 10)}</p>
@@ -67,52 +80,72 @@ const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, l
 
       </div>
       <div
-      className="absolute h-full w-[17%] top-1/2 right-0 transform -translate-y-1/2 bg-gray-50 text-black px-4 py-2 mr-3 ml-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 group-hover:delay-200 text-center flex items-center justify-center overflow-x-hidden"
+      className={`absolute h-full w-[17%] top-1/2 right-0 transform -translate-y-1/2 bg-gray-50 text-black px-4 py-2 mr-3 ml-0 rounded-lg group-hover:opacity-100 transition-opacity duration-200 group-hover:delay-200 text-center flex items-center justify-center overflow-x-hidden ${deleteMode ? "opacity-100 pb-5" : "opacity-0"}`}
       >
-      <div className="flex flex-col gap-2 px-2">
-        {
-          sharedWith.length > 0 ? (
-            sharedWith.map((user, index) => {
-              const btnId = `btn-${user.nickname}`;
+        <div className="flex flex-col gap-2 px-2">
+          { deleteMode ? 
+          <>
+            {/*<Checkbox
+              isSelected={isSelected}
+              onChange={() => {}}
+              className="absolute top-2 left-2 z-10"
+              onClick={(e) => { e.stopPropagation(); setIsSelected(!isSelected); }} // Evita que active el click del card
+            >
+              <div className="checkbox-indicator w-5 h-5 border-2 border-gray-400 rounded bg-white flex items-center justify-center">
+                {isSelected && <span className="text-blue-600">✓</span>}
+              </div>
+            </Checkbox>*/}
+            <p className="text-xs">Select to delete</p>
+            <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => { setIsSelected(!isSelected); onSelectionChange(id); }} 
+              className=" inset-0 m-auto w-6 h-6 bg-gray-100 border-gray-300 rounded focus:ring-red-500 focus:ring-1 accent-red-500"
+            />
+          </>
+          :
+            sharedWith.length > 0 ? (
+              sharedWith.map((user, index) => {
+                const btnId = `btn-${user.nickname}`;
 
-              return (
-                <div className="inline-block px-2">
-                  <button
-                    key={user.nickname + index}
-                    onClick={goToCorrection(user.correctedLetterId)}
-                    data-tooltip-id={btnId}
-                    data-tooltip-place="top-start"
-                    data-tooltip-content=
-                    {user.correctionSentBack ? `${user.nickname} sent a correction` : `Wait for ${user.nickname} to send a correction`}
-                    id={btnId}
-                    className={`w-[90%] p-2 rounded-sm max-h-[40%]
-                      ${user.correctionSentBack ? "ring-2 ring-transparent bg-green-300 hover:ring-green-500" : "bg-red-200"}`}
-                    disabled={!user.correctionSentBack}
-                  >
-                    {user.correctionSentBack ? (
-                      <p>{user.nickname}</p>
-                    ) : (
-                      <div className="flex flex-row gap-x-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap">
-                        <p>⏰</p> 
+                return (
+                  <div className="inline-block px-2">
+                    <button
+                      key={user.nickname + index}
+                      onClick={goToCorrection(user.correctedLetterId)}
+                      data-tooltip-id={btnId}
+                      data-tooltip-place="top-start"
+                      data-tooltip-content=
+                      {user.correctionSentBack ? `${user.nickname} sent a correction` : `Wait for ${user.nickname} to send a correction`}
+                      id={btnId}
+                      className={`w-[90%] p-2 rounded-sm max-h-[40%]
+                        ${user.correctionSentBack ? "ring-2 ring-transparent bg-green-300 hover:ring-green-500" : "bg-red-200"}`}
+                      disabled={!user.correctionSentBack}
+                    >
+                      {user.correctionSentBack ? (
                         <p>{user.nickname}</p>
-                        </div>
-                    )
-                  }
-                  </button>
+                      ) : (
+                        <div className="flex flex-row gap-x-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap">
+                          <p>⏰</p> 
+                          <p>{user.nickname}</p>
+                          </div>
+                      )
+                    }
+                    </button>
 
-                  {/*<Tooltip
-                    id={btnId}
-                    className="!z-[9999]"
-                    data-tooltip-variant="dark"
-                  ></Tooltip>*/}
-                </div>
-              );
-            })
-          ) : (
-            "Share this letter! 📬"
-          )
-        }
-        </div>
+                    {/*<Tooltip
+                      id={btnId}
+                      className="!z-[9999]"
+                      data-tooltip-variant="dark"
+                    ></Tooltip>*/}
+                  </div>
+                );
+              })
+            ) : (
+              "Share this letter! 📬"
+            )
+          }
+          </div>
       </div>
 
       </div>

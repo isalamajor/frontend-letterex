@@ -59,6 +59,29 @@ UTILS:
 - SavePPicInSessionStorage(token, userId) - Save profile pic in session storage
 */
 
+export const deleteLetters = async (letterIds) => {
+    const token = sessionStorage.getItem("authToken");
+    console.log("API - Deleting letters with IDs:", letterIds);
+    try {
+        const response = await axios.delete(`${API_URL}/letter/delete`, {
+            headers: {
+                'Authorization': `${token}`
+            },
+            data: { letters: letterIds }
+        });
+        if (response.status === 200) {
+            console.log("Letters deleted successfully:", response.data);
+            return response.data.countDeleted;
+        }
+        console.error("Error deleting letters:", response.data.message);
+        return -1;
+    }
+    catch (error) {
+        console.error("Axios error: ", error.message);
+        return -1;
+    }
+}
+
 
 export const getDiaries = async () => {
     const token = sessionStorage.getItem("authToken");
@@ -96,14 +119,12 @@ export const declineFriendRequest = async (senderId) => {
             }
         });
         if (response.status === 200) {
-            console.log("Friend request declined:", response.data);
             return 0;
         }
         console.error("Error declining friend request:", response.data.message);
         return -1;
     }
     catch (error) {
-        console.log("Error declining friend request:", error);
         return -1;
     }
 }
@@ -117,14 +138,12 @@ export const acceptFriendRequest = async (senderId) => {
             }
         });
         if (response.status === 200) {
-            console.log("Friend request accepted:", response.data);
             return 0;
         }
         console.error("Error accepting friend request:", response.data.message);
         return -1;
     }
     catch (error) {
-        console.log("Error accepting friend request:", error);
         return -1;
     }
 }
@@ -138,10 +157,8 @@ export const getFriendRequests = async () => {
             }
         });
         if (response.status === 200) {
-            console.log("Friend requests API:", response.data.requests);
             return response.data.requests;
         }
-        console.error("Error obtaining friend requests:", response.data.message);
         return [];
     }
     catch (error) {
@@ -164,10 +181,8 @@ export const sendFollowRequest = async(receiverId) => {
             }
         });
         if (response.status === 200) {
-            console.log("Follow request sent:", response.data);
             return 0;
         }
-        console.error("Error sending follow request:", response.data.message);
         return -1;
     }
     catch (error) {
@@ -187,10 +202,8 @@ export const getNonFriends = async () => {
             }
         });
         if (response.status === 200) {
-            console.log("Non friends API:", response.data.users);
             return response.data.count, response.data.users;
         }
-        console.error("Error obtaining friends:", response.data.message);
         return -1, [];
     }
     catch (error) {
@@ -250,10 +263,8 @@ export const getCountCorrectedLetters = async (userId) => {
         );}
         
         if (response.status === 200) {
-            console.log("Num letters:", response.data.count);
             return response.data.counts;
         }
-        console.error("Error obtaining letter count:", response.data.message);
         return -1;
     }
     catch (error) { 
@@ -288,10 +299,8 @@ export const getCountLetters = async (userId) => {
         );}
         
         if (response.status === 200) {
-            console.log("Num letters:", response.data.count);
             return response.data.counts;
         }
-        console.error("Error obtaining letter count:", response.data.message);
         return -1;
     }
     catch (error) { 
@@ -319,10 +328,8 @@ export const sendLetterBack = async (letterId) => {
             }
         );
         if (response.status === 200) {
-            console.log("Letter sent back successfully:", response.data);
             return 0;
         }
-        console.error("Error sending letter back:", response.data.message);
         return -1;
     }
     catch (error) { 
@@ -351,10 +358,8 @@ export const updateLetterCorrections = async (letterId, corrections, comments) =
             }
         );
         if (response.status === 200) {
-            console.log("Corrections updated successfully:", response.data);
             return 0;
         }
-        console.error("Error updating corrections:", response.data.message);
         return -1;
     }
     catch (error) { 
@@ -402,10 +407,8 @@ export const getReceivedLetters = async () => {
             }
         });
         if (response.status === 200) {
-            console.log("Received letters:", response.data.letters);
             return response.data.letters;
         } else {
-            console.error("Error fetching received letters:", response.data);
             return [];
         }
     } catch (error) {
@@ -433,10 +436,8 @@ export const shareLetter = async (letterId, sharedWith) => {
             }
         );
         if (response.status === 200) {
-            console.log("Letter shared successfully:", response.data);
             return 0;
         }
-        console.error("Error sharing letter:", response.data);
         return -1;
     }
     catch (error) {
@@ -458,8 +459,7 @@ export const getFriendsList = async (id) => {
             'Authorization': `${token}`
         }
        });
-       console.log("RESPONSE: " + response.data.friends);
-        if (response.status === 200) {
+       if (response.status === 200) {
             return response.data.friends;
         } else {
             console.error("Error fetching friends:", response.data);
@@ -522,10 +522,7 @@ export const getLetter = async (id) => {
             }
         });
         if (response.status === 200) {
-            
-        console.log(response);
-            return response.data.letter;
-            
+            return response.data.letter;            
         } else {
             console.error("Error fetching letter:", response.data);
             return null;
@@ -544,7 +541,6 @@ export const getLetter = async (id) => {
 
 export const editLetter = async (id, title, content, diary, language, created_at, sharedWith) => {
     const token = sessionStorage.getItem("authToken");
-    console.log("Token: " + token);
     
     try {
         const response = await axios.put(`${API_URL}/letter/edit/${id}`, 
@@ -580,8 +576,6 @@ export const editLetter = async (id, title, content, diary, language, created_at
 
 export const saveLetter = async (title, content, diary, language, created_at) => {
     const token = sessionStorage.getItem("authToken");
-    console.log("Token: " + token);
-    // El body se ve así { title, content, diary, language, created_at } 
     
     try {
         const response = await axios.post(`${API_URL}/letter/new`, 
@@ -631,7 +625,6 @@ export const getUserLetters = async () => {
 
 export const sendVerificationCode = async (email) => {
     try {
-        console.log(email);
         const response = await axios.post(`${API_URL}/user/verificate-email/${email}`);
         if (response.data.code === 0) { return 0}
         return -1;
@@ -645,7 +638,6 @@ export const checkVerificationCode = async (email, code) => {
     const response = await axios.post(`${API_URL}/user/check-code`, { email: email, code: code }, {
         validateStatus: status => status >= 200 && status < 500
     });
-    console.log("RESPONSE checkVerificationCode: " + response.data.code + " " + response.data.message);
     if (response.data.code === 0) { return 0 }
     return response.data.message;
 } catch (error) {
@@ -704,14 +696,12 @@ const SavePPicInSessionStorage = async(token, userId) => {
 
 export const isUsernameInUse = async (username) => {
     const response = await axios.get(`${API_URL}/user/check-nickname/${username}`);
-    console.log("RESPONSE: " + response.data.status + " " + response.data.inUse);
     if (response.data.status === 0 ) { return response.data.inUse }
     return -1;
 }
 
 export const isEmailInUse = async (email) => {
     const response = await axios.get(`${API_URL}/user/check-email/${email}`);
-    console.log("RESPONSE: " + response.data.inUse + response.data.result);
     if (response.data.result === 0 ) { return response.data.inUse }
     return -1;
 }
@@ -765,11 +755,9 @@ export const changePassword = async (currentPass, newPass) => {
             validateStatus: status => status >= 200 && status < 500 // solo lanza excepción en 5xx
         });
         if (response.status === 200) {
-            console.log("Password changed successfully");
             return 0;
         }
         if (response.status === 401) {
-            console.log("Unauthorized");
             return -2;
         }
         console.log("Error changing password:", response.data.message);

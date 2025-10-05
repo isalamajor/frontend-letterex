@@ -1,45 +1,65 @@
 
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import React from "react";
 import LetterCard from "./LetterCard";
 import { getUserLetters } from "../services/api";
 import { unique } from "next/dist/build/utils";
 import { BookCopy, BookX } from "lucide-react";
 
-interface LetterCardListProps {
-  letters: {
-    _id: string;
-    created_at: string;
-    diary: string;
-    title: string;
-    language: string;
-    sharedWith: { nickname: string; image: string; correctionSentBack: boolean; correctedLetterId: string }[];
-  }[];
+
+
+interface Letter {
+  _id: string;
+  created_at: string;
+  diary: string;
+  title: string;
+  language: string;
+  sharedWith: { nickname: string; image: string; correctionSentBack: boolean; correctedLetterId: string }[];
+  selectedToDelete?: boolean;
 }
 
 interface ChildProps {
   orderByDiaryTrigger: number; 
   searchFilter: string;
+  deleteMode: boolean;
+  resetSelection: boolean;
+  onDeleteListChange: (letterIds: string[]) => void;
+  reFetchLetters: boolean;
 }
 
-const LetterCardList = ({ orderByDiaryTrigger, searchFilter } : ChildProps) => {
-  const [letters, setletters] = useState<LetterCardListProps["letters"]>([]);
+
+interface DraggableItemProps {
+  id: string;
+  children: React.ReactNode;
+  onDrop?: (id: string, x: number, y: number) => void;
+}
+
+
+interface DropZoneProps {
+  onDropAction: (id: string) => void;
+  children: React.ReactNode;
+}
+
+
+const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSelection, onDeleteListChange, reFetchLetters }: ChildProps) => {
+  const [letters, setletters] = useState<Letter[]>([]);
   const [diaryOrganised, setDiaryOrganised] = useState<boolean>(false);
   const [diaries, setDiaries] = useState<{ diary: string; count: number }[]>([]);
   const [diarySelected, setDiarySelected] = useState<string>("");
-  const [filteredLetters, setFilteredLetters] = useState<LetterCardListProps["letters"]>([]);
+  const [filteredLetters, setFilteredLetters] = useState<Letter[]>([]);
+  const [selectedToDeleteIds, setSelectedToDeleteIds] = useState<string[]>([]);
 
   // Get user letters from the API
   useEffect(() => {
      const fetchletters = async () => {
        const response = await getUserLetters();
-       
-       console.log("Letters fetched:", response);
+      // Set all fields selectedToDelete to false
+      response.forEach((letter: Letter) => letter.selectedToDelete = false);
        setletters(response);
      };
      fetchletters();
-   }, []);
+   }, [reFetchLetters]);
 
    // Organise letters by diaries on trigger
    useEffect(() => {
@@ -77,7 +97,42 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter } : ChildProps) => {
        event.stopPropagation();
        event.preventDefault();
        window.location.href = `/edit-letter/${id}`;
-     }
+    }
+
+
+    // Cambia selección de delete de un Item, entonces notifica al padre
+    const toggleDeleteItem = (letterId: string) => {
+      setSelectedToDeleteIds(prevIds => {
+        const newIds = prevIds.includes(letterId)
+          ? prevIds.filter(id => id !== letterId)
+          : [...prevIds, letterId];
+
+        console.log("Nuevo selectedToDeleteIds:", newIds);
+        onDeleteListChange(newIds); // pasamos el valor actualizado a la función
+        return newIds;
+      });
+    };
+
+
+
+    // Resetea selección al salir de delete mode o al clicar en cancelar
+    useEffect(() => {
+      setletters(prevLetters => {
+        const updatedLetters = prevLetters.map(letter => {
+          letter.selectedToDelete = false;
+          return letter;
+        });
+        return updatedLetters;
+      }
+      );
+    }, [resetSelection]);
+
+  const [droppedItems, setDroppedItems] = useState<string[]>([]);
+  const handleDropAction = (id: string) => {
+    console.log("Dropped item id:", id);
+    // Añadir el id a la lista (sin duplicados)
+    setDroppedItems((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  };
 
   if (diaryOrganised && filteredLetters && filteredLetters.length > 0) {
     return(
@@ -86,18 +141,20 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter } : ChildProps) => {
         {/* Diaries */}
         <div className="flex flex-col gap-y-3 w-[50%]">
           {diaries.map((diary) =>  (  
-          <div className="flex flex-row group relative cursor-pointer" onClick={ () => {if (diary.diary === diarySelected) {setDiarySelected("")} else { setDiarySelected(diary.diary)}}}>
-            <p className="flex rounded-l-lg bg-yellow-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
-              <span className="block group-hover:hidden transition-opacity duration-900">
-                {diary.diary === diarySelected ? "📖" : "📘"}
-                </span>
-              <span className="hidden group-hover:block transition-opacity duration-900">📖</span>
-            </p> 
-            <div className={`px-8 py-4 rounded-r-lg bg-gray-50 shadow-md w-full max-w-5xl text-black ${diary.diary === diarySelected && "bg-yellow-50"}`}>
-              <p className="font-semibold">{diary.diary}</p>
-              <p>{diary.count} letters in this diary</p>
+          <DropZone onDropAction={handleDropAction} key={diary.diary}>
+            <div className="flex flex-row group relative cursor-pointer" onClick={ () => {if (diary.diary === diarySelected) {setDiarySelected("")} else { setDiarySelected(diary.diary)}}}>
+              <p className="flex rounded-l-lg bg-yellow-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
+                <span className="block group-hover:hidden transition-opacity duration-900">
+                  {diary.diary === diarySelected ? "📖" : "📘"}
+                  </span>
+                <span className="hidden group-hover:block transition-opacity duration-900">📖</span>
+              </p> 
+              <div className={`px-8 py-4 rounded-r-lg bg-gray-50 shadow-md w-full max-w-5xl text-black ${diary.diary === diarySelected && "bg-yellow-50"}`}>
+                <p className="font-semibold">{diary.diary}</p>
+                <p>{diary.count} letters in this diary</p>
+              </div>
             </div>
-          </div>
+          </DropZone>
           ))}
         </div>
 
@@ -114,25 +171,27 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter } : ChildProps) => {
         </div> :  
         <div className="flex flex-col gap-4 custom-scroll h-[60vh] overflow-y-auto w-[50%]">
           {filteredLetters.filter(letter => letter.diary === diarySelected).map((letter, index) => (
-            <div className="flex flex-row group relative cursor-pointer" onClick={ goToEditLetter(letter._id)}>
-            <p className="flex rounded-l-lg bg-blue-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
-              <span className="block group-hover:hidden transition-opacity duration-900">✉️</span>
-              <span className="hidden group-hover:block transition-opacity duration-900">💌</span>
-            </p> 
-            <div className="px-8 py-4 rounded-r-lg bg-gray-50 shadow-md w-full max-w-5xl text-black">
-              <div className="flex flex-row justify-between">
-                <div className="flex flex-row gap-2 text-gray-500 items-center">
-                  <img
-                  src={`/flags/${letter.language}.svg`}
-                  className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600"
-                  />
-                  <p>{letter.language}</p>
-                  </div>
-                <p>{letter.created_at.slice(0, 10)}</p>
+            <DraggableItem id={letter._id} key={index}>
+              <div className="flex flex-row group relative cursor-pointer" onClick={ goToEditLetter(letter._id)}>
+              <p className="flex rounded-l-lg bg-blue-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
+                <span className="block group-hover:hidden transition-opacity duration-900">✉️</span>
+                <span className="hidden group-hover:block transition-opacity duration-900">💌</span>
+              </p> 
+              <div className="px-8 py-4 rounded-r-lg bg-gray-50 shadow-md w-full max-w-5xl text-black">
+                <div className="flex flex-row justify-between">
+                  <div className="flex flex-row gap-2 text-gray-500 items-center">
+                    <img
+                    src={`/flags/${letter.language}.svg`}
+                    className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600"
+                    />
+                    <p>{letter.language}</p>
+                    </div>
+                  <p>{letter.created_at.slice(0, 10)}</p>
+                </div>
+                <p className="font-semibold">{letter.title}</p>
               </div>
-              <p className="font-semibold">{letter.title}</p>
             </div>
-          </div>
+            </DraggableItem>
           ))}
         </div>
         )
@@ -152,6 +211,9 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter } : ChildProps) => {
           language={letter.language}
           sharedWith={letter.sharedWith}
           key={index}
+          deleteMode={deleteMode || false}
+          resetSelection={resetSelection}
+          onSelectionChange={toggleDeleteItem}
         />
       ))}
     </div>
@@ -165,3 +227,95 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter } : ChildProps) => {
 };
 
 export default LetterCardList;
+
+
+function DraggableItem({ id, children, onDrop }: DraggableItemProps) {
+  const [dragging, setDragging] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const offsetRef = useRef({ x: 0, y: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    offsetRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    setPos({ x: e.clientX, y: e.clientY });
+    setDragging(true);
+
+    // Para escuchar movimientos globales
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    setPos({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseUp = (e: MouseEvent) => {
+    setDragging(false);
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+
+    if (onDrop) {
+      onDrop(id, e.clientX, e.clientY);
+    }
+  };
+
+  return (
+    <>
+      {/* Elemento original */}
+      <div
+        onMouseDown={handleMouseDown}
+        className="cursor-grab select-none"
+      >
+        {children}
+      </div>
+
+      {/* Elemento flotante que sigue al ratón */}
+      {dragging && (
+        <div
+          className="fixed pointer-events-none p-1 bg-yellow-200 rounded shadow-lg opacity-90"
+          style={{
+            left: pos.x - offsetRef.current.x,
+            top: pos.y - offsetRef.current.y,
+          }}
+        >
+          {children}
+        </div>
+      )}
+    </>
+  );
+}
+
+
+
+function DropZone({ onDropAction, children }: DropZoneProps) {
+  const [isOver, setIsOver] = useState(false);
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Necesario para permitir el drop
+    e.dataTransfer.dropEffect = "move";
+    setIsOver(true);
+  };
+
+  const handleDragLeave = () => setIsOver(false);
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsOver(false);
+    const id = e.dataTransfer.getData("text/plain");
+    if (id) {
+      onDropAction(id);
+    }
+  };
+
+  return (
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`p-2 rounded border-2 border-dashed border-gray-300 bg-gray-50 ${isOver && "border-blue-400 bg-blue-50"} transition-colors duration-200 `}
+      aria-label="Drop zone"
+    >
+      {children}
+    </div>
+  );
+}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, AlertTriangle, CircleX, Send, Lock, BookOpen, MailQuestionMark, TriangleAlert } from 'lucide-react'
+import { Check, X, AlertTriangle, CircleX, Send, Lock, BookOpen, MailQuestionMark, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getFriendsList, shareLetter, changePassword, deleteAccount } from '@/services/api'
 import FriendsCheckboxList from '@/components/ui/friendsCheckBoxList'
@@ -604,12 +604,12 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                       type: "spring",
                       stiffness: 200
                     }}
-                    className={`flex items-center justify-center w-16 h-16 rounded-full ${currentConfig.iconBgClass}`}
+                    className={`flex items-center justify-center w-16 h-16 rounded-full ${displayTitle.includes("delete") ? "bg-red-100 dark:bg-red-900/20" : currentConfig.iconBgClass}`}
                   >
-                    <IconComponent className={`w-8 h-8 ${currentConfig.iconColorClass}`} />
+                    {displayTitle.includes("delete") ? <Trash2 className="w-8 h-8 text-red-600 dark:text-red-400" /> : <IconComponent className={`w-8 h-8 ${currentConfig.iconColorClass}`}/>}
                   </motion.div>
                   {/* Title */}
-                  <DialogHeader className="space-y-2 display-inline-flex items-center justify-center">
+                  <DialogHeader className="space-y-2 display-inline-flex items-center justify-center"> 
                     <DialogTitle
                       id="success-dialog-title"
                       className="text-xl font-semibold text-black text-center mx-10"
@@ -639,7 +639,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                   <div className="flex justify-center items-center gap-4 pt-2">
                     <Button
                         onClick={handlePrimaryAction}
-                        className={`min-w-[120px] bg-gray-300 text-black rounded py-2 px-4 hover:bg-gray-400 transition-colors`}
+                        className={`min-w-[120px] bg-gray-300 text-black rounded py-2 px-4 hover:bg-gray-200! transition-colors`}
                         size="default"
                       > Cancel
                     </Button>
@@ -648,7 +648,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                           handlePrimaryAction();
                           if (onConfirmationPositive) onConfirmationPositive();
                         }}
-                        className={`min-w-[120px] bg-yellow-500 text-white rounded py-2 px-4 hover:bg-red-600 transition-colors`}
+                        className={`min-w-[120px] ${displayTitle.includes("delete") ? "bg-red-500" : "bg-yellow-500"} text-white rounded py-2 px-4 transition-colors`}
                         size="default"
                       > Confirm
                     </Button>
