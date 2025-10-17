@@ -282,15 +282,16 @@ export default function AnimatedForm() {
             />
             
             <InputPass
-                  styles="w-full p-0 mb-2 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(pass) => {
-                    setPassword(pass);
-                    setShowAlert("");
-                  }}
-                  label={false}
-                />
+              styles="w-full p-0 mb-2 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
+              placeholder="Password"
+              value={password}
+              onChange={(pass) => {
+                setPassword(pass);
+                setShowAlert("");
+              }}
+              label={false}
+              onEnter={loginAttempt}
+            />
             <p style={{ whiteSpace: "pre-line" }} className="alert-message">{showAlert}</p>
           </div>
           <div className="back-go">
@@ -344,6 +345,7 @@ export default function AnimatedForm() {
                   label={false}
                   maxLength={20}
                   type="login"
+                  onEnter={handleNextStep}
                 />
               </div>
               <p style={{ whiteSpace: "pre-line"}} className="alert-message">{showAlert}</p>
@@ -359,6 +361,7 @@ export default function AnimatedForm() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(event)=>{ if (event.key === "Enter") handleNextStep() }}
               />
             <p style={{ whiteSpace: "pre-line"}} className="alert-message">{showAlert}</p>
             </div>

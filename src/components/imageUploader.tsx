@@ -1,9 +1,10 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect, use } from "react";
 import { FolderUp } from "lucide-react";
-import Dialog, { SuccessDialog, DialogType } from "@/components/ui/dialog";
+import { SuccessDialog, DialogType } from "@/components/ui/dialog";
+import { Trash2 } from "lucide-react";
 
 interface ImageUploaderProps {
-  onImageSelect: (file: File) => void;
+  onImageSelect: (file: File | null) => void;
   currentPicLocalUrl?: string | null;
   size?: string | null;
   active?: boolean | null;
@@ -16,9 +17,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   active = true,
 }) => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [imageRemoved, setImageRemoved] = useState<string | null>(null);
   const defaultImage = "/default.png";
 
-  // Dialog
+  useEffect(() => {
+    setImageRemoved(null);
+  }, [active])
+
   // Dialog
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean
@@ -53,6 +58,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     if (file && file.type.startsWith("image/")) {
       const imageUrl = URL.createObjectURL(file);
       setProfileImage(imageUrl);
+      setImageRemoved(null);
       onImageSelect(file);
     } else {
       openDialog({
@@ -67,38 +73,46 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   };
 
   return (
-    <div
-      className="relative rounded-full overflow-hidden cursor-pointer group"
-      style={{ height: size ?? "125px", width: size ?? "125px" }}
-      onClick={() => document.getElementById("fileInput")?.click()}
-    >
-      <img
-        src={profileImage ?? currentPicLocalUrl ?? defaultImage}
-        alt="Imagen de perfil"
-        className="w-full h-full object-cover rounded-full border-2 border-gray-300 transition-opacity duration-300"
-      />
-      {/* overlay */}
-      {active && (
-        <div className="absolute inset-0 hover:bg-black/50 text-white flex items-center justify-center text-sm font-bold opacity-0 transition-opacity duration-300 rounded-full group-hover:opacity-100">
-          <FolderUp size={70} />
-        </div>
-      )}
-      <input
-        id="fileInput"
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        className="hidden"
-        disabled={!active}
-      />
-      <SuccessDialog
-        isOpen={dialogConfig.isOpen}
-        title={dialogConfig.title ?? undefined}
-        description={dialogConfig.description ?? undefined}
-        primaryActionText={dialogConfig.primaryActionText ?? undefined}
-        onClose={closeDialog}
-        type={dialogConfig.type}
-      />
+    <div> 
+      <div
+        className="relative rounded-full overflow-hidden cursor-pointer group"
+        style={{ height: size ?? "125px", width: size ?? "125px" }}
+        onClick={() => document.getElementById("fileInput")?.click()}
+      > 
+        <img
+          src={profileImage ?? imageRemoved ?? currentPicLocalUrl ?? defaultImage}
+          alt="Imagen de perfil"
+          className="w-full h-full object-cover rounded-full border-2 border-gray-300 transition-opacity duration-300"
+        />
+        {/* overlay */}
+        {active && (
+          <div className="absolute inset-0 hover:bg-black/50 text-white flex items-center justify-center text-sm font-bold opacity-0 transition-opacity duration-300 rounded-full group-hover:opacity-100">
+            <FolderUp size={70} />
+          </div>
+        )}
+        <input
+          id="fileInput"
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="hidden"
+          disabled={!active}
+        />
+      
+        
+        <SuccessDialog
+          isOpen={dialogConfig.isOpen}
+          title={dialogConfig.title ?? undefined}
+          description={dialogConfig.description ?? undefined}
+          primaryActionText={dialogConfig.primaryActionText ?? undefined}
+          onClose={closeDialog}
+          type={dialogConfig.type}
+        />
+      </div>
+      {active && 
+        <p className="text-red-500 flex flex-row gap-1 justify-center items-center mt-2 hover:underline underline-2 cursor-pointer" onClick={() => {
+        setProfileImage(null); onImageSelect(null); setImageRemoved("/default.png") }}><Trash2 size={20}/>Remove</p> 
+      }
     </div>
   );
 };

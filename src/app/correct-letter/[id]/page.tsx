@@ -5,12 +5,11 @@ import Link from "next/link";
 import { useState } from "react"
 import { parseDate } from "@internationalized/date"
 import { Label } from "@/components/ui/field"
-import { getLetterToCorrect } from "@/services/api";
 import { Check, X, Trash, Eye, EyeOff, SquareDashed  } from "lucide-react";
 import { use } from "react";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import TextCorrections from "@/components/textCorrections";
-import { updateLetterCorrections, sendLetterBack } from "@/services/api";
+import { updateLetterCorrections, sendLetterBack, getLetterToCorrect } from "@/services/api";
 
 
 interface Correccion {
@@ -46,6 +45,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   const [author, setAuthor] = useState("");
   const [letterContent, setLetterContent] = useState("");
   const [date, setDate] = useState(() => parseDate(new Date().toISOString().split("T")[0]));
+  const [deleted, setDeleted] = useState(false);
   const [correctionMode, setCorrectionMode] = useState(false);
   const [selectionInfo, setSelectionInfo] = useState<{ text: string, rect: DOMRect | null, startIndex:number, endIndex:number } | null>(null);
   const [corrections, setCorrections] = useState<Correccion[]>([]);
@@ -105,6 +105,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       setTitle(letterData.originalLetter.title || "");
       setLetterContent(letterData.originalLetter.content || "");
       setDate(parseDate(new Date(letterData.originalLetter.created_at).toISOString().split("T")[0]));
+      setDeleted(letterData.originalLetter.deleted || false);
       setCorrections(letterData.corrections || []);
       setSentBack(letterData.sentBack || false);
       setComment(letterData.comments || "");
@@ -289,6 +290,9 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
               <div className="flex flex-col text-black justify-end text-right ">
               <p>By <span className="font-semibold">{author}</span></p>
                 <p>{date.toString()}</p>
+                { deleted && <><p className="text-red-400 font-semibold">This letter has been deleted by the author.</p>
+                <p className="text-red-400">You can review it and add corrections, but you won't be able to send it back.</p></>
+                }
               </div>
 
               {/* Correcting tools */}
@@ -464,11 +468,13 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                   </button>
                   ) : (
                     <>
-                    <button onClick={sendBackOnClick}>
-                      <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
-                        📬 Send Back
-                      </div>
-                    </button>
+                    {!deleted &&
+                      <button onClick={sendBackOnClick}>
+                        <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
+                          📬 Send Back
+                        </div>
+                      </button>
+                    }
                     <div className="text-[#8EBA03] flex items-center gap-2">
                       Correction saved
                       <Check className="w-5 h-5" />

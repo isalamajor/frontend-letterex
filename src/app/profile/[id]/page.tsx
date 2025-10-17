@@ -3,10 +3,9 @@ import { SidebarDemo } from "@/components/sidebardemo";
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/router";
 import { CircleUserRound, Mail, Leaf, SquarePen, Save, Plus, Trash2, Settings, Trash } from "lucide-react";
-import { getCountLetters, getCountCorrectedLetters, uploadProfilePicture } from "@/services/api";
+import { getCountLetters, getCountCorrectedLetters, uploadProfilePicture, deleteProfilePicture, updateUser, getUserData  } from "@/services/api";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { updateUser, getUserData } from "@/services/api";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { ImageUploader } from "@/components/imageUploader";
 
@@ -86,6 +85,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
         userData = await getUserData(id);
         console.log(userData);
         profilePictureUrl = `http://localhost:3090/uploads/profile_pictures/${userData.image}`;
+        console.log("profilePictureUrl: ", profilePictureUrl);
         setMyProfile(false);
       } else {
         // Get languages from sessionStorage
@@ -135,7 +135,6 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
       // Guardar imagen
       if (profilePictureUrl) {
         setProfilePictureLocalUrl(profilePictureUrl);
-        console.log("Profile picture URL:", profilePictureUrl);
       }
 
       // Obtener contadores de cartas y correcciones
@@ -166,6 +165,16 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
       if (!location) {
         setLocationUser(user.location || { city: "", country: "" });
       }
+
+      // Save image
+      let resPicChange;
+      if (imageFile) { resPicChange = await uploadProfilePicture(imageFile) }
+      else { 
+        resPicChange = await deleteProfilePicture(); 
+        if (resPicChange === 0) { setProfilePictureLocalUrl(null) }
+      }
+
+      // Save data
       const newUserData = {
         ...user,
         bio: bioUser,
@@ -179,7 +188,6 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
       };
       
       const response = await updateUser(newUserData);
-
       if (!response) {
         openDialog({
           title: "Failed to save changes",
@@ -195,20 +203,27 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
       setUser(response.userData);
       setEditing(false);
 
-      // Save image
-      await uploadProfilePicture(imageFile);
       
+      if (resPicChange === 0) {
       openDialog({
         title: "Profile updated!",
         description: "Your data has been updated successfully 👍🏽",
         primaryActionText: "OK",
         autoDismiss: true,
         type: "success"
-      });
+      }); }
+
+      else {
+       openDialog({
+        title: "Profile updated!",
+        description: "However, these was trouble changing your profile picture. Try again later.",
+        primaryActionText: "OK",
+        autoDismiss: true,
+        type: "success"
+      }); }
 
       console.log("Bio and location saved:", response);
     } catch (error) {
-      console.error("Error saving bio and location:", error);
       openDialog({
           title: "Failed to save changes",
           description: "Please try again later...",
@@ -218,6 +233,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
         });
     }
   };
+
 
   // Dialog
   const [dialogConfig, setDialogConfig] = useState<{
@@ -301,8 +317,8 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
               {/* Primera fila info */}
               <div className="flex flex-row gap-15 w-full h-[30%] justify-between items-x  mb-5">
 
-                <div className="relative w-[10%] h-[100%] mt-5">
-                  <ImageUploader onImageSelect={(f:File) => setImageFile(f)}
+                <div className="relative w-[10%] h-[100%]">
+                  <ImageUploader onImageSelect={(f:File | null) => setImageFile(f)}
                     currentPicLocalUrl={profilePictureLocalUrl}
                     active={editing}
                     size="150px"
@@ -437,7 +453,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                   </div>}
                 </div>
 
-                {/* Mapa */}
+                {/* Mapa 
                 <div className="w-[60%] h-[90%] flex flex-col items-center p-2 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">
                   <MapNoSSR
                     key={user._id + "_" + editing}
@@ -447,7 +463,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                       setLocationUser((prev) => ({ ...prev, country: newCountry }))
                     }
                   /> 
-                </div>
+                </div>*/}
 
               </div>
             </div>

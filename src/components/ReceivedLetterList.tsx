@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import React from "react";
 import ReceivedLetterCardProps from "./ReceivedLetterCard";
-import { getReceivedLetters } from "../services/api";
+import { getReceivedLetters } from "@/services/api";
 
 interface ReceivedLetterListProps {
   letters: {
@@ -13,6 +13,7 @@ interface ReceivedLetterListProps {
       title: string;
       language: string;
       created_at: string;
+      deleted: boolean;
     };
     sender: {
       _id: string;
@@ -36,45 +37,37 @@ interface ChildProps {
 
 const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending, refresh } : ChildProps) => {
   const [letters, setletters] = useState<ReceivedLetterListProps["letters"]>([]);
-  const [diaryOrganised, setDiaryOrganised] = useState<boolean>(false);
-  const [senderSelected, setSenderSelected] = useState<string>("");
   const [filteredLetters, setFilteredLetters] = useState<ReceivedLetterListProps["letters"]>([]);
+  const [childAskedForRefresh, setChildAskedForRefresh] = useState<boolean>(false);
 
   // Get user letters from the API
   useEffect(() => {
      const fetchletters = async () => {
        const response = await getReceivedLetters();
-       console.log("Letters fetched:", response);
        setletters(response);
      };
      fetchletters();
-     console.log("Letters state updated: ", refresh);
-   }, [refresh]);
+   }, [refresh, childAskedForRefresh]);
    
    
   // Filter letters by search text
   useEffect(() => {
     const filteredLetters = async() => {
-      //if (!filteredLetters || filteredLetters.length < 1) {return}
-        const q = searchFilter.toLowerCase();
-        const results = letters.filter(letter =>
-          letter.originalLetter.title.toLowerCase().includes(q) ||
-          letter.originalLetter.language.toLowerCase().includes(q) ||
-          letter.originalLetter.created_at.slice(0, 10).toLocaleLowerCase().includes(q)
-        );
-        console.log("results ", results);
-        console.log("orderBySender ", orderBySender);
-        const lettersReduced = orderBySender
-        ? results.filter((letter) => letter.sender.nickname === orderBySender)
-        : results;
-        console.log("lettersReduced ", lettersReduced)
-        if (showOnlyPending) {
-          const lettersPending = letters.filter(letter => !letter.sentBack);
-          setFilteredLetters(lettersPending);
-        } else {
-          setFilteredLetters(lettersReduced);
-        }
-
+      const q = searchFilter.toLowerCase();
+      const results = letters.filter(letter =>
+        letter.originalLetter.title.toLowerCase().includes(q) ||
+        letter.originalLetter.language.toLowerCase().includes(q) ||
+        letter.originalLetter.created_at.slice(0, 10).toLocaleLowerCase().includes(q)
+      );
+      const lettersReduced = orderBySender
+      ? results.filter((letter) => letter.sender.nickname === orderBySender)
+      : results;
+      if (showOnlyPending) {
+        const lettersPending = lettersReduced.filter(letter => !letter.sentBack);
+        setFilteredLetters(lettersPending);
+      } else {
+        setFilteredLetters(lettersReduced);
+      }
     }
     filteredLetters();
   }, [searchFilter, letters, orderBySender, showOnlyPending, refresh]);
@@ -94,6 +87,8 @@ const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending, refr
           sender={letter.sender}
           sentBack={letter.sentBack}
           seen={letter.seen}
+          deleted={letter.originalLetter.deleted}
+          letterDeleted={() => {setChildAskedForRefresh(!childAskedForRefresh)}}
           key={index}
         />
       ))}

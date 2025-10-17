@@ -3,7 +3,7 @@ import LetterCard from "@/components/LetterCard";
 import LetterCardList from "@/components/LetterCardList";
 import ReceivedLetterList from "@/components/ReceivedLetterList";
 import { SidebarDemo } from "@/components/sidebardemo";
-import { getUserLetters, getReceivedLetters, deleteLetters } from "../../services/api";
+import { getUserLetters, getReceivedLetters, deleteLetters } from "@/services/api";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Search, RefreshCw, Trash2, X } from "lucide-react";
@@ -64,7 +64,6 @@ const HomepageContent = () => {
   const [rotation, setRotation] = useState(0); // Spin Icon Refresh
   const [deleteLettersMode, setDeleteLettersMode] = useState(false);
   const [resetSelection, setResetSelection] = useState(false);
-  const [deleteClicked, setDeleteClicked] = useState(false);
   const [reFetchLetters, setReFetchLetters] = useState(false);
   const [toDeleteLetters, setToDeleteLetters] = useState<string[]>([]);
 
@@ -100,7 +99,6 @@ const HomepageContent = () => {
   const receiveDataAndDelete = async () => {
     if (toDeleteLetters.length < 1) return; 
     let deletedCount = 0; 
-    console.log("Array of letters to delete:", toDeleteLetters);
     if (deleteLettersMode) {
       // Delete
       openDialog({
@@ -110,7 +108,6 @@ const HomepageContent = () => {
         primaryActionText: "Cancel",
         autoDismiss: false,
         onConfirmationPositive: async () => {
-          console.log("LettersToDelete: ", toDeleteLetters);
           deletedCount = await deleteLetters(toDeleteLetters);
           setDeleteLettersMode(false);
           setResetSelection(!resetSelection);
@@ -222,7 +219,7 @@ const HomepageContent = () => {
                 </div>
               </div>
               <LetterCardList orderByDiaryTrigger={orderDiariesEvent} searchFilter={searchFilter} deleteMode={deleteLettersMode} resetSelection={resetSelection} 
-               onDeleteListChange={(ids)=> {setToDeleteLetters(ids); console.log("Padre recibe: ", ids)}} reFetchLetters={reFetchLetters}></LetterCardList>
+               onDeleteListChange={(ids)=> {setToDeleteLetters(ids);}} reFetchLetters={reFetchLetters}></LetterCardList>
             </div>
 
             {/* Letters received */}
@@ -264,7 +261,7 @@ const HomepageContent = () => {
                   <div className="space-y-2 min-w-[200px]">
                   <Select 
                     value={filterSenders} 
-                    onValueChange={(sender) => {trySetFilterSenders(sender); console.log("Selected .", sender);}}>
+                    onValueChange={(sender) => {trySetFilterSenders(sender)}}>
                       <SelectTrigger className="text-black bg-white h-10 rounded-md ring-transparent">
                         <SelectValue placeholder="🙋 (Select a friend)"/>
                       </SelectTrigger>

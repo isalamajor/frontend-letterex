@@ -208,99 +208,78 @@ const NewLetterPageContent = () => {
                 <DateInput className={`bg-white text-black  ${
                   dateError ? "border-red-500" : "border-neutral-300"
                 }`}/>
-              </DateField>
+                </DateField>
 
-                
-              {/* Diary select */}
-              <div className="space-y-2 min-w-[200px]">
-                <Label className="text-black">Select diary</Label>
-                <Select value={diary} onValueChange={(diary) => {handleDiaryChange(diary)}}>
-                  <SelectTrigger  className="text-black bg-white h-10 rounded-md ring-transparent">
-                    <SelectValue placeholder="(None)"/>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {diaryList.map((diary) => (
-                      <SelectItem key={diary} value={diary}>{diary}</SelectItem>
-                    ))}
-                    <div key="new" className="flex justify-center items-center hover:bg-gray-100 w-full text-sm bg-white h-8 rounded-md ring-transparent text-[#8EBA03]" onClick={
-                      (e) => { 
-                        e.preventDefault();
-                        openDialog({
-                          title: "Create New Diary",
-                          description: "Enter a name for your new diary.",
-                          primaryActionText: "OK",
-                          size: 'md',
-                          type: 'newDiary',
-                          autoDismiss: false
-                      })
-                    }}>
-                      <BookOpen className="mr-2" size={15} /> Create new diary
-                    </div>
-                  </SelectContent>
-                </Select>
-              </div>
-
-
-              {/* Language select*/}
-              <div className="space-y-2 min-w-[200px]">
-                <Label className="text-black" >Select language</Label>
-                <Select value={language} onValueChange={(lang) => {handleLanguageChange(lang)}}>
-                  <SelectTrigger  className="text-black bg-white h-10 rounded-md ring-transparent">
-                    <SelectValue placeholder="(None)"/>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languageList.map((lang) => (
-                      <SelectItem key={lang} value={lang}>{lang}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
                   
-              </div>
-
-
-              {/* Letter content field 
-              <textarea
-                value={letterContent}
-                onChange={handleLetterContentChange}
-                placeholder="Write your letter here..."
-                className={`w-full h-[10%] p-4 text-lg text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-neutral-800 rounded-lg border ${
-                  contentError ? "border-red-500 placeholder-red-500" : "border-neutral-300"
-                } outline-none resize-none`}
-              />
-              <div 
-              className="h-[55vh] border rounded-md bg-white text-black
-              rounded-md p-2 space-y-1 ring-transparent">
-              <ReactQuill theme="snow" value={value} onChange={setValue}
-              className="h-[48vh]"
-              />
-              </div>
-              */}
-              
-              <div 
-              className="h-[55vh] border rounded-md bg-white text-black
-              rounded-md p-2 space-y-1 ring-transparent">
-              <ReactQuill theme="bubble" value={letterContent} onChange={(content) => {setLetterContent(content); setContentError(false);}}
-              />
-              </div>
-
-            {/* Buttons */}
-            <div className="flex justify-between h-[5%] col items-center gap-4 mt-4">
-                <Link href={"/homepage"}>
-                  <button>
-                      <div className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
-                      Back
+                {/* Diary select */}
+                <div className="space-y-2 min-w-[200px]">
+                  <Label className="text-black">Select diary</Label>
+                  <Select value={diary} onValueChange={(diary) => {handleDiaryChange(diary)}}>
+                    <SelectTrigger  className="text-black bg-white h-10 rounded-md ring-transparent">
+                      <SelectValue placeholder="(None)"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {diaryList.map((diary) => (
+                        <SelectItem key={diary} value={diary}>{diary}</SelectItem>
+                      ))}
+                      <div key="new" className="flex justify-center items-center hover:bg-gray-100 w-full text-sm bg-white h-8 rounded-md ring-transparent text-[#8EBA03]" onClick={
+                        (e) => { 
+                          e.preventDefault();
+                          openDialog({
+                            title: "Create New Diary",
+                            description: "Enter a name for your new diary.",
+                            primaryActionText: "OK",
+                            size: 'md',
+                            type: 'newDiary',
+                            autoDismiss: false
+                        })
+                      }}>
+                        <BookOpen className="mr-2" size={15} /> Create new diary
                       </div>
-                  </button>
-                </Link>
-                <div className="flex flex-row justify-end h-[5%] col items-center gap-4 mt-4 ">
-                  <button onClick={() => {SaveLetterOnClick()}}>
-                    <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
-                      💾 Save Letter
-                    </div>
-                  </button>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Language select*/}
+                <div className="space-y-2 min-w-[200px]">
+                  <Label className="text-black" >Select language</Label>
+                  <Select value={language} onValueChange={(lang) => {handleLanguageChange(lang)}}>
+                    <SelectTrigger  className="text-black bg-white h-10 rounded-md ring-transparent">
+                      <SelectValue placeholder="(None)"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languageList.map((lang) => (
+                        <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                    
               </div>
-            </div>
+              
+              <ReactQuill
+              className="h-[55vh] border rounded-md bg-white text-gray-900
+              rounded-md p-2 space-y-1 ring-transparent"
+              theme="bubble" value={letterContent} onChange={(content) => {setLetterContent(content); setContentError(false);}}
+              />
+
+              {/* Buttons */}
+              <div className="flex justify-between h-[5%] col items-center gap-4 mt-4">
+                  <Link href={"/homepage"}>
+                    <button>
+                        <div className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
+                        Back
+                        </div>
+                    </button>
+                  </Link>
+                  <div className="flex flex-row justify-end h-[5%] col items-center gap-4 mt-4 ">
+                    <button onClick={() => {SaveLetterOnClick()}}>
+                      <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
+                        💾 Save Letter
+                      </div>
+                    </button>
+                </div>
+              </div>
             </div>
         </div>
         <SuccessDialog

@@ -11,10 +11,11 @@ interface InputPassProps {
   styles?: string;
   label?: boolean;
   type?: string;
+  onEnter?: () => void;
 }
 
 
-function InputPass({ onChange, wrongPassword, styles, label = true, type }: InputPassProps) {
+function InputPass({ onChange, wrongPassword, styles, label = true, type, onEnter }: InputPassProps) {
   const id = useId();
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [markRed, setMarkRed] = useState<boolean>(false);
@@ -38,6 +39,7 @@ function InputPass({ onChange, wrongPassword, styles, label = true, type }: Inpu
           onChange={(e) => {setMarkRed(false);
             onChange(e.target.value);
           }}
+          onKeyDown={(event)=>{ if (event.key === "Enter" && onEnter) onEnter() }}
         />
         <button
             className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"

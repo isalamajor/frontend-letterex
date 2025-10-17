@@ -8,7 +8,7 @@ import {Tooltip} from 'react-tooltip';
 interface LetterCardProps {
   id: string;
   created_at: string;
-  diary: string;
+  diary: string | null;
   title: string;
   language: string;
   sharedWith: { nickname: string; image: string; correctionSentBack: boolean; correctedLetterId: string }[];

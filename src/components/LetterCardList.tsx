@@ -12,7 +12,7 @@ import { BookCopy, BookX } from "lucide-react";
 interface Letter {
   _id: string;
   created_at: string;
-  diary: string;
+  diary: string | null;
   title: string;
   language: string;
   sharedWith: { nickname: string; image: string; correctionSentBack: boolean; correctedLetterId: string }[];
@@ -61,22 +61,27 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
      fetchletters();
    }, [reFetchLetters]);
 
+
    // Organise letters by diaries on trigger
    useEffect(() => {
-    if (!filteredLetters || filteredLetters.length < 1) {return}
+    if (!filteredLetters || filteredLetters.length < 1) return;
      setDiarySelected("");
      const counts = filteredLetters.reduce((acc, letter) => {
-      const found = acc.find(item => item.diary === letter.diary);
+
+      const diaryName = letter.diary && letter.diary.trim() !== "" ? letter.diary : "Unclassified";
+      const found = acc.find(item => item.diary === diaryName);
+
       if (found) {
         found.count += 1;
       } else {
-        acc.push({ diary: letter.diary, count: 1 });
+        acc.push({ diary: letter.diary || "Unclassified", count: 1 });
       }
       return acc;
     }, [] as { diary: string; count: number }[]);
     setDiaries(counts);
     setDiaryOrganised(!diaryOrganised);
    }, [orderByDiaryTrigger]);
+
 
    // Filter letters by search text
    useEffect(() => {
@@ -85,7 +90,7 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
         const results = letters.filter(letter =>
           letter.title.toLowerCase().includes(q) ||
           letter.language.toLowerCase().includes(q) ||
-          letter.diary.toLowerCase().includes(q) ||
+          letter.diary && letter.diary.toLowerCase().includes(q) ||
           letter.created_at.toLocaleLowerCase().includes(q)
         );
         setFilteredLetters(results);
@@ -112,7 +117,6 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
         return newIds;
       });
     };
-
 
 
     // Resetea selección al salir de delete mode o al clicar en cancelar
@@ -142,16 +146,20 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
         <div className="flex flex-col gap-y-3 w-[50%]">
           {diaries.map((diary) =>  (  
           <DropZone onDropAction={handleDropAction} key={diary.diary}>
-            <div className="flex flex-row group relative cursor-pointer" onClick={ () => {if (diary.diary === diarySelected) {setDiarySelected("")} else { setDiarySelected(diary.diary)}}}>
+            <div className="flex flex-row group relative cursor-pointer" 
+            onClick={ () => {if (diary.diary === diarySelected) {setDiarySelected("")} else { if (!diary.diary || diary.diary === "") setDiarySelected("Unclassified"); else setDiarySelected(diary.diary)}}}>
               <p className="flex rounded-l-lg bg-yellow-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
                 <span className="block group-hover:hidden transition-opacity duration-900">
-                  {diary.diary === diarySelected ? "📖" : "📘"}
-                  </span>
-                <span className="hidden group-hover:block transition-opacity duration-900">📖</span>
+                  {(diary.diary === "Unclassified") 
+                  ? (diary.diary === diarySelected ? "📃" : "📤") // Unclassified
+                  : (diary.diary === diarySelected ? "📖" : "📘") }
+                </span>
+                <span className="hidden group-hover:block transition-opacity duration-900">
+                   {(diary.diary === "Unclassified") ? "📃" : "📖"} </span>
               </p> 
               <div className={`px-8 py-4 rounded-r-lg bg-gray-50 shadow-md w-full max-w-5xl text-black ${diary.diary === diarySelected && "bg-yellow-50"}`}>
-                <p className="font-semibold">{diary.diary}</p>
-                <p>{diary.count} letters in this diary</p>
+                <p className="font-semibold">{(diary.diary === "Unclassified") ? "Unclassified" : diary.diary}</p>
+                <p>{diary.count} letters { (diary.diary !== "Unclassified") && "in this diary"}</p>
               </div>
             </div>
           </DropZone>
@@ -164,36 +172,49 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
           Select a diary and its letters will appear here
           <BookCopy className="h-20 w-20" strokeWidth={0.75}></BookCopy>
           </div>
-        ) : ( filteredLetters.filter(letter => letter.diary === diarySelected).length === 0 ? 
-        <div className="text-gray-500 bg-white rounded-lg shadow-md flex flex-col gap-y-3 items-center justify-center align-middle p-5 text-center">
-          No letters in this diary matching the filter
-          <BookX className="h-20 w-20" strokeWidth={0.75}></BookX>
-        </div> :  
-        <div className="flex flex-col gap-4 custom-scroll h-[60vh] overflow-y-auto w-[50%]">
-          {filteredLetters.filter(letter => letter.diary === diarySelected).map((letter, index) => (
-            <DraggableItem id={letter._id} key={index}>
-              <div className="flex flex-row group relative cursor-pointer" onClick={ goToEditLetter(letter._id)}>
-              <p className="flex rounded-l-lg bg-blue-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
-                <span className="block group-hover:hidden transition-opacity duration-900">✉️</span>
-                <span className="hidden group-hover:block transition-opacity duration-900">💌</span>
-              </p> 
-              <div className="px-8 py-4 rounded-r-lg bg-gray-50 shadow-md w-full max-w-5xl text-black">
-                <div className="flex flex-row justify-between">
-                  <div className="flex flex-row gap-2 text-gray-500 items-center">
-                    <img
-                    src={`/flags/${letter.language}.svg`}
-                    className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600"
-                    />
-                    <p>{letter.language}</p>
-                    </div>
-                  <p>{letter.created_at.slice(0, 10)}</p>
+        ) : 
+        (filteredLetters.filter(letter => {
+          if (diarySelected === "Unclassified") {
+            return !letter.diary || letter.diary.trim() === "";
+          }
+          return letter.diary === diarySelected;
+        }).length === 0 ? 
+          <div className="text-gray-500 bg-white rounded-lg shadow-md flex flex-col gap-y-3 items-center justify-center align-middle p-5 text-center">
+            No letters in this diary matching the filter
+            <BookX className="h-20 w-20" strokeWidth={0.75}></BookX>
+          </div> :  
+          <div className="flex flex-col gap-4 custom-scroll h-[60vh] overflow-y-auto w-[50%]">
+          {filteredLetters
+            .filter(letter => {
+              if (diarySelected === "Unclassified") {
+                return !letter.diary || letter.diary.trim() === "";
+              }
+              return letter.diary === diarySelected;
+            })
+            .map((letter, index) => (
+              <DraggableItem id={letter._id} key={index}>
+                <div className="flex flex-row group relative cursor-pointer" onClick={ goToEditLetter(letter._id)}>
+                <p className="flex rounded-l-lg bg-blue-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
+                  <span className="block group-hover:hidden transition-opacity duration-900">✉️</span>
+                  <span className="hidden group-hover:block transition-opacity duration-900">💌</span>
+                </p> 
+                <div className="px-8 py-4 rounded-r-lg bg-gray-50 shadow-md w-full max-w-5xl text-black">
+                  <div className="flex flex-row justify-between">
+                    <div className="flex flex-row gap-2 text-gray-500 items-center">
+                      <img
+                      src={`/flags/${letter.language}.svg`}
+                      className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600"
+                      />
+                      <p>{letter.language}</p>
+                      </div>
+                    <p>{letter.created_at.slice(0, 10)}</p>
+                  </div>
+                  <p className="font-semibold">{letter.title}</p>
                 </div>
-                <p className="font-semibold">{letter.title}</p>
               </div>
-            </div>
-            </DraggableItem>
-          ))}
-        </div>
+              </DraggableItem>
+            ))}
+          </div>
         )
         }
       </div>
@@ -235,6 +256,10 @@ function DraggableItem({ id, children, onDrop }: DraggableItemProps) {
   const offsetRef = useRef({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Prevenir que se dispare el click del elemento hijo
+    e.preventDefault();
+    e.stopPropagation();
+    
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     offsetRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
     setPos({ x: e.clientX, y: e.clientY });
@@ -259,12 +284,23 @@ function DraggableItem({ id, children, onDrop }: DraggableItemProps) {
     }
   };
 
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Solo permitir click si no estamos dragging
+    if (dragging) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   return (
     <>
-      {/* Elemento original */}
+      {/* Elemento original - se oculta durante el drag */}
       <div
         onMouseDown={handleMouseDown}
-        className="cursor-grab select-none"
+        onClick={handleClick}
+        className={`cursor-grab select-none transition-opacity duration-150 ${
+          dragging ? 'opacity-30 pointer-events-none' : 'opacity-100'
+        }`}
       >
         {children}
       </div>
@@ -272,7 +308,7 @@ function DraggableItem({ id, children, onDrop }: DraggableItemProps) {
       {/* Elemento flotante que sigue al ratón */}
       {dragging && (
         <div
-          className="fixed pointer-events-none p-1 bg-yellow-200 rounded shadow-lg opacity-90"
+          className="fixed pointer-events-none p-1 bg-yellow-200 rounded shadow-lg opacity-90 z-50"
           style={{
             left: pos.x - offsetRef.current.x,
             top: pos.y - offsetRef.current.y,
@@ -284,7 +320,6 @@ function DraggableItem({ id, children, onDrop }: DraggableItemProps) {
     </>
   );
 }
-
 
 
 function DropZone({ onDropAction, children }: DropZoneProps) {

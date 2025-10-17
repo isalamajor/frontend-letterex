@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, AlertTriangle, CircleX, Send, Lock, BookOpen, MailQuestionMark, Trash2 } from 'lucide-react'
+import { Check, X, AlertTriangle, CircleX, Send, Lock, BookOpen, MailQuestionMark, Trash2, Handshake } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { getFriendsList, shareLetter, changePassword, deleteAccount } from '@/services/api'
+import { getFriendsList, shareLetter, changePassword, deleteAccount } from "@/services/api"
 import FriendsCheckboxList from '@/components/ui/friendsCheckBoxList'
 import { Switch } from '@/components/ui/switch'
 import { InputPasswords } from '@/components/ui/inputPasswords'
@@ -176,12 +176,12 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
       buttonClass: 'bg-red-600 text-white hover:bg-red-700',
     },
     shareLetter: {
-      icon: Send,
-      iconBgClass: 'bg-blue-100 dark:bg-blue-900/20',
-      iconColorClass: 'text-blue-600 dark:text-blue-400',
+      icon: Handshake,
+      iconBgClass: 'bg-[#7E27A3]/40 dark:bg-[#DB5FDE]',
+      iconColorClass: 'text-white dark:text-white-400',
       titleDefault: "Send this letter to friends",
       descriptionDefault: "They can check your letter and send a correction back :)",
-      buttonClass: 'bg-blue-600 text-white hover:bg-blue-700',
+      buttonClass: 'bg-[#7E27A3] text-white hover:bg-[#DB5FDE]',
     },
     settings: {
       icon: Lock,
@@ -216,7 +216,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
     setFriendsSelected([])
     setInternalOpen(false)
     onClose()
-    
+
     // Return focus to the previously active element
     if (previousActiveElement.current) {
       previousActiveElement.current.focus()
@@ -252,7 +252,6 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   }
 
   const handleDeleteAccount = async () => {
-    console.log("password:", password);
     if (!password) {return;}
     const result = await deleteAccount(password);
     setDeleteAccountResult(result);
@@ -395,6 +394,42 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
 
             { type === 'shareLetter' && (
               <div className="flex flex-col items-center text-center space-y-4">
+                {friendsList.length === 0 ? (
+                  <div className='flex flex-col gap-4 min-h-[15rem] w-full align-center items-center justify-center mt-2'>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 10 }} 
+                      transition={{ 
+                        delay: 0.1, 
+                        duration: 0.3, 
+                        type: "spring", 
+                        stiffness: 200 
+                      }}
+                      className={`flex items-center justify-center w-20 h-20 rounded-full ${currentConfig.iconBgClass}`}
+                    >
+                      <IconComponent className={`w-8 h-8 ${currentConfig.iconColorClass}`} />
+                    </motion.div>
+                    <h3 className="mx-10 text-xs text-gray-700 font-semibold dark:text-gray-400">
+                      First add some friends to share with!
+                    </h3>
+                    <div className="flex justify-center items-center gap-4 pt-4">
+                      <Button
+                        onClick={handlePrimaryAction}
+                        className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
+                        size="default"
+                      > Cancel
+                      </Button>
+                      <Button
+                        onClick={() => {window.location.href = "/friends"}}
+                        className={`min-w-[120px] rounded transition-colors duration-200 bg-[#7E27A3] hover:!bg-[#DB5FDE] `}
+                        size="default"
+                      > Discover new people
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
                   <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300">
                     Share with friends (choose at most 2)
                   </h3>
@@ -402,57 +437,35 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                     ⚠️ 
                     Note that{" "}
                     <span className="bg-yellow-300/40">
-                      you won’t be able to modify
+                      you won't be able to modify
                     </span>{" "}
                     the letter after sharing it.
                   </h4>
-
-                    {friendsList.length === 0 ? (
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          First add some friends to share with!
-                        </p>
-                        <div className="flex justify-center items-center gap-4 pt-4">
-                          <Button
-                            onClick={handlePrimaryAction}
-                            className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
-                            size="default"
-                          > Cancel
-                          </Button>
-                          <Button
-                            onClick={handlePrimaryAction}
-                            className={`min-w-[120px] rounded transition-colors duration-200 bg-[#7E27A3] hover:!bg-[#DB5FDE] `}
-                            size="default"
-                          > Discover new people
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                    : (
-                      <div>
-                      <FriendsCheckboxList
-                      friends={friendsList}
-                      selected={friendsSelected}
-                      setSelected={setFriendsSelected}
-                      />
-                      <div className="flex justify-center items-center gap-4 pt-4">
-                        <Button
-                            onClick={handlePrimaryAction}
-                            className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
-                            size="default"
-                          > Cancel
-                        </Button>
-                        <Button
-                            onClick={handleShareLetter}
-                            className={`min-w-[120px] bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
-                            size="default"
-                          > Share 📩
-                        </Button>
-                      </div>
-                      </div>
-                    )
-                      }
-                </div>
+                  <div className='flex flex-col gap-2 align-center items-center mt-2'>
+                    <FriendsCheckboxList
+                    friends={friendsList}
+                    selected={friendsSelected}
+                    setSelected={setFriendsSelected}
+                    />
+                  </div>
+                  <div className="flex justify-center items-center gap-4 pt-4">
+                    <Button
+                        onClick={handlePrimaryAction}
+                        className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                        size="default"
+                      > Cancel
+                    </Button>
+                    <Button
+                        onClick={handleShareLetter}
+                        className={`min-w-[120px] bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                        size="default"
+                      > Share 📩
+                    </Button>
+                  </div>
+                  </div>
+                )
+                  }
+            </div>
             )}
 
 
@@ -465,8 +478,8 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                       label="Change password"
                       size="large"
                       value="password"
-                  />
-                  <Switch.Control label="Delete account" size="large" value="delete" />
+                    />
+                  <Switch.Control label="Delete account" size="large" value="delete"/>
                 </Switch>
                 )}
                   {settingSwitch === "password"
@@ -476,6 +489,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                           <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 10 }}
                           transition={{ 
                             delay: 0.1, 
                             duration: 0.3, 
@@ -530,6 +544,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                           key="delete-success"
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 10 }} 
                           transition={{ 
                             delay: 0.1, 
                             duration: 0.3, 
@@ -545,6 +560,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                           key="delete-fail"
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 10 }} 
                           transition={{ 
                             delay: 0.1, 
                             duration: 0.3, 
@@ -598,6 +614,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }} 
                     transition={{
                       delay: 0.1,
                       duration: 0.3,
@@ -617,6 +634,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                       <motion.span
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }} 
                         transition={{ delay: 0.2, duration: 0.3 }}
                       >
                         {displayTitle}
@@ -630,6 +648,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                       <motion.span
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }} 
                         transition={{ delay: 0.3, duration: 0.3 }}
                       >
                         {displayDescription}
@@ -662,6 +681,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }} 
                 transition={{ 
                   delay: 0.1, 
                   duration: 0.3, 
@@ -677,11 +697,12 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
               <DialogHeader className="space-y-2 display-inline-flex items-center justify-center">
                 <DialogTitle 
                   id="success-dialog-title"
-                  className="text-xl font-semibold text-black"
+                  className="text-xl font-semibold text-black text-center"
                 >
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }} 
                     transition={{ delay: 0.2, duration: 0.3 }}
                   >
                     {displayTitle}
@@ -696,6 +717,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                   <motion.span
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }} 
                     transition={{ delay: 0.3, duration: 0.3 }}
                   >
                     {displayDescription}
@@ -712,6 +734,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }} 
                 transition={{ delay: 0.4, duration: 0.3 }}
                 className="pt-2"
               >

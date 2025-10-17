@@ -2,12 +2,11 @@
 import { useEffect } from "react";
 import { SidebarDemo } from "@/components/sidebardemo";
 import Link from "next/link";
-import { editLetter } from "@/services/api";
 import { useState } from "react"
 import { Calendar, parseDate } from "@internationalized/date"
 import { DateField, DateInput } from "@/components/ui/datefield"
 import { Label } from "@/components/ui/field"
-import { getLetter, getDiaries } from "@/services/api";
+import { getLetter, getDiaries, editLetter } from "@/services/api";
 import { Check } from "lucide-react";
 import { use } from "react";
 import {
@@ -162,7 +161,6 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     );
     
     if (res === 0) {
-      console.log("Letter saved successfully!");
       openDialog({
         title: "Letter Saved",
         autoDismiss: true,
@@ -173,7 +171,14 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       });
       setValuesChanged(false);
     } else {
-      console.error("Error saving letter.");
+      openDialog({
+        title: "Error Saving Letter",
+        description: "There was an error saving your letter. Please try again later.",
+        primaryActionText: "OK",
+        size: 'md',
+        type: 'error'
+      });
+      return;
     }
     
     console.log("Saving letter:", { title, date, letterContent });
@@ -200,7 +205,6 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     }
 
     const letterData = await getLetter(id);
-      console.log("Letter data:", letterData);
       if (!letterData) {
         console.error("No letter data found for ID:", id);
         return;
@@ -211,7 +215,6 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   useEffect(() => {
     (async () => {
       const letterData = await getLetter(id);
-      console.log("Letter data:", letterData);
       if (!letterData) {
         console.error("No letter data found for ID:", id);
         return;
@@ -366,10 +369,12 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                 } outline-none resize-none`}
               />*/}
               
-              <div className="h-[55vh] border rounded-md bg-white rounded-md p-2 space-y-1 ring-transparent text-gray-900">
-                <ReactQuill theme="bubble" value={letterContent} onChange={(content) => {setLetterContent(content); setContentError(false);}}
-                modules={modulesQuill} readOnly={sharedWith.length > 0}/>
-              </div>
+              <ReactQuill 
+              className="h-[55vh] border rounded-md bg-white text-gray-900
+              rounded-md p-2 space-y-1 ring-transparent"
+              theme="bubble" value={letterContent} onChange={(content) => {setLetterContent(content); setContentError(false); setValuesChanged(true);}}
+              modules={modulesQuill} readOnly={sharedWith.length > 0}/>
+
 
             {/* Buttons */}
             <div className="flex justify-between h-[5%] col items-center gap-4 mt-4">

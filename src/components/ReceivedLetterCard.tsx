@@ -1,6 +1,9 @@
 import Link from "next/link";
 import React from "react";
-import { Check } from "lucide-react";
+import { useState } from "react";
+import { Check, Trash, Trash2 } from "lucide-react";
+import { SuccessDialog, DialogType } from "@/components/ui/dialog";
+import { deleteCorrectedLetter } from "@/services/api";
 
 interface ReceivedLetterCardProps {
   id: string;
@@ -11,24 +14,84 @@ interface ReceivedLetterCardProps {
   language: string;
   sender: { _id: string, nickname: string; image: string };
   sentBack: boolean;
-  seen: boolean
+  seen: boolean;
+  deleted: boolean;
+  letterDeleted: () => void;
 }
 
 
 
-const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({ id, created_at, received_at, title, language, sender, sentBack, seen }) => {
+const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({ id, created_at, received_at, title, language, sender, sentBack, seen, deleted, letterDeleted }) => {
+
+  // Dialog
+    const [dialogConfig, setDialogConfig] = useState<{
+      isOpen: boolean
+      title: string
+      description: string
+      primaryActionText: string
+      onPrimaryAction?: () => void
+      autoDismiss: boolean
+      size: 'sm' | 'md' | 'lg'
+      type: DialogType
+      onConfirmationPositive?: () => void
+      autoDismissDelay: number
+    }>({
+      isOpen: false,
+      title: "Payment Successful!",
+      description: "Your payment has been processed successfully. You will receive a confirmation email shortly.",
+      primaryActionText: "View Receipt",
+      autoDismiss: true,
+      size: 'md',
+      type: 'success',
+      onConfirmationPositive: undefined,
+      autoDismissDelay: 10000
+    })
+  
+    const openDialog = (config: Partial<typeof dialogConfig>) => {
+      setDialogConfig(prev => ({ ...prev, ...config, isOpen: true }))
+    }
+  
+    const closeDialog = () => {
+      setDialogConfig(prev => ({ ...prev, isOpen: false }))
+    }
+
+    const deleteOnClick = async () => {
+      const result = await deleteCorrectedLetter(id);
+      if (result === 0) {
+        letterDeleted();
+      } else {
+        openDialog({
+          title: "There was an error deleting the letter.",
+          description: "Please, try again later.",
+          primaryActionText: "Ok",
+          onPrimaryAction: () => setTimeout(closeDialog, 4000),
+          autoDismiss: true,
+          size: 'sm',
+          type: 'error',
+          autoDismissDelay: 3000
+        });
+      }
+    }
+
+
   return (
-      <Link href={`/correct-letter/${id}`} > 
+      <Link
+          onClick={() => console.log("Link clicked")}
+          href={`/correct-letter/${id}`}>
       <div className=" w-full max-w-5xl">
       <div className={`px-8 py-4 rounded-lg bg-gray-50 shadow-md relative group
-      w-full max-w-5xl ${sentBack ? "hover:bg-green-100" : "hover:bg-blue-100"}`}>
+      w-full max-w-5xl ${deleted ? "hover:bg-red-100" : sentBack ? "hover:bg-green-100" : "hover:bg-blue-100"}`}>
         {/* Fecha */}
         <div className="flex flex-row align-center items-center justify-between mb-6">
           <p className="text-s text-gray-500 dark:text-gray-400">{"Received " + formatReceivedDate(received_at)}</p>
           <div className="flex flex-row gap-x-2">
-            <p className={`opacity-0 group-hover:opacity-100
-            ${sentBack ? "text-green-500 " : "text-blue-500 "}`}>
-            {sentBack ? "Corrected & Sent Back" : "Pending to correct"}
+            <p className={`opacity-0 group-hover:opacity-100 flex items-center justify-center
+            ${deleted ? "text-red-500 " : sentBack ? "text-green-500 " : "text-blue-500 "}`}>
+            {deleted ? "Deleted by the author" : sentBack ? "Corrected & Sent Back" : "Pending to correct"}
+            {deleted &&
+            <button type="button" className="cursor-pointer text-white rounded-sm bg-red-500 shadow-md p-1 ml-2 hover:bg-red-700" onClick={(e) => {e.stopPropagation(); e.preventDefault(); deleteOnClick();}}>
+              <Trash2 size={20}></Trash2>
+            </button>}
             </p>
           { !seen &&
           <p className="text-xs bg-red-400 mb-2 rounded-md p-1">New</p>
@@ -61,6 +124,19 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({ id, created_at,
         </div>
       </div>
       </div>
+      <SuccessDialog
+                isOpen={dialogConfig.isOpen}
+                onClose={closeDialog}
+                title={dialogConfig.title}
+                description={dialogConfig.description}
+                primaryActionText={dialogConfig.primaryActionText}
+                onPrimaryAction={dialogConfig.onPrimaryAction}
+                autoDismiss={dialogConfig.autoDismiss}
+                size={dialogConfig.size}
+                type={dialogConfig.type}
+                onConfirmationPositive={dialogConfig.onConfirmationPositive}
+                autoDismissDelay={dialogConfig.autoDismissDelay}
+              />
       </Link>
   );
 };
