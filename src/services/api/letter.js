@@ -181,6 +181,39 @@ const editLetter = async (id, title, content, diary, language, created_at, share
 }
 
 
+const changeLetterDiary = async (letterId, diary) => {
+    console.log("changeLetterDiary: ", letterId, diary);
+    return 0;
+    const token = sessionStorage.getItem("authToken");
+    
+    try {
+        const response = await axios.put(`${API_URL}/letter/edit-diary`, 
+            {
+                letterId: letterId,
+                diary: diary
+            },
+            {
+            headers: {
+              'Authorization': `${token}`
+            }
+          });
+          
+    if (response.status === 200) {
+        return 0;
+    } else {
+        console.error("Error saving letter:", data);
+        return -1;
+    }
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error("Axios error:", error.response?.data);
+        } else {
+          console.error("Unknown error:", error);
+        }
+      }
+}
+
+
 const saveLetter = async (title, content, diary, language, created_at) => {
     const token = sessionStorage.getItem("authToken");
     
@@ -239,6 +272,7 @@ export {
     shareLetter,
     getLetter,
     editLetter,
+    changeLetterDiary, 
     saveLetter,
     getUserLetters
 };

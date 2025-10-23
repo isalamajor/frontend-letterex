@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import React from "react";
 import LetterCard from "./LetterCard";
-import { getUserLetters } from "../services/api";
+import { getUserLetters, changeLetterDiary } from "../services/api";
 import { unique } from "next/dist/build/utils";
 import { BookCopy, BookX } from "lucide-react";
 
@@ -33,12 +33,14 @@ interface DraggableItemProps {
   id: string;
   children: React.ReactNode;
   onDrop?: (id: string, x: number, y: number) => void;
+  diaryName: string;
 }
 
 
 interface DropZoneProps {
-  onDropAction: (id: string) => void;
+  onDropAction: (letterId: string, oldDiary: string, newDiary:string ) => void;
   children: React.ReactNode;
+  diaryDropZone: string;
 }
 
 
@@ -132,20 +134,20 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
     }, [resetSelection]);
 
   const [droppedItems, setDroppedItems] = useState<string[]>([]);
-  const handleDropAction = (id: string) => {
-    console.log("Dropped item id:", id);
-    // Añadir el id a la lista (sin duplicados)
-    setDroppedItems((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  const handleDropAction = (letterId: string, oldDiary: string, newDiary: string) => {
+    console.log("Cambiar de ", oldDiary, " a ", newDiary);
+    if (oldDiary === newDiary) return;
+    changeLetterDiary(letterId, newDiary);
+
   };
 
   if (diaryOrganised && filteredLetters && filteredLetters.length > 0) {
     return(
       <div className="flex flex-row gap-5">
-        
         {/* Diaries */}
         <div className="flex flex-col gap-y-3 w-[50%]">
           {diaries.map((diary) =>  (  
-          <DropZone onDropAction={handleDropAction} key={diary.diary}>
+          <DropZone onDropAction={handleDropAction} key={diary.diary} diaryDropZone={diary.diary}>
             <div className="flex flex-row group relative cursor-pointer" 
             onClick={ () => {if (diary.diary === diarySelected) {setDiarySelected("")} else { if (!diary.diary || diary.diary === "") setDiarySelected("Unclassified"); else setDiarySelected(diary.diary)}}}>
               <p className="flex rounded-l-lg bg-yellow-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
@@ -192,7 +194,7 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
               return letter.diary === diarySelected;
             })
             .map((letter, index) => (
-              <DraggableItem id={letter._id} key={index}>
+              <DraggableItem id={letter._id} key={index} diaryName={letter.diary || "Unclassified"}>
                 <div className="flex flex-row group relative cursor-pointer" onClick={ goToEditLetter(letter._id)}>
                 <p className="flex rounded-l-lg bg-blue-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
                   <span className="block group-hover:hidden transition-opacity duration-900">✉️</span>
@@ -250,38 +252,40 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
 export default LetterCardList;
 
 
-function DraggableItem({ id, children, onDrop }: DraggableItemProps) {
+
+function DraggableItem({ id, children, onDrop, diaryName }: DraggableItemProps) {
   const [dragging, setDragging] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const offsetRef = useRef({ x: 0, y: 0 });
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Prevenir que se dispare el click del elemento hijo
-    e.preventDefault();
-    e.stopPropagation();
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.setData("text/plain", id);
+    e.dataTransfer.setData("application/x-letter-diary", diaryName);
+    console.log("Desde Draggable Item: diaryName (old) es ", diaryName)
+    e.dataTransfer.effectAllowed = "move";
     
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    // Crear una imagen de drag transparente para eliminar la imagen por defecto
+    const dragImage = new Image();
+    dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+    
+    // Calcular el offset inicial
+    const rect = e.currentTarget.getBoundingClientRect();
     offsetRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
     setPos({ x: e.clientX, y: e.clientY });
     setDragging(true);
 
-    // Para escuchar movimientos globales
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    // Añadir listeners para seguir el mouse
+    document.addEventListener("dragover", handleDragMove);
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleDragMove = (e: DragEvent) => {
     setPos({ x: e.clientX, y: e.clientY });
   };
 
-  const handleMouseUp = (e: MouseEvent) => {
+  const handleDragEnd = () => {
     setDragging(false);
-    window.removeEventListener("mousemove", handleMouseMove);
-    window.removeEventListener("mouseup", handleMouseUp);
-
-    if (onDrop) {
-      onDrop(id, e.clientX, e.clientY);
-    }
+    document.removeEventListener("dragover", handleDragMove);
   };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -296,10 +300,12 @@ function DraggableItem({ id, children, onDrop }: DraggableItemProps) {
     <>
       {/* Elemento original - se oculta durante el drag */}
       <div
-        onMouseDown={handleMouseDown}
+        draggable={true}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
         onClick={handleClick}
         className={`cursor-grab select-none transition-opacity duration-150 ${
-          dragging ? 'opacity-30 pointer-events-none' : 'opacity-100'
+          dragging ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
         {children}
@@ -308,7 +314,7 @@ function DraggableItem({ id, children, onDrop }: DraggableItemProps) {
       {/* Elemento flotante que sigue al ratón */}
       {dragging && (
         <div
-          className="fixed pointer-events-none p-1 bg-yellow-200 rounded shadow-lg opacity-90 z-50"
+          className="fixed pointer-events-none rounded shadow-lg opacity-100 z-50"
           style={{
             left: pos.x - offsetRef.current.x,
             top: pos.y - offsetRef.current.y,
@@ -322,13 +328,14 @@ function DraggableItem({ id, children, onDrop }: DraggableItemProps) {
 }
 
 
-function DropZone({ onDropAction, children }: DropZoneProps) {
+function DropZone({ onDropAction, children, diaryDropZone }: DropZoneProps) {
   const [isOver, setIsOver] = useState(false);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault(); // Necesario para permitir el drop
     e.dataTransfer.dropEffect = "move";
     setIsOver(true);
+    console.log("it's over")
   };
 
   const handleDragLeave = () => setIsOver(false);
@@ -337,8 +344,12 @@ function DropZone({ onDropAction, children }: DropZoneProps) {
     e.preventDefault();
     setIsOver(false);
     const id = e.dataTransfer.getData("text/plain");
+    const oldDiary = e.dataTransfer.getData("application/x-letter-diary");
+    
+    console.log("Desde DropZone: diaryName (new) es ", oldDiary, "diaryDropZone es ", diaryDropZone);
+    
     if (id) {
-      onDropAction(id);
+      onDropAction(id, oldDiary, diaryDropZone);
     }
   };
 
@@ -347,7 +358,7 @@ function DropZone({ onDropAction, children }: DropZoneProps) {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`p-2 rounded border-2 border-dashed border-gray-300 bg-gray-50 ${isOver && "border-blue-400 bg-blue-50"} transition-colors duration-200 `}
+      className={`${isOver && "rounded-lg ring ring-2 ring-blue-400"} transition-colors duration-200 `}
       aria-label="Drop zone"
     >
       {children}

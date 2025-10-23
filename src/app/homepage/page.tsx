@@ -1,5 +1,4 @@
 "use client";
-import LetterCard from "@/components/LetterCard";
 import LetterCardList from "@/components/LetterCardList";
 import ReceivedLetterList from "@/components/ReceivedLetterList";
 import { SidebarDemo } from "@/components/sidebardemo";
@@ -15,17 +14,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { motion } from "framer-motion";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
-import { get } from "http";
 
 export default function Home() {
   return (
-    <div className="page-container">
-      <SidebarDemo>
-        <HomepageContent/>
-      </SidebarDemo>
-    </div>
+    <SidebarDemo>
+      <HomepageContent/>
+    </SidebarDemo>
   );
 }
 
@@ -167,11 +162,19 @@ const HomepageContent = () => {
   
 
   return (
-      <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
-        <div className="flex gap-2 h-[15%]">
-          <img src="/letter-logo.png" className="h-25 mx-auto mt-4 object-cover transition-transform duration-300 hover:-translate-y-1 hover:scale-105"/>
-        </div>
-        <div className="flex gap-2 flex-1 h-[85%]">
+      <div className=" p-2 md:p-10 md:pt-2 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2
+      min-h-screen overflow-auto 
+      sm:h-full sm:overflow-hidden">
+        
+        <img src="/letter-logo-2.png" className="h-15 m-2 sm:h-20 mx-auto object-cover transition-transform duration-300 hover:-translate-y-1 hover:scale-105"/>
+        
+        <div className="flex flex-col lg:flex-row gap-2 flex-1 sm:scrolling-auto sm:h-[85%]">
+            
+            
+            <div className="flex flex-row gap-2 justify-center sm:hidden">
+              <button className="rounded-full border border-1 border-black bg-gray-300 text-gray-900 px-3 py-1">Letters written</button>
+              <button className="rounded-full border border-1 border-gray-500 bg-gray-100 text-gray-800  px-3 py-1">Letters received</button>
+            </div>
             {/* Letters written */}
             <div
               className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-6"
@@ -180,7 +183,7 @@ const HomepageContent = () => {
                   Letters written
               </h2>
 
-              <div className={`flex gap-2 ${noLetters ? "justify-end" : "justify-between"}`}>
+              <div className={`flex gap-2 flex-col lg:flex-row ${noLetters ? "justify-end" : "justify-between"}`}>
                 { !noLetters &&
                 <div className="flex flex-row gap-2 cursor-pointer border border-lightblack text-gray-700 rounded-sm py-2 px-4 mb-4 bg-gray-50">
                   <Search className="text-gray-500"></Search>
