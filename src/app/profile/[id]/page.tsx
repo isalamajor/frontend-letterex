@@ -1,15 +1,17 @@
 "use client";
 import { SidebarDemo } from "@/components/sidebardemo";
 import { useState, useEffect, use } from "react";
-import { useRouter } from "next/router";
-import { CircleUserRound, Mail, Leaf, SquarePen, Save, Plus, Trash2, Settings, Trash } from "lucide-react";
+import { CircleUserRound, Mail, Leaf, SquarePen, Save, Plus, Trash2, Settings } from "lucide-react";
 import { getCountLetters, getCountCorrectedLetters, uploadProfilePicture, deleteProfilePicture, updateUser, getUserData  } from "@/services/api";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { ImageUploader } from "@/components/imageUploader";
 
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 const MapNoSSR = dynamic(() => import("@/components/ui/map"), { ssr: false });
+import rawLanguages from "@/components/languages.json";
+const languagesData = rawLanguages.languages as { name: string; image: string }[];
 
 export interface User {
   _id: string;
@@ -30,7 +32,7 @@ export interface User {
   };
 }
 
-const languagesData = [
+/*const languagesData = [
   { name: "English", image: "/flags/english.svg" },
   { name: "Spanish", image: "/flags/spanish.svg" },
   { name: "French", image: "/flags/french.svg" },
@@ -43,7 +45,7 @@ const languagesData = [
   { name: "Arabic", image: "/flags/arabic.svg" },
   { name: "Hindi", image: "/flags/hindi.svg" },
   { name: "Turkish", image: "/flags/turkish.svg" },
-];
+];*/
 
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
@@ -56,7 +58,6 @@ export default function Home({ params }: { params: Promise<{ id: string }> }) {
     </div>
   );
 }
-
 
 
 export const ProfilePageContent = ({ id }: { id: string }) => {
@@ -72,7 +73,6 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
   const [addingLanguage, setAddingLanguage] = useState<"LEARN" | "MASTER" | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [profilePictureLocalUrl, setProfilePictureLocalUrl] = useState<string | null>(null);
-  const [myProfile, setMyProfile] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,12 +86,10 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
         console.log(userData);
         profilePictureUrl = `http://localhost:3090/uploads/profile_pictures/${userData.image}`;
         console.log("profilePictureUrl: ", profilePictureUrl);
-        setMyProfile(false);
       } else {
         // Get languages from sessionStorage
         userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
         profilePictureUrl = sessionStorage.getItem("profilePictureBase64") || "";
-        setMyProfile(true);
       
         // If userData is not available, redirect to login
         if (Object.keys(userData).length === 0) {
@@ -223,7 +221,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
       }); }
 
       console.log("Bio and location saved:", response);
-    } catch (error) {
+    } catch (_error) {
       openDialog({
           title: "Failed to save changes",
           description: "Please try again later...",
@@ -264,16 +262,16 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
 
 
   return (
-      <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
+      <div className="p-2 lg:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
-        <h1 className="h-[7%] text-3xl md:text-5xl font-semibold bg-gradient-to-r bg-clip-text text-transparent from-[#8EBA03] via-yellow-500 to-[#8EBA03] animate-text">
+        <h1 className="ml-5 mt-10 lg:mt-0 text-5xl lg:text-md h-[7%] text-3xl font-semibold w-fit bg-gradient-to-r from-[#8EBA03] via-yellow-500 to-[#8EBA03] bg-clip-text text-transparent animate-text text-center lg:text-left">
           { id !== "yours" ? `${user.nickname}` : "Your profile"}
         </h1>
 
-        <div className="flex gap-2 flex-1 h-[85%] text-xl">
+        <div className="mb-10 lg:mb-0 flex gap-2 flex-1 h-[85%]">
             {/* Bloque pantalla */}
             <div
-              className="h-full w-full rounded-lg bg-gray-50 px-15 py-10 text-black flex flex-col"
+              className="h-full w-full rounded-lg bg-gray-50 px-5 lg:px-15 py-10 text-black flex flex-col"
             >
               {/* Botones Edit */}
               { id === "yours" && (
@@ -315,34 +313,36 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                 }
               </div>)}
               {/* Primera fila info */}
-              <div className="flex flex-row gap-15 w-full h-[30%] justify-between items-x  mb-5">
+              <div className="lg:h-[30%] flex flex-col lg:flex-row gap-2 items-start">
 
-                <div className="relative w-[10%] h-[100%]">
+                <div className="w-full lg:w-[50%] relative flex items-center justify-center">
+                  <div className="w-[35%]">
                   <ImageUploader onImageSelect={(f:File | null) => setImageFile(f)}
                     currentPicLocalUrl={profilePictureLocalUrl}
                     active={editing}
-                    size="150px"
+                    size={innerWidth > 750 ? '125px' : null}
                   />
-                </div>
-
-                <div className="h-full w-[30%]">
-                  <div className="flex flex-col gap-1 w-auto">
-                    <span className="font-bold">Nickname</span>
-                    <div className="flex flex-row align-center items-center gap-2 cursor-pointer bg-white border border-lightblack text-gray-700 rounded-sm py-2 px-4 mb-4 bg-gray-50">
-                        <CircleUserRound className="text-gray-500"></CircleUserRound>
-                        <p className="w-full outline-none">{user.nickname}</p>
-                    </div>
                   </div>
-                  <div className="flex flex-col gap-1 w-auto flex-grow">
-                    <span className="font-bold">Email</span>
-                    <div className="flex flex-row align-center items-center gap-2 cursor-pointer bg-white border border-lightblack text-gray-700 rounded-sm py-2 px-4 mb-4 bg-gray-50">
-                        <Mail className="text-gray-500"></Mail>
-                        <p className="w-full outline-none">{user.email}</p>
+
+                  <div className="w-full">
+                    <div className="flex flex-col gap-1 w-auto">
+                      <span className="font-bold">Nickname</span>
+                      <div className="flex flex-row align-center items-center gap-2 cursor-pointer bg-white border border-lightblack text-gray-700 rounded-sm py-2 px-4 mb-4 bg-gray-50">
+                          <CircleUserRound className="text-gray-500"></CircleUserRound>
+                          <p className="w-full outline-none">{user.nickname}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1 w-auto flex-grow">
+                      <span className="font-bold">Email</span>
+                      <div className="flex flex-row align-center items-center gap-2 cursor-pointer bg-white border border-lightblack text-gray-700 rounded-sm py-2 px-4 mb-4 bg-gray-50">
+                          <Mail className="text-gray-500"></Mail>
+                          <p className="w-full outline-none">{user.email}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
                
-                <div className="flex flex-col gap-1 w-[50%] h-fill flex-grow">
+                <div className="w-full lg:w-[50%]">
                   <span className="font-bold">Bio</span>
                   <div className="flex flex-row h-35 w-full gap-2 cursor-pointer bg-white border border-lightblack text-gray-700 rounded-sm p-5 bg-gray-50">
                       <Leaf className="text-gray-500"></Leaf>
@@ -353,42 +353,42 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
               </div>
 
               {/* Segunda fila info */}
-              <div className="flex flex-row gap-10 w-full h-[70%] justify-between">
+              <div className="flex flex-col lg:flex-row gap-10 w-full h-[70%] justify-between">
             
                 {/* Idiomas */}
-                <div className="w-[40%] h-[90%]">
+                <div className="lg:w-[40%] h-[90%]">
                   <div className="flex flex-col gap-10 items-center p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2 mb-3">
                     <div className="flex flex-row gap-15">
                       <div className="flex flex-col gap-5">  
-                        <h2 className="font-semibold">Languages learning</h2>
+                        <h3 className="font-bold">Languages learning</h3>
                           <div className="flex flex-row gap-3">
                             {languagesLearning.map((lang, index) => (
                               <div key={index} className="relative">
-                              <img src={`/flags/${lang}.svg`} className="h-10 w-10 rounded-full object-cover border border-gray-300 shadow"></img>
+                              <img src={`/flags/${lang}.svg`} className="h-7 w-7 sm:h-10 sm:w-10 rounded-full object-cover border border-gray-300 shadow"></img>
                                 {editing && 
-                                <Trash2 className="absolute h-10 w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white"
+                                <Trash2 className="absolute h-7 w-7 sm:h-10 sm:w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white"
                                 onClick={() => {if (languagesLearning.length <= 1) {return} 
                                   setLanguagesLearning((prev) => prev.filter((l) => l !== lang)); setAvailableLanguages((prev) => [...prev, lang])}}></Trash2>
                                 }
                               </div>
                             ))}
-                          {editing && <Plus onClick={() => {if (addingLanguage === "LEARN") setAddingLanguage(null); else setAddingLanguage("LEARN");}} className={`h-10 w-10 rounded-full bg-gray-200 p-2 ${addingLanguage === "LEARN" ? "bg-lime-300" : ""}`}></Plus>}
+                          {editing && <Plus onClick={() => {if (addingLanguage === "LEARN") setAddingLanguage(null); else setAddingLanguage("LEARN");}} className={`h-7 w-7 sm:h-10 sm:w-10  rounded-full bg-gray-200 p-2 ${addingLanguage === "LEARN" ? "bg-lime-300" : ""}`}></Plus>}
                           </div>
                       </div> 
                       <div className="flex flex-col gap-5">
-                        <h2 className="font-semibold">Mastered languages</h2>
+                        <h3 className="font-bold">Mastered languages</h3>
                           <div className="flex flex-row gap-3">
                             {languagesSpoken.map((lang, index) => (
                               <div key={index} className="relative">
-                              <img src={`/flags/${lang}.svg`} className="h-10 w-10 rounded-full object-cover border border-gray-300 shadow"></img>
+                              <img src={`/flags/${lang}.svg`} className="h-7 w-7 sm:h-10 sm:w-10 rounded-full object-cover border border-gray-300 shadow"></img>
                               {editing && 
-                              <Trash2 className="absolute h-10 w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white"
+                              <Trash2 className="absolute h-7 w-7 sm:h-10 sm:w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white"
                               onClick={() => { if (languagesSpoken.length <= 1) {return} 
                                 setLanguagesSpoken((prev) => prev.filter((l) => l !== lang)); setAvailableLanguages((prev) => [...prev, lang])}}></Trash2>
                               }
                               </div>
                             ))}
-                            {editing && <Plus onClick={() => {if (addingLanguage === "MASTER") setAddingLanguage(null); else setAddingLanguage("MASTER");}} className={`h-10 w-10 rounded-full bg-gray-200 p-2 ${addingLanguage === "MASTER" ? "bg-lime-300" : ""}`}></Plus>}
+                            {editing && <Plus onClick={() => {if (addingLanguage === "MASTER") setAddingLanguage(null); else setAddingLanguage("MASTER");}} className={`h-7 w-7 sm:h-10 sm:w-10  rounded-full bg-gray-200 p-2 ${addingLanguage === "MASTER" ? "bg-lime-300" : ""}`}></Plus>}
                           </div>
                       </div>
                     </div>
@@ -403,7 +403,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                                   key={lang}
                                   src={`/flags/${lang}.svg`}
                                   alt={lang}
-                                  className="cursor-pointer rounded-full border border-gray-300 shadow h-10 w-10"
+                                  className="cursor-pointer rounded-full border border-gray-300 shadow h-7 w-7 sm:h-10 sm:w-10 "
                                   whileHover={{ scale: 1.1 }}
                                   onClick={() => {
                                       if (!addingLanguage) {return}
@@ -421,12 +421,12 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                   </div>
 
                 { !editing && 
-                  <div className="h-[70%] flex flex-col p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">        
-                    <div className={`flex flex-row text-xl w-full justify-around h-full ${letterCounts && Object.values(letterCounts).reduce((a, b) => a + b, 0) < 1 && correctionCounts && Object.values(correctionCounts).reduce((a, b) => a + b, 0) < 1 ? "items-center" : "items-start"}`}>
+                  <div className="h-[70%] p-7 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">        
+                    <div className={`flex flex-row gap-10 text-xl w-full justify-around h-full ${letterCounts && Object.values(letterCounts).reduce((a, b) => a + b, 0) < 1 && correctionCounts && Object.values(correctionCounts).reduce((a, b) => a + b, 0) < 1 ? "items-center" : "items-start"}`}>
                       
                       <div className="flex flex-col items-center gap-2">
                         <p className="text-5xl font-medium">{letterCounts && Object.values(letterCounts).reduce((a, b) => a + b, 0)} ✉️</p>
-                        <h2 className="font-bold"> Letters written</h2>
+                        <h3 className="font-bold"> Letters written</h3>
                         <ul className="flex flex-col gap-2 mt-3">
                           { letterCounts && Object.entries(letterCounts).map(([lang, count]) => (
                             <li key={lang} className="flex flex-row gap-3">
@@ -439,7 +439,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                       
                       <div className="flex flex-col items-center gap-2">
                         <p  className="text-5xl font-medium">{correctionCounts && Object.values(correctionCounts).reduce((a, b) => a + b, 0)} 💌</p>
-                        <h2 className="font-bold"> Letters corrected</h2>
+                        <h3 className="font-bold"> Letters corrected</h3>
                         <ul className="flex flex-col gap-2 mt-3">
                           { correctionCounts && Object.entries(correctionCounts).map(([lang, count]) => (
                             <li key={lang} className="flex flex-row gap-3">
@@ -454,7 +454,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                 </div>
 
                 {/* Mapa 
-                <div className="w-[60%] h-[90%] flex flex-col items-center p-2 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">
+                <div className="lg:w-[60%] h-[20rem] lg:h-[90%] flex flex-col items-center p-2 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">
                   <MapNoSSR
                     key={user._id + "_" + editing}
                     selectedCountry={locationUser?.country || "No location"}
@@ -463,8 +463,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                       setLocationUser((prev) => ({ ...prev, country: newCountry }))
                     }
                   /> 
-                </div>*/}
-
+                </div>*/} 
               </div>
             </div>
             
@@ -490,3 +489,39 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
   );
 };
 
+
+
+/*
+function Mapa2() {
+  // evitar render en servidor / antes del montaje del cliente
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    // placeholder con tamaño para evitar reflow cuando el mapa se monte
+    return <div className="w-full h-full" />;
+  }
+
+  return (
+    <div className="w-[50%] h-[80%] flex flex-col items-center p-2 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">
+    <MapContainer
+      center={[40.4168, -3.7038]}
+      zoom={5}
+      scrollWheelZoom={false}
+      key={user._id + "_" + editing}
+      selectedCountry={locationUser?.country || "No location"}
+      editing={editing}
+      onCountryChange={(newCountry) =>
+        setLocationUser((prev) => ({ ...prev, country: newCountry }))
+      >
+      <TileLayer
+        url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+        subdomains={["a", "b", "c", "d"]}
+        maxZoom={20}
+      />
+    </MapContainer>
+    </div>
+  );
+}*/

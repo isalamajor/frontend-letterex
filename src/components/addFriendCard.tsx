@@ -1,7 +1,5 @@
 "use client";
-import Link from "next/link";
 import React from "react";
-import {Tooltip} from 'react-tooltip';
 import { UserRoundPlus, Dot, UserRoundCheck } from "lucide-react";
 import { sendFollowRequest } from "@/services/api";
 import { useState } from "react";

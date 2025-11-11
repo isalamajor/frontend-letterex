@@ -10,12 +10,11 @@ interface InputPassProps {
   wrongPassword: boolean;
   styles?: string;
   label?: boolean;
-  type?: string;
   onEnter?: () => void;
 }
 
 
-function InputPass({ onChange, wrongPassword, styles, label = true, type, onEnter }: InputPassProps) {
+function InputPass({ onChange, wrongPassword, styles, label = true, onEnter }: InputPassProps) {
   const id = useId();
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [markRed, setMarkRed] = useState<boolean>(false);

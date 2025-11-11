@@ -1,7 +1,7 @@
 "use client";
 import { SidebarDemo } from "@/components/sidebardemo";
-import { useState, useEffect, use } from "react";
-import { getFriends, getNonFriends, getSuggestedUsers, getFriendRequests } from "@/services/api";
+import { useState, useEffect } from "react";
+import { getFriends, getSuggestedUsers, getFriendRequests } from "@/services/api";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import FriendCard from "@/components/friendCard";
 import AddFriendCard from "@/components/addFriendCard";
@@ -13,14 +13,6 @@ import Stack from '@mui/material/Stack';
 
 const ITEMS_PER_PAGE = 6;
 
-function PaginationRounded() {
-  return (
-    <Stack spacing={2}>
-      <Pagination count={10} shape="rounded" />
-      <Pagination count={10} variant="outlined" shape="rounded" />
-    </Stack>
-  );
-}
 
 interface FriendList {
   friends: {
@@ -195,7 +187,7 @@ const SocialPageContent = () => {
                       </div>
                       {friends.length > ITEMS_PER_PAGE && (
                         <Pagination count={Math.ceil(friends.length / ITEMS_PER_PAGE)} variant="outlined" shape="rounded" 
-                        onChange={(event, page) => setCurrentPage(page)} size="large" />
+                        onChange={(event, page) => setCurrentPage(page)} size="large"/>
                       )}
                     </div>
                       ) :

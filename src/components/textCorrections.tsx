@@ -62,7 +62,7 @@ const TextCorrections = forwardRef<HTMLDivElement, {
       }
       
       // Buscar el texto original en el HTML
-      let searchStart = startHtmlIndex;
+      const searchStart = startHtmlIndex;
       let actualStart = -1;
       
       // Buscar hacia atrás y adelante para encontrar el texto exacto

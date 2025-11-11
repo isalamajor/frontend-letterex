@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { SidebarDemo } from "@/components/sidebardemo";
 import Link from "next/link";
 import { useState } from "react"
-import { Calendar, parseDate } from "@internationalized/date"
-import { DateField, DateInput } from "@/components/ui/datefield"
+import { parseDate } from "@internationalized/date"
+import { DateField, JollyDateField, DateInput } from "@/components/ui/datefield"
 import { Label } from "@/components/ui/field"
 import { getLetter, getDiaries, editLetter } from "@/services/api";
 import { Check } from "lucide-react";
@@ -17,15 +17,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.bubble.css';
+//import ReactQuill from 'react-quill-new';
+//import 'react-quill-new/dist/quill.bubble.css';
+import dynamic from "next/dynamic";
+
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+
+
+
 
 // Struct con los datos de la letter
-interface SharedWithUsers {
+interface SharedWithUser {
     id: string; 
     nickname: string;
     image: string;
-}[];
+};
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -41,6 +47,9 @@ export default function Home({ params }: { params: Promise<{ id: string }> }) {
 
 
 const NewLetterPageContent = ({ id }: { id: string }) => {
+  useEffect(() => {
+  import('react-quill-new/dist/quill.bubble.css').catch(() => {});
+  }, []);
 
   const [valuesChanged, setValuesChanged] = useState(false);
   const [date, setDate] = useState(() => parseDate(new Date().toISOString().split("T")[0]));
@@ -50,14 +59,11 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   const [title, setTitle] = useState(""); 
   const [letterContent, setLetterContent] = useState(""); 
   const [diaryList, setDiaryList] = useState<string[]>(["English Diary", "Spanish Tales", "new"]);
-  const [indexNewDiary, setIndexNewDiary] = useState(-1);
-  const [sharedWith, setSharedWith] = useState<SharedWithUsers[]>([]);
+  const [sharedWith, setSharedWith] = useState<SharedWithUser[]>([]);
 
   // Estados para manejar errores
   const [titleError, setTitleError] = useState(false);
   const [dateError, setDateError] = useState(false);
-  const [contentError, setContentError] = useState(false);
-  const [languageError, setLanguageError] = useState(false);
 
   const modulesQuill = {
     toolbar: [
@@ -96,20 +102,19 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     }
 
   // Funciones
-  const handleTitleChange = (event: any) => {
+  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitleError(false);
     setValuesChanged(true);
     setTitle(event.target.value); 
   }
 
-  const handleDateChange = (newDate: any) => {
+  const handleDateChange = (newDate: React.ChangeEvent<HTMLInputElement>) => {
     setDateError(false);
     setValuesChanged(true);
     setDate(newDate)
   }
 
   const handleLanguageChange = (selectedLanguage: string) => {
-    setLanguageError(false);
     setValuesChanged(true);
     setLanguage(selectedLanguage); 
   }
@@ -118,12 +123,6 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     setValuesChanged(true);
     setDiary(selectedDiary);
     return; 
-  };
-
-  const handleLetterContentChange = (event: any) => {
-    setContentError(false);
-    setValuesChanged(true);
-    setLetterContent(event.target.value);
   };
 
   // Función para guardar la carta (editar)
@@ -139,11 +138,9 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       hasError = true;
     }
     if (!language) {
-      setLanguageError(true);
       hasError = true;
     }
     if (!letterContent.trim()) {
-      setContentError(true);
       hasError = true;
     }
     if (hasError) {
@@ -258,9 +255,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
         <div className="flex gap-2 flex-1">
-            <div
-              className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-20"
-            >
+            <div className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-5 sm:px-20">
 
               {/* Title field */}
               <input
@@ -275,12 +270,11 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                 autoFocus
               />
               
-              <div className="flex flex-row gap-2 justify-between items-end">
-                
+              <div className="grid grid-cols-2 grid-rows-2 lg:grid-cols-8 lg:grid-rows-1 gap-2 justify-between items-end mb-0 sm:mb-5">
                 {/* Date field */}
-                <div className="flex flex-row items-center gap-4 w-[50%]">
+                <div className="w-full">
                   <DateField
-                  className={"w-[150px] rounded-md p-2 space-y-1 ring-transparent"}
+                  className={"rounded-md ring-transparent"}
                   value={date}
                   isDisabled={sharedWith.length > 0}
                   onChange={handleDateChange}
@@ -291,9 +285,10 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                     dateError ? "border-red-500" : "border-neutral-300"
                   }`}/>
                   </DateField>
+                </div>
 
                 {/* Diary select */}
-                <div className="space-y-2 min-w-[200px]">
+                <div className="">
                   <Label className="text-black" htmlFor={id}>Select diary</Label>
                   <Select 
                   value={diary} 
@@ -311,7 +306,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                 </div>
 
                 {/* Language select */}
-                <div className="space-y-2 min-w-[200px]">
+                <div className="">
                   <Label className="text-black" htmlFor={id}>Select language</Label>
                   <Select 
                   value={language} 
@@ -327,10 +322,9 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                     </SelectContent>
                   </Select>
                 </div>
-                </div>
 
                   { sharedWith && sharedWith[0] && 
-                    <div className="text-[#6495ED] m-4 flex flex-row gap-2 items-center">
+                    <div className="col-span-5 text-[#6495ED] m-4 flex flex-row gap-2 justify-end">
                       <span className="text-gray-600">Shared with</span>
                       <div key={sharedWith[0].id} className="flex items-center gap-1">
                           <img
@@ -356,28 +350,16 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                   }
 
               </div>
-
-
-              {/* Letter content field 
-              <textarea
-                value={letterContent}
-                disabled={sharedWith.length > 0}
-                onChange={handleLetterContentChange}
-                placeholder="Write your letter here..."
-                className={`w-full h-[70%] p-4 text-lg text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-neutral-800 rounded-lg border ${
-                  contentError ? "border-red-500 placeholder-red-500" : "border-neutral-300"
-                } outline-none resize-none`}
-              />*/}
               
               <ReactQuill 
-              className="h-[55vh] border rounded-md bg-white text-gray-900
+              className="min-h-[60vh] sm:min-h-[65vh] border rounded-md bg-white text-gray-900
               rounded-md p-2 space-y-1 ring-transparent"
-              theme="bubble" value={letterContent} onChange={(content) => {setLetterContent(content); setContentError(false); setValuesChanged(true);}}
+              theme="bubble" value={letterContent} onChange={(content) => {setLetterContent(content); setValuesChanged(true);}}
               modules={modulesQuill} readOnly={sharedWith.length > 0}/>
 
 
             {/* Buttons */}
-            <div className="flex justify-between h-[5%] col items-center gap-4 mt-4">
+            <div className="flex justify-between h-[5%] items-center gap-4 mt-4">
               
               <Link href={"/homepage"}>
                 <button>

@@ -1,8 +1,6 @@
 "use client";
-import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { Checkbox } from "react-aria-components";
-import {Tooltip} from 'react-tooltip';
+import { useSwipeable } from "react-swipeable";
 
 
 interface LetterCardProps {
@@ -22,6 +20,14 @@ interface LetterCardProps {
 const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, language, sharedWith, deleteMode, onSelectionChange }) => {
 
   const [isSelected, setIsSelected] = useState(false);
+  const [widthClass, setWidthClass] = useState("w-full");
+  
+  const handlers = useSwipeable({
+    onSwipedLeft: () => setWidthClass("w-[80%]"),
+    onSwipedRight: () => setWidthClass("w-full"),
+    preventScrollOnSwipe: true,
+    trackMouse: true, // opcional: también permite swipes con el ratón
+  });
 
   // Si cambia el modo delete, resetea la selección
   useEffect(() => {
@@ -42,9 +48,11 @@ const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, l
   }
 
   return (
-    <div className="block w-full relative w-full max-w-5xl group">
-      <div className={`px-8 py-4 rounded-lg bg-gray-50 shadow-md relative 
-      group max-w-5xl transition-all duration-300 group-hover:w-[80%] ${deleteMode ? "w-[80%]" : "w-full"}`} onClick={goToEditLetter(id)}>
+    <div className="block w-full relative  group">
+      <div className={`px-8 py-4 rounded-lg bg-gray-50 shadow-md relative h-[12vh]
+      group transition-all duration-300 ${widthClass} group-hover:w-[80%] ${deleteMode ? "w-[80%]" : "w-full"}`} 
+      onClick={goToEditLetter(id)}
+      {...handlers}>
         {/* Fecha y Diario */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-s text-gray-500 dark:text-gray-400 mb-2">{created_at.slice(0, 10)}</p>
@@ -55,7 +63,7 @@ const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, l
 
         {/* Título de la carta */}
         <div className="flex justify-between">
-          <h4 className="text-xl items-center text-gray-700 font-bold dark:text-gray-400">
+          <h4 className="items-center text-gray-700 font-bold dark:text-gray-400">
             {title}
           </h4>
 
@@ -67,13 +75,13 @@ const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, l
                   key={index}
                   src={`http://localhost:3090/uploads/profile_pictures//${user.image}`}
                   alt={user.image}
-                  className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
+                  className="w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600"
                 />
               ))}
             <img
               src={`/flags/${language}.svg`}
               alt={language}
-              className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600"
+              className="w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600"
             />
           </div>
         </div>
@@ -109,7 +117,7 @@ const LetterCard: React.FC<LetterCardProps> = ({ id, created_at, diary, title, l
                 const btnId = `btn-${user.nickname}`;
 
                 return (
-                  <div className="inline-block px-2">
+                  <div className="inline-block px-2" key={`${btnId}-div`}>
                     <button
                       key={user.nickname + index}
                       onClick={goToCorrection(user.correctedLetterId)}

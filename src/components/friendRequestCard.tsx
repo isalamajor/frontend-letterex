@@ -1,7 +1,5 @@
 "use client";
-import Link from "next/link";
 import React from "react";
-import {Tooltip} from 'react-tooltip';
 import { Check, X } from 'lucide-react';
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { useState } from "react";
@@ -11,14 +9,12 @@ interface User {
     _id: string;
     nickname: string;
     image: string;
-    profilePictureUrl: string;
-    idRequest: string;
     onAcceptSuccess: () => void;
 }
 
 
 
-const FriendRequestCard: React.FC<User> = ({ _id, nickname, image, profilePictureUrl, idRequest, onAcceptSuccess }) => {
+const FriendRequestCard: React.FC<User> = ({ _id, nickname, image, onAcceptSuccess }) => {
   // Dialog
     const [dialogConfig, setDialogConfig] = useState<{
       isOpen: boolean
@@ -45,18 +41,6 @@ const FriendRequestCard: React.FC<User> = ({ _id, nickname, image, profilePictur
     const closeDialog = () => {
       setDialogConfig(prev => ({ ...prev, isOpen: false }))
     }
-
-  const goToCorrection = (correctedLetterId: string) => (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    event.preventDefault(); 
-    window.location.href = `/view-correction/${correctedLetterId}`;
-  };
-
-  const goToEditLetter = (id: string) => (event: React.MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-    event.preventDefault();
-    window.location.href = `/edit-letter/${id}`;
-  }
 
   const acceptOnClick = async () => {
     const result = await acceptFriendRequest(_id);
@@ -88,7 +72,7 @@ const FriendRequestCard: React.FC<User> = ({ _id, nickname, image, profilePictur
 
   return (
       <div className="px-8 pt-4 rounded-lg bg-white hover:bg-gray-50 border border-gray-200 shadow-md w-full flex flex-row gap-4">
-        <img
+        <Image
             src={`http://localhost:3090/uploads/profile_pictures/${image}`}
             alt={image}
             className="w-14 h-14 rounded-full border border-gray-300 dark:border-gray-600"

@@ -17,7 +17,7 @@ const declineFriendRequest = async (senderId) => {
         console.error("Error declining friend request:", response.data.message);
         return -1;
     }
-    catch (error) {
+    catch (_error) {
         return -1;
     }
 }
@@ -37,7 +37,7 @@ const acceptFriendRequest = async (senderId) => {
         console.error("Error accepting friend request:", response.data.message);
         return -1;
     }
-    catch (error) {
+    catch (_error) {
         return -1;
     }
 }
@@ -161,7 +161,7 @@ const getFriends = async () => {
 }
 
 
-const getFriendsList = async (id) => {
+const getFriendsList = async () => {
     const token = sessionStorage.getItem("authToken");
     try {
        const response = await axios.get(`${API_URL}/follow/friends`, {

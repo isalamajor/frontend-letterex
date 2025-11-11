@@ -75,12 +75,11 @@ const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending, refr
 
   if (filteredLetters && filteredLetters.length > 0) {
   return (
-    <div className="flex flex-col gap-4 max-h-[80%] custom-scroll overflow-y-auto">
+    <div className="flex flex-col gap-4 pb-10 custom-scroll sm:max-h-[80%] sm:overflow-y-auto">
       {filteredLetters.map((letter, index) => (
         <ReceivedLetterCardProps
           id={letter._id}
           diary="-"
-          created_at={letter.corrected_at}
           received_at={letter.received_at}
           title={letter.originalLetter.title}
           language={letter.originalLetter.language}
@@ -96,7 +95,7 @@ const ReceivedLetterList = ({ orderBySender, searchFilter, showOnlyPending, refr
   )
   }
   return (
-    <div className="text-center text-gray-500 h-[40vh] flex items-center justify-center">
+    <div className="text-center text-gray-500 h-[70%] flex items-center justify-center">
       { !letters || letters.length === 0 ? "When you receive letters to check and correct, they will appear here." : "No letters matching the filter."}
     </div>
   );

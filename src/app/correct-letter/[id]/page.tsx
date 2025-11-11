@@ -1,15 +1,14 @@
 "use client";
-import { useEffect, useRef } from "react";
-import { SidebarDemo } from "@/components/sidebardemo";
-import Link from "next/link";
+import { useEffect, useRef } from "react"
+import { SidebarDemo } from "@/components/sidebardemo"
+import Link from "next/link"
 import { useState } from "react"
 import { parseDate } from "@internationalized/date"
-import { Label } from "@/components/ui/field"
-import { Check, X, Trash, Eye, EyeOff, SquareDashed  } from "lucide-react";
-import { use } from "react";
-import { SuccessDialog, DialogType } from "@/components/ui/dialog";
-import TextCorrections from "@/components/textCorrections";
-import { updateLetterCorrections, sendLetterBack, getLetterToCorrect } from "@/services/api";
+import { Check, X, Trash, SquareDashed  } from "lucide-react"
+import { use } from "react"
+import { SuccessDialog, DialogType } from "@/components/ui/dialog"
+import TextCorrections from "@/components/textCorrections"
+import { updateLetterCorrections, sendLetterBack, getLetterToCorrect } from "@/services/api"
 
 
 interface Correccion {
@@ -50,10 +49,9 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   const [selectionInfo, setSelectionInfo] = useState<{ text: string, rect: DOMRect | null, startIndex:number, endIndex:number } | null>(null);
   const [corrections, setCorrections] = useState<Correccion[]>([]);
   const [sentBack, setSentBack] = useState(false);
-  const [commentBoxOpen, setCommentBoxOpen] = useState(false);
   const [comment, setComment] = useState("");
 
-  const handleInput = (e:any) => {
+  const handleInput = (e:React.ChangeEvent<HTMLInputElement>) => {
     const textarea = e.target;
     textarea.style.height = "auto"; // reset height
     textarea.style.height = textarea.scrollHeight + "px"; // set height to scrollHeight
@@ -109,7 +107,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       setCorrections(letterData.corrections || []);
       setSentBack(letterData.sentBack || false);
       setComment(letterData.comments || "");
-      if (letterData.comments) { setCommentBoxOpen(true); console.log("abierto");}
     })();
   }, [id]);
 
@@ -261,7 +258,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         type: 'askConfirmation',
         onConfirmationPositive: sendBack
       });
-    } catch (error) {
+    } catch (_error) {
       openDialog({
         title: "Fail to send back",
         description: "There was an error sending letter back :(",
@@ -277,7 +274,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       <div className="overflow-y-auto custom-scroll p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
             <div
-              className="h-auto w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-20"
+              className="h-auto w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-10 sm:px-20"
             >
 
               {/* Title field */}
@@ -438,7 +435,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                 value={comment}
                 onChange={handleInput}
                 disabled={sentBack}
-                className="px-5 py-4 w-full text-lg text-gray-800 bg-gray-50 rounded-lg outline-none
+                className="px-5 py-4 w-full text-gray-800 bg-gray-50 rounded-lg outline-none
                   resize-none
                   opacity-100"
                 />

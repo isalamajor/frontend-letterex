@@ -1,7 +1,7 @@
 "use client"; 
 
 import "../stylesheets/animatedForm.css";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MdOutlineSensorDoor } from "react-icons/md";
 import { RiPlantLine } from "react-icons/ri";
 import { motion } from "framer-motion";
@@ -11,6 +11,7 @@ import { ImageUploader } from "@/components/imageUploader";
 import { useRouter } from "next/navigation"; 
 import { Typewriter } from "./ui/typeWriter";
 import { InputPass } from "./ui/inputPass";
+import FrogAnimation from "@/components/frogAnimation1";
 
 const languagesData = [
   { name: "English", image: "/flags/english.svg" },
@@ -47,6 +48,36 @@ export default function AnimatedForm() {
   const [languagesLearning, setLanguagesLearning] = useState([]);
   const [profileImage, setProfileImage] = useState(null);
   const inputRefs = useRef([]); // Referencias a los inputs del código de confirmación
+  const [frogSettings, setFrogSettings] = useState({
+    register: {  top: "30%", left: "50%", width: 200}, 
+    login: {  top: "30%", left: "50%", width: 200},
+    other: {  top: "30%", left: "50%", width: 200}})
+
+
+  useEffect(() => {
+  const updateWidth = () => {
+      const w = window.innerWidth;
+      if (w < 480) setFrogSettings({
+        register: {  top: "25%", left: "50%", width: 150}, 
+        login: {  top: "25%", left: "50%", width: 150},
+        other: {  top: "25%", left: "50%", width: 200}})      // móviles pequeños
+      else if (w < 768) setFrogSettings({
+        register: {  top: "25%", left: "50%", width: 150}, 
+        login: {  top: "25%", left: "50%", width: 150},
+        other: {  top: "30%", left: "50%", width: 250}}); // móviles / tablets pequenos
+      else if (w < 1024) setFrogSettings({
+        register: {  top: "32%", left: "50%", width: 180}, 
+        login: {  top: "33%", left: "50%", width: 180},
+        other: {  top: "30%", left: "50%", width: 250}}); // tablets / pantallas medias    
+      else setFrogSettings({
+        register: {  top: "30%", left: "50%", width: 180}, 
+        login: {  top: "30%", left: "50%", width: 180},
+        other: {  top: "25%", left: "50%", width: 250}});              // desktop
+      };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
 
 
   const handleImageUpload = (imageFile) => {
@@ -218,19 +249,27 @@ export default function AnimatedForm() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <motion.img
-        src="/logo-frog.png"
+    <div className="flex flex-col items-center justify-center min-h-[80dvh] sm:h-screen">
+      <motion.div
+        src={showLoginForm ? "/logo-frog-open.png" : "/logo-frog-closed.png"}
         alt="Logo"
-        className="w-40"
         href="/"
-        animate={showLoginForm ? {  top: "30%", left: "50%", width: 150 } : showRegisterForm ? {  top: "29%", left: "49%", width: 150 }: { top: "29%", left: "49%", width: 200 }}
+        className="w-40"
+        animate={showLoginForm ? frogSettings.login : showRegisterForm ? frogSettings.register : frogSettings.other}
         transition={{ duration: 0.8, ease: "easeInOut" }}
         style={{ position: "absolute", transform: "translate(-50%, -50%)" }}
-      />
+      >
+        
+      <FrogAnimation toggle={showLoginForm} velocidad={50}></FrogAnimation>
+      </motion.div>
+
+      {/*<div className={`absolute ${showLoginForm ? "top-56 left-25" : "top-60 left-15"}`}>
+      <FrogAnimation toggle={showLoginForm} velocidad={50}></FrogAnimation>
+      </div>*/}
 
       {!showLoginForm && !showRegisterForm && (
         <div>
+          <p className="relative"></p>
           <div className="text text-white text-lg">
             <h2 className="font-semibold text-2xl">Welcome to Letterex</h2>
             <Typewriter
@@ -267,13 +306,13 @@ export default function AnimatedForm() {
       {/* Formulario de inicio de sesión */}
       {showLoginForm && (
         <motion.div
-          className="mt-10 bg-white p-6 rounded-lg shadow-lg w-80  w-[22rem]"
+          className="mt-10 bg-white p-6 rounded-lg shadow-lg w-80 w-[22rem]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <h2 className="text-lg font-semibold mb-4">Log in</h2>
-          <div className="grid-form">
+          <div className="flex flex-col gap-2 my-5 mx-0 justify-start">
             <input
               className="w-full p-2 mb-2 border rounded form-blank"
               type="text"
@@ -292,7 +331,7 @@ export default function AnimatedForm() {
               label={false}
               onEnter={loginAttempt}
             />
-            <p style={{ whiteSpace: "pre-line" }} className="alert-message">{showAlert}</p>
+            <p style={{ whiteSpace: "pre-line" }} className="text-red-500">{showAlert}</p>
           </div>
           <div className="back-go">
             <button
@@ -313,7 +352,7 @@ export default function AnimatedForm() {
 
       {showRegisterForm && (
         <motion.div
-            className="mt-10 bg-white p-6 rounded-lg shadow-lg w-80 slide-form"
+          className="mt-10 bg-white p-6 rounded-lg shadow-lg min-w-[22rem]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -321,9 +360,9 @@ export default function AnimatedForm() {
           {currentStep === 1 && (
             <div>
               <h2 className="text-lg font-semibold mb-4">Create your account</h2>
-              <div className="form-register">
+              <div className="flex flex-col gap-2 my-5 mx-0 justify-start">
                 <input
-                    className="p-2 mb-2 border rounded form-blank w-[17rem]"
+                    className="w-full p-2 mb-2 border rounded form-blank"
                     type="text"
                     placeholder="Username"
                     value={username}
@@ -335,7 +374,7 @@ export default function AnimatedForm() {
                     }}
                 />
                 <InputPass
-                  styles=" w-[17rem] p-2 mb-2 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
+                  styles="w-full p-0 mb-2 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
                   placeholder="Password"
                   value={password}
                   onChange={(pass) => {
@@ -348,7 +387,7 @@ export default function AnimatedForm() {
                   onEnter={handleNextStep}
                 />
               </div>
-              <p style={{ whiteSpace: "pre-line"}} className="alert-message">{showAlert}</p>
+              <p style={{ whiteSpace: "pre-line"}} className="text-red-500">{showAlert}</p>
             </div>
           )}
 
@@ -363,7 +402,7 @@ export default function AnimatedForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(event)=>{ if (event.key === "Enter") handleNextStep() }}
               />
-            <p style={{ whiteSpace: "pre-line"}} className="alert-message">{showAlert}</p>
+            <p style={{ whiteSpace: "pre-line"}} className="text-red-500">{showAlert}</p>
             </div>
           )}
 
@@ -415,7 +454,7 @@ export default function AnimatedForm() {
                   />
                 ))}
               </div>
-            <p className="alert-message">{showAlert}</p>
+            <p className="text-red-500">{showAlert}</p>
             </div>
           )}
 

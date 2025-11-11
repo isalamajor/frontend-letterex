@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, AlertTriangle, CircleX, Send, Lock, BookOpen, MailQuestionMark, Trash2, Handshake } from 'lucide-react'
+import { Check, X, AlertTriangle, CircleX, Lock, BookOpen, MailQuestionMark, Trash2, Handshake } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getFriendsList, shareLetter, changePassword, deleteAccount } from "@/services/api"
 import FriendsCheckboxList from '@/components/ui/friendsCheckBoxList'
 import { Switch } from '@/components/ui/switch'
 import { InputPasswords } from '@/components/ui/inputPasswords'
 import { InputPass } from '@/components/ui/inputPass'
-import { on } from 'events'
 
 interface DialogProps {
   open: boolean;
@@ -123,8 +122,8 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   type = 'success', // Default to success
   letterId = '',
   sharedWith = [],
-  onShareSuccess = (shareLetterResult: number) => {},
-  onNewDiaryCreated = (diaryName) => {},
+  onShareSuccess = (_shareLetterResult: number) => {},
+  onNewDiaryCreated = (_diaryName: string) => {},
   prevNewDiaryName = "",
   onConfirmationPositive = () => {}
 }) => {

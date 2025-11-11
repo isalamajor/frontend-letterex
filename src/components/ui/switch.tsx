@@ -85,7 +85,7 @@ const SwitchControl = ({
       />
       <span
         className={twMerge(clsx(
-          "flex items-center justify-center flex-1 cursor-pointer font-medium font-sans duration-150",
+          "flex items-center justify-center flex-1 cursor-pointer font-sans duration-150 ",
           checked ? "bg-gray-100 text-gray-1000 fill-gray-1000 rounded-sm" : "text-gray-900 hover:text-gray-1000 fill-gray-900 hover:fill-gray-1000",
           disabled && "text-gray-800 fill-gray-800",
           !icon && size === "small" && "text-sm px-3",

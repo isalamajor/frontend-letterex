@@ -1,13 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { LayoutDashboard, UserCog, Handshake, LogOut } from "lucide-react";
+import { LayoutDashboard, UserCog, Handshake, LogOut, LeafyGreen } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import "../stylesheets/sidebardemo.css";
-import { BsPlus } from "react-icons/bs";
 
 export function SidebarDemo({ children }: { children: React.ReactNode }) {
   const links = [
@@ -33,12 +32,19 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
       ),
     },
     {
+      label: "Community",
+      href: "/community",
+      icon: (
+        <LeafyGreen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+    },
+    {
       label: "Logout",
       href: "/",
       icon: (
         <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
-    },
+    }
   ];
   const [open, setOpen] = useState(false);
   return (

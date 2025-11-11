@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { SidebarDemo } from "@/components/sidebardemo";
 import { useRouter } from 'next/navigation'
 import Link from "next/link";
@@ -15,14 +15,12 @@ import { DateField, DateInput } from "@/components/ui/datefield"
 import { Label } from "@/components/ui/field"
 import { getDiaries, saveLetter } from "@/services/api";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
-import { BookOpen, Edit } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import Quill from 'quill';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import 'react-quill-new/dist/quill.bubble.css';
-
-
-const Delta = Quill.import('delta');
+import { log } from "console";
 
 
 
@@ -46,20 +44,13 @@ const NewLetterPageContent = () => {
   const [languageList, setLanguageList] = useState<string[]>(["English", "Spanish", "French", "German"]);
   const [title, setTitle] = useState(""); 
   const [letterContent, setLetterContent] = useState(""); 
-  const [diaryList, setDiaryList] = useState<string[]>(["English Diary", "Spanish Tales", "First Notebook"]);
+  const [diaryList, setDiaryList] = useState<string[]>([]);
   const [diaryAddedPreviously, setDiaryAddedPreviously] = useState<boolean>(false);
-
-
-  const [range, setRange] = useState();
-  const [lastChange, setLastChange] = useState();
-  const [readOnly, setReadOnly] = useState(false);
 
 
   // Estados para manejar errores
   const [titleError, setTitleError] = useState(false);
   const [dateError, setDateError] = useState(false);
-  const [contentError, setContentError] = useState(false);
-  const [languageError, setLanguageError] = useState(false);
 
   
   const router = useRouter()
@@ -91,19 +82,18 @@ const NewLetterPageContent = () => {
     setDialogConfig(prev => ({ ...prev, isOpen: false }))
   }
 
-  const handleTitleChange = (event: any) => {
+  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitleError(false);
     console.log("Title changed:", event.target.value);
     setTitle(event.target.value); 
   }
 
-  const handleDateChange = (newDate: any) => {
+  const handleDateChange = (newDate: React.ChangeEvent<HTMLInputElement>) => {
     setDateError(false);
     setDate(newDate)
   }
 
   const handleLanguageChange = (selectedLanguage: string) => {
-    setLanguageError(false);
     setLanguage(selectedLanguage); 
   }
 
@@ -126,11 +116,9 @@ const NewLetterPageContent = () => {
       hasError = true;
     }
     if (!language) {
-      setLanguageError(true);
       hasError = true;
     }
     if (!letterContent.trim()) {
-      setContentError(true);
       hasError = true;
     }
     if (hasError) {
@@ -165,6 +153,7 @@ const NewLetterPageContent = () => {
 
     const fetchDiaries = async () => {
       const res = await getDiaries();
+      console.log("Diares: ", res);
       if (Array.isArray(res)) {
         setDiaryList(res);
       }
@@ -179,9 +168,7 @@ const NewLetterPageContent = () => {
       <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
         <div className="flex gap-2 flex-1">
-            <div
-              className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-20"
-            >
+            <div className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-5 sm:px-20">
 
               {/* Title field */}
               <input
@@ -197,22 +184,24 @@ const NewLetterPageContent = () => {
 
 
               {/* Date field */}
-              <div className="flex flex-row items-center gap-4">
-                <DateField
-                className={"w-[150px] rounded-md p-2 space-y-1 ring-transparent"}
-                value={date}
-                onChange={handleDateChange}
-                >
-                {dateError && <Label className="text-red-500">Date missing</Label>}
-                {!dateError && <Label className="text-black">Date</Label>}
-                <DateInput className={`bg-white text-black  ${
-                  dateError ? "border-red-500" : "border-neutral-300"
-                }`}/>
-                </DateField>
+              <div className="grid grid-cols-3 grid-rows-1 lg:grid-cols-8 gap-2 justify-between items-end mb-2 sm:mb-5">
+                <div>
+                  <DateField
+                  className={"rounded-md ring-transparent"}
+                  value={date}
+                  onChange={handleDateChange}
+                  >
+                  {dateError && <Label className="text-red-500">Date missing</Label>}
+                  {!dateError && <Label className="text-black">Date</Label>}
+                  <DateInput className={`bg-white text-black  ${
+                    dateError ? "border-red-500" : "border-neutral-300"
+                  }`}/>
+                  </DateField>
+                </div>
 
                   
                 {/* Diary select */}
-                <div className="space-y-2 min-w-[200px]">
+                <div>
                   <Label className="text-black">Select diary</Label>
                   <Select value={diary} onValueChange={(diary) => {handleDiaryChange(diary)}}>
                     <SelectTrigger  className="text-black bg-white h-10 rounded-md ring-transparent">
@@ -241,7 +230,7 @@ const NewLetterPageContent = () => {
                 </div>
 
                 {/* Language select*/}
-                <div className="space-y-2 min-w-[200px]">
+                <div>
                   <Label className="text-black" >Select language</Label>
                   <Select value={language} onValueChange={(lang) => {handleLanguageChange(lang)}}>
                     <SelectTrigger  className="text-black bg-white h-10 rounded-md ring-transparent">
@@ -258,25 +247,24 @@ const NewLetterPageContent = () => {
               </div>
               
               <ReactQuill
-              className="h-[55vh] border rounded-md bg-white text-gray-900
+              className="min-h-[62vh] sm:min-h-[65vh] border rounded-md bg-white text-gray-900
               rounded-md p-2 space-y-1 ring-transparent"
-              theme="bubble" value={letterContent} onChange={(content) => {setLetterContent(content); setContentError(false);}}
+              theme="bubble" value={letterContent} onChange={(content) => setLetterContent(content)}
               />
 
               {/* Buttons */}
-              <div className="flex justify-between h-[5%] col items-center gap-4 mt-4">
+              <div className="flex justify-between h-[5%] items-end gap-4 mt-4">
                   <Link href={"/homepage"}>
-                    <button>
-                        <div className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
+                    <button
+                    className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors"
+                    >
                         Back
-                        </div>
                     </button>
                   </Link>
-                  <div className="flex flex-row justify-end h-[5%] col items-center gap-4 mt-4 ">
-                    <button onClick={() => {SaveLetterOnClick()}}>
-                      <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
+                  <div className="flex flex-row justify-end h-[5%] col items-center gap-4 mt-4">
+                    <button onClick={() => {SaveLetterOnClick()}}
+                      className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
                         💾 Save Letter
-                      </div>
                     </button>
                 </div>
               </div>

@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import React from "react";
 import LetterCard from "./LetterCard";
 import { getUserLetters, changeLetterDiary } from "../services/api";
-import { unique } from "next/dist/build/utils";
 import { BookCopy, BookX } from "lucide-react";
 
 
@@ -133,7 +132,6 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
       );
     }, [resetSelection]);
 
-  const [droppedItems, setDroppedItems] = useState<string[]>([]);
   const handleDropAction = (letterId: string, oldDiary: string, newDiary: string) => {
     console.log("Cambiar de ", oldDiary, " a ", newDiary);
     if (oldDiary === newDiary) return;
@@ -143,7 +141,9 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
 
   if (diaryOrganised && filteredLetters && filteredLetters.length > 0) {
     return(
-      <div className="flex flex-row gap-5">
+        
+      <div className="flex flex-row gap-5 max-h-[60%] sm:custom-scroll sm:overflow-y-auto">
+        
         {/* Diaries */}
         <div className="flex flex-col gap-y-3 w-[50%]">
           {diaries.map((diary) =>  (  
@@ -223,8 +223,8 @@ const LetterCardList = ({ orderByDiaryTrigger, searchFilter, deleteMode, resetSe
     )
   }
   if (filteredLetters && filteredLetters.length > 0) {
-  return (
-    <div className="flex flex-col gap-4 max-h-[80%] custom-scroll overflow-y-auto pr-2">
+  return (      
+    <div className="flex flex-col gap-4 h-full sm:h-[70vh] custom-scroll overflow-y-auto pb-10">
       {filteredLetters.map((letter, index) => (
         <LetterCard
           id={letter._id}
@@ -253,7 +253,7 @@ export default LetterCardList;
 
 
 
-function DraggableItem({ id, children, onDrop, diaryName }: DraggableItemProps) {
+function DraggableItem({ id, children, diaryName }: DraggableItemProps) {
   const [dragging, setDragging] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const offsetRef = useRef({ x: 0, y: 0 });

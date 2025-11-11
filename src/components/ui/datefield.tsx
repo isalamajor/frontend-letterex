@@ -123,7 +123,7 @@ function JollyTimeField<T extends AriaTimeValue>({
       {...props}
     >
       <Label>{label}</Label>
-      <DateInput />
+      <DateInput/>
       {description && <Text slot="description">{description}</Text>}
       <FieldError>{errorMessage}</FieldError>
     </TimeField>

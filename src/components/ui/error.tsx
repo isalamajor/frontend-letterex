@@ -54,7 +54,7 @@ export const Error = ({ error, label, size = "medium", children }: ErrorProps) =
           large: "text-base"
         }[size]}`
       }
-      // @ts-ignore
+      // @ts-expect-error
       style={{ "--geist-link-color": "var(--ds-red-900)" }}
     >
       <ErrorIcon />

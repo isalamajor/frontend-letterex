@@ -31,7 +31,7 @@ export default function LanguageSelector({ languagesAvailable, languagesTaken, n
   };
 
   return (
-    <div className="flex flex-col items-center main">
+    <div className="flex flex-col items-center fit-content">
       <h2 className="text-lg font-semibold mb-4">{titleText}</h2>
       <div className="grid grid-cols-7 gap-2 h-[5rem]">
         {availableLanguages.map((lang) => (

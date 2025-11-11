@@ -307,10 +307,26 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground text-[3vw] sm:text-[1vw] ;
   }
   .ql-editor {
     @apply font-sans text-base;
+  }
+  h1 {
+        @apply text-[6vw] sm:text-[2vw];
+  }
+
+  h2 {
+      @apply text-[4.5vw] sm:text-[1.5vw] font-bold; 
+  }
+
+  h3 {
+      @apply text-[3.5vw] sm:text-[1.2vw]; 
+  }
+
+  
+  h4 {
+      @apply text-[3vw] sm:text-[1.1vw]; 
   }
 }
 
@@ -325,4 +341,9 @@
     border-radius: 9999px;
   }
 
+  .text-res {
+    @apply text-[3vw] sm:text-[1vw] 
+    }
+
 }
+

@@ -1,7 +1,6 @@
-import { m } from 'framer-motion';
 import { useState } from 'react';
 import { Pagination } from '@mui/material';
-import { Search } from 'lucide-react';
+//import { Search } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -21,11 +20,11 @@ interface FriendsCheckboxListProps {
 const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({ friends, selected, setSelected }) => {
   const maxSelectable = 2 - friends.filter(friend => friend.alreadySent).length;
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchFilter, setSearchFilter] = useState("");
+  /*const [searchFilter, setSearchFilter] = useState("");
 
   const filteredFriends = friends.filter(friend => 
     friend.nickname.toLowerCase().includes(searchFilter.toLowerCase())
-  );
+  );*/
 
   const handleToggle = (friendId: string) => {
     if (maxSelectable === 1) {
@@ -49,7 +48,7 @@ const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({ friends, sele
   return (
     <div className="flex flex-col items-center py-3">
       <ul className="space-y-2 grid grid-cols-2 gap-x-4 mb-2">
-        {filteredFriends
+        {friends
           .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
           .map((friend) => (
             <label
@@ -67,12 +66,12 @@ const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({ friends, sele
           </label>
         ))}
       </ul>
-      {filteredFriends.length === 0 && (
+      {friends.length === 0 && (
         <p className="text-sm text-gray-500 mb-5">No friends matching the filter...</p>
       )}
       <div className='flex flex-row gap-1'>
-        {filteredFriends.length > ITEMS_PER_PAGE && (
-          <Pagination count={Math.ceil(filteredFriends.length / ITEMS_PER_PAGE)} variant="outlined" shape="rounded" 
+        {friends.length > ITEMS_PER_PAGE && (
+          <Pagination count={Math.ceil(friends.length / ITEMS_PER_PAGE)} variant="outlined" shape="rounded" 
           onChange={(event, page) => setCurrentPage(page)} size="small" />
         )}
         

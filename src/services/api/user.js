@@ -39,6 +39,7 @@ const getUserData = async (id) => {
 
 
 const sendVerificationCode = async (email) => {
+    return 0;
     try {
         const response = await axios.post(`${API_URL}/verificate-email/${email}`);
         if (response.data.code === 0) { return 0}
@@ -85,7 +86,7 @@ const login = async (credentials) => {
         else if (response.data.status > 0) {
             return response.data;
         }
-    } catch (error) {
+    } catch (_error) {
         return -1;
     }
 };
@@ -153,7 +154,7 @@ const listUsers = async (token, page = 1) => {
 
 const updateUser = async (userData) => {
     // Quitar email y nickname de userData
-    const { email, nickname, ...rest } = userData;
+    const { email: _, nickname: __, ...rest } = userData;
     const token = sessionStorage.getItem("authToken");
     try {
         const response = await axios.put(`${API_URL}/update`, rest, {
@@ -248,7 +249,7 @@ const getProfilePictureUrl = async (id) => {
             return URL.createObjectURL(response.data);
         }
         return null;
-    } catch (error) {
+    } catch (_error) {
         return null;
     }
 };
