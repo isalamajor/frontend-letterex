@@ -30,8 +30,8 @@ export const Switch = ({ children, name = "default", size = "medium", style, onC
         className={clsx(
           "flex bg-background-100 p-1 border border-gray-alpha-400",
           size === "small" && "h-8 rounded-md",
-          size === "medium" && "h-10 rounded-md",
-          size === "large" && "h-12 rounded-lg"
+          size === "medium" && "h-10 h-10 rounded-md",
+          size === "large" && "h-full rounded-lg"
         )}
         style={style}>
         {React.Children.map(children, (child) =>
