@@ -1,24 +1,20 @@
 "use client";
 import '@/stylesheets/effects.css'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SidebarDemo } from "@/components/sidebardemo";
 import Pagination from '@mui/material/Pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
-import { MessageCirclePlus, Users, Mail, Star, Languages, Search, Telescope, 
-ChevronLeft, ChevronRight, LogOut, MessagesSquare, PencilLine, Lock, LockOpen  } from "lucide-react";
+import { MessageCirclePlus, Users, Star, Languages, Search, Telescope, 
+ChevronLeft, ChevronRight, LogOut, MessagesSquare, PencilLine, Lock, LockOpen,  
+SearchSlash, SearchX, Check } from "lucide-react";
 import 'react-quill-new/dist/quill.snow.css';
 import 'react-quill-new/dist/quill.bubble.css';
 import LetterFlip from '@/components/flipLetter'
 import rawLanguages from "@/components/languages.json";
 import { ImageUploader } from '@/components/imageUploader';
 import { Switch } from '@/components/ui/switch'
+import { getCommunities, createCommunity, requestMembership, getMyCommunities } from '../../services/api/community'
 
 const ITEMS_PER_PAGE = 3
 
@@ -61,10 +57,8 @@ export default function Home() {
 
 
 const CommunityPageContent = () => {
-  const [isManager, setIsManager] = useState(true)
-  const [communities, setCommunities] = useState(['Com1', 'Com2', 'Com3'])
-  const [communitySelected, setCommunitySelected] = useState('Com1')
-  const [sectionSelected, setSectionSelected] = useState(0)
+  const [communities, setCommunities] = useState<Community[]>([])
+  const [noCommunities, setNoCommunities] = useState(true)
   
   // Dialog
   const [dialogConfig, setDialogConfig] = useState<{
@@ -92,10 +86,29 @@ const CommunityPageContent = () => {
   const closeDialog = () => {
     setDialogConfig(prev => ({ ...prev, isOpen: false }))
   }
-  
-  const [screen, setScreen] = useState(true);
 
-  if (screen) {
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      const res = await getMyCommunities()
+      if (res.ok) {
+        setCommunities(res.communities)
+        setNoCommunities(res.communities.length === 0)
+      } else {
+        openDialog({
+          title: "Server Error",
+          description: "An error occurred obtaining data",
+          primaryActionText: "OK",
+          size: 'md',
+          type: 'error',
+          autoDismiss: false
+        })
+        setNoCommunities(true)
+      }
+    }
+    fetchCommunities()
+  }, [])
+
+  if (noCommunities) {
     return (
       <div className="text-gray-900 p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
         
@@ -104,7 +117,7 @@ const CommunityPageContent = () => {
             Community
           </h1>
           
-          <button  onClick={() => setScreen(!screen)}>click</button>
+          <button  onClick={() => setNoCommunities(!noCommunities)}>click</button>
 
             <p>It seems that you're not part of a community yet...</p>
             <p className='text-gray-500 text-center md:w-[50%]'>The members of a community can post letters, suggest topics to write about, and chat! Join a community or create your own one and try it out!</p>
@@ -113,12 +126,11 @@ const CommunityPageContent = () => {
             <div className='md:grid md:grid-cols-2 gap-15'>
               <div>
                 <h2 className='mb-5'> Find the one(s) that suit you best</h2>
-                <CommunityList></CommunityList>
-
+                <CommunityList/>
               </div>
               <div>
                 <h2 className='mb-5'>Or create your own 🐸 </h2>
-                <CreateCommunityForm/>
+                <CreateCommunityForm onCommunityCreated={(newCommunity) =>  { setCommunities([...communities, newCommunity])}}/>
               </div>
             </div>
             </div>
@@ -138,11 +150,37 @@ const CommunityPageContent = () => {
   )
   }
 
+  return (
+    <>
+      <CommunityBoard communities={communities}/>
+      <SuccessDialog
+        isOpen={dialogConfig.isOpen}
+        onClose={closeDialog}
+        title={dialogConfig.title}
+        description={dialogConfig.description}
+        primaryActionText={dialogConfig.primaryActionText}
+        autoDismiss={dialogConfig.autoDismiss}
+        autoDismissDelay={2000}
+        size={dialogConfig.size}
+        type={dialogConfig.type}
+      />
+    </>
+  );
+}
+
+interface CommunityBoardProps {
+  communities: Community[]
+}
+
+
+const CommunityBoard : React.FC<CommunityBoardProps> = ( { communities } ) => {
+  const [isManager, setIsManager] = useState(true)
+  const [communitySelected, setCommunitySelected] = useState<Community | null>(null)
+  const [sectionSelected, setSectionSelected] = useState(0)
 
   return (
+    
       <div className="text-gray-900 p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
-        
-        
         
           <div className='flex  items-center flex-row mb-5 gap-5'>
             <img
@@ -154,29 +192,31 @@ const CommunityPageContent = () => {
               <h1 className="mt-10 lg:mt-0 text-5xl w-fit lg:text-md text-3xl font-semibold bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent animate-text text-center">
                 Community
               </h1>
-              <h2>{communitySelected}</h2>
+              <h2>{communitySelected?.name}</h2>
             </div>
           </div>
 
 
         <div className='flex justify-between gap-2'>
           <div className='flex flex-row gap-3 items-center'>
-          <Switch name="w-fit"  size ="large" onChange={(value) => {if (value) setCommunitySelected(value)}}>
+          <Switch name="w-fit"  size ="large" onChange={(comId) => { if (comId) {
+            const comSelected = communities.find(c => c.id === comId)
+            if (comSelected) setCommunitySelected(comSelected)
+          }}}>
             {communities.map(com =>
               <Switch.Control
               defaultChecked
-              label={com}
+              label={com.name}
               size="large"
-              value={com}
-              key={com}
+              value={com.id}
+              key={com.id}
               />
             )}
             </Switch>
-            <p className='text-sm'>You can be part of up to 3 communities</p>
             </div>
           <div className='flex flex-row gap-2'>
           <button className="bg-green-400 hover:bg-green-500 self-right text-white rounded-sm p-2 flex flex-row items-center gap-2"
-          onClick={() => setScreen(!screen)}>
+          onClick={() => setNoCommunities(!noCommunities)}>
             <Telescope/>
             Explore
           </button>
@@ -195,70 +235,82 @@ const CommunityPageContent = () => {
 
           <div className='flex flex-col md:flex-row gap-2'>
             <SectionSelector onSelectionChange={(id) => {setSectionSelected(id); console.log(id);}}/>
-          {/* Suggested Topics */}
+          {/* Content */}
 
-          {sectionSelected === 0 && <SuggestedTopics/>}
-          
-          {sectionSelected === 1 && <LetterBoard/>}
-          
-          {sectionSelected === 2 && <Forum community={communitySelected}/>}
-
+          { communitySelected && (
+            sectionSelected === 0 ? <SuggestedTopics/> :
+            sectionSelected === 1 ? <LetterBoard/> :
+            sectionSelected === 2 ? <Forum community={communitySelected}/> :
+            null
+          )
+          }
           </div>
-          
           <MemberList/>
-        <SuccessDialog
-          isOpen={dialogConfig.isOpen}
-          onClose={closeDialog}
-          title={dialogConfig.title}
-          description={dialogConfig.description}
-          primaryActionText={dialogConfig.primaryActionText}
-          autoDismiss={dialogConfig.autoDismiss}
-          autoDismissDelay={2000}
-          size={dialogConfig.size}
-          type={dialogConfig.type}
-        />
       </div>
-  );
+  )
 }
-
 
 interface CommunityCardProps {
-  name: String;
-  creator: String;
-  description: String;
-  members: Number;
-  letters: Number;
-  language: String;
+  id: string;
+  name: string;
+  creator: string;
+  description: string;
+  members: number;
+  letters: number;
+  language: string;
+  isPrivate: boolean;
+  userIsMember: boolean;
+  userSentRequest: boolean;
 }
 
-const CommunityCard : React.FC<CommunityCardProps> = ( { name, description, creator, members, letters, language } ) => {
+const CommunityCard : React.FC<CommunityCardProps> = ( { id, name, description, creator, members, letters, language, userIsMember, userSentRequest, isPrivate } ) => {
+  const [userSentRequestUpdated, setUserSentRequestUpdated] = useState(false)
+
+  useEffect(() => {
+    setUserSentRequestUpdated(userSentRequest)
+  }, [])
+  const sendRequest = async () => {
+    const res = await requestMembership(id)
+    if (res.ok) {
+      setUserSentRequestUpdated(true)
+    }
+  }
+
    return(
-    <div className="items-center px-8 py-4 rounded-lg bg-white hover:bg-gradient-to-r hover:from-indigo-100 hover:via-purple-100 hover:to-pink-100 border border-gray-200 shadow-md w-full flex flex-row gap-8">
-        <img
-            src={`/community-frogs-bw.png`}
-            alt={'image'}
-            className="w-30 h-30 rounded-sm border border-gray-300 dark:border-gray-600"
-        />
-        <div className="flex flex-col gap-2 items-start justify-between">
-          <h4 className="items-center text-gray-700 font-bold dark:text-gray-400">
-            {name}
-          </h4>
-          <p>{description}</p>
-          <div className='grid grid-cols-[auto_auto] md:grid-cols-[auto_auto_auto_auto] gap-3'>
-            <p className="text-gray-800 text-base dark:text-gray-200 mb-2 flex flex-row gap-1">
-              <Star/>{ creator }
-            </p>
-            <p className="text-gray-800 text-base dark:text-gray-200 mb-2 flex flex-row gap-1">
-              <Users/>{ members.toString() }
-            </p>
-            <p className="text-gray-800 text-base dark:text-gray-200 mb-2 flex flex-row gap-1">
-              <Mail/>{letters.toString()} letters shared
-            </p>
-            <p className="text-gray-800 text-base dark:text-gray-200 mb-2 flex flex-row gap-1">
-              <Languages/>Learning {language.toLocaleLowerCase()}
-            </p>
+    <div className="items-center px-8 py-4 rounded-lg bg-white border border-gray-200  hover:border-orange-200 shadow-md w-full flex flex-row justify-between gap-8" key={id}>
+        <div className='flex flex-row gap-8'>
+          <img
+              src={`/community-frogs-bw.png`}
+              alt={'image'}
+              className="w-30 h-30 rounded-sm border border-gray-300 dark:border-gray-600"
+          />
+          <div className="flex flex-col gap-2 items-start justify-between">
+            <h4 className="items-center text-gray-700 font-bold dark:text-gray-400">
+              {name}
+            </h4>
+            <p>{description}</p>
+            <div className='grid grid-cols-[auto_auto] md:grid-cols-[auto_auto_auto_auto] gap-3'>
+              <p className="text-gray-800 text-base dark:text-gray-200 mb-2 flex flex-row gap-1">
+                <Star/>{ creator }
+              </p>
+              <p className="text-gray-800 text-base dark:text-gray-200 mb-2 flex flex-row gap-1">
+                <Users/>{ members?.toString() }
+              </p>
+              {/*<p className="text-gray-800 text-base dark:text-gray-200 mb-2 flex flex-row gap-1">
+                <Mail/>{letters?.toString()} letters shared
+              </p>*/}
+              <p className="text-gray-800 text-base dark:text-gray-200 mb-2 flex flex-row gap-1">
+                <Languages/>{language}
+              </p>
+            </div>
           </div>
-          
+        </div>
+        <div className='flex h-30 items-start'>
+          { userSentRequestUpdated ? 
+          <p className='text-green-500 flex flex-row gap-1'><Check/>Request sent</p>
+          :  
+          <button className='bg-green-500 px-4 py-1 rounded-md text-white cursor-pointer hover:bg-green-600 flex align-bottom' onClick={sendRequest}>Join</button>
+          }
         </div>
       </div>
    )
@@ -360,52 +412,42 @@ const MemberList = () => {
   )
 }
 
+interface Community {
+  id: string,
+  name: string,
+  creator: string,
+  description: string,
+  members: number,
+  lettersShared: number,
+  language: string,
+  isPrivate: boolean,
+  userIsMember: boolean,
+  userSentRequest: boolean
+}
+
 const CommunityList = () => {
   const [currentPage, setCurrentPage] = useState(1)
-  const [learningLanguage, setLearningLanguage] = useState('')
+  const [learningLanguage, setLearningLanguage] = useState('English')
   const [searchFilter, setSearchFilter] = useState('')
-  const communities = [
-    {
-      name: 'Community Name',
-      creator: 'isalamajor',
-      description: 'Descripción de la comunidad, tipo de miembros que la componen, bio, qué hacen, demás',
-      users: 15,
-      lettersShared: 70,
-      language: 'English'
-    },
-    {
-      name: 'Community Name',
-      creator: 'isalamajor',
-      description: 'Descripción de la comunidad, tipo de miembros que la componen, bio, qué hacen, demás',
-      users: 15,
-      lettersShared: 70,
-      language: 'English'
-    },
-    {
-      name: 'Community Name',
-      creator: 'isalamajor',
-      description: 'Descripción de la comunidad, tipo de miembros que la componen, bio, qué hacen, demás',
-      users: 15,
-      lettersShared: 70,
-      language: 'English'
-    },
-    {
-      name: 'Community Name',
-      creator: 'isalamajor',
-      description: 'Descripción de la comunidad, tipo de miembros que la componen, bio, qué hacen, demás',
-      users: 15,
-      lettersShared: 70,
-      language: 'English'
-    },
-    {
-      name: 'Community Name',
-      creator: 'isalamajor',
-      description: 'Descripción de la comunidad, tipo de miembros que la componen, bio, qué hacen, demás',
-      users: 15,
-      lettersShared: 70,
-      language: 'English'
+  const [communities, setCommunities] = useState<Community[]>([])
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const refreshCommunities = async () => {
+      if (learningLanguage) {
+        const res = await getCommunities(learningLanguage)
+        if (res.ok) {
+          setCommunities(res.communities)
+        } else {
+          setError(res.error)
+        }
+      }
     }
-  ]
+
+    refreshCommunities()
+  }, [learningLanguage])
+
+
   return (
     <>
     <div className='w-full flex flex-row items-end justify-between'>
@@ -433,52 +475,94 @@ const CommunityList = () => {
       </div>
         <div className="flex flex-row gap-2 items-center h-10 cursor-pointer border border-lightblack text-gray-700 rounded-sm py-2 px-4 bg-gray-50 w-[45%]">
           <Search className="text-gray-500 w-fit"></Search>
-          <input placeholder="Search by community name..." className="flex-1 min-w-0 bg-transparent outline-none" value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)}></input>
+          <input placeholder="Search by community name..." className="flex-1 min-w-0 bg-transparent outline-none" value={searchFilter} onChange={(e) => setSearchFilter(e.target.value.toLowerCase())}></input>
         </div>
     </div>
-    <div className='flex flex-col justify-between'>
-      <div className='flex flex-col gap-3 my-5 min-h-[55vh]'>
-      {communities.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-      .map(com => <CommunityCard name={com.name} creator={com.creator} description={com.description} 
-      members={com.users} letters={com.lettersShared} language={com.language}></CommunityCard>)}
+    { communities.length === 0 ? 
+      <div className=' bg-gray-100 rounded-lg my-5 min-h-[55vh] flex flex-row gap-2 justify-center items-center'>
+        <SearchSlash/> No Communities Yet
       </div>
-      {communities.length > ITEMS_PER_PAGE && (
-        <Pagination count={Math.ceil(communities.length / ITEMS_PER_PAGE)} variant="outlined" shape="rounded" 
-        onChange={(event, page) => setCurrentPage(page)} size="large"/>
-      )} 
-    </div>
+      :
+       communities.filter(c => c.name.toLowerCase().includes(searchFilter)).length === 0 ? 
+        <div className=' bg-gray-100 rounded-lg my-5 min-h-[55vh] flex flex-row gap-2 justify-center items-center'>
+        <SearchX/> No communities matching the filter
+        </div>
+      :
+      <div className='flex flex-col justify-between'>
+        <div className='flex flex-col gap-3 my-5 min-h-[55vh]'>
+        {communities.filter(c => c.name.toLowerCase().includes(searchFilter)).slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+        .map(com => 
+        <div key={com.id}>
+        <CommunityCard id={com.id} name={com.name} creator={com.creator} description={com.description} members={com.members} letters={com.lettersShared} language={com.language}
+        isPrivate={com.isPrivate} userIsMember={com.userIsMember} userSentRequest={com.userSentRequest}/>
+        </div>)}
+        </div>
+        {communities.length > ITEMS_PER_PAGE && (
+          <Pagination count={Math.ceil(communities.length / ITEMS_PER_PAGE)} variant="outlined" shape="rounded" 
+          onChange={(event, page) => setCurrentPage(page)} size="large"/>
+        )} 
+      </div>
+      
+    }
     </>
   )
 }
 
+interface CreateCommunityFormProps {
+  onCommunityCreated: (newCommunity: Community) => void
+}
 
-const CreateCommunityForm = () => {
+const CreateCommunityForm : React.FC<CreateCommunityFormProps> = ({ onCommunityCreated }) => {
   const stylesInput = 'w-full p-2 bg-gray-100 border-1 border-gray-300 rounded-sm focus:border-orange-300 focus:ring-yellow-200 focus:ring-1 outline-none w-[50%]'
   const errorStylesInput = 'w-full p-2 bg-gray-100 border-1 border-red-500 rounded-sm focus:border-red-500 focus:ring-red-200 focus:ring-1 outline-none w-[50%]'
-  const [invalidName, setInvalidName] = useState(false);
-  const [invalidDescription, setInvalidDescription] = useState(false);
-  const [publicCommunity, setPublicCommunity] = useState(true);
-  const [communityData, setCommunityData] = useState({
-    name: '',
-    description: '',
-    language: ''
-  })
+  const [invalidName, setInvalidName] = useState('')
+  const [invalidDescription, setInvalidDescription] = useState('')
+  const [invalidLanguage, setInvalidLanguage] = useState('')
+  const [publicCommunity, setPublicCommunity] = useState(true)
+  const [communityName, setCommunityName] = useState('')
+  const [description, setDescription] = useState('')
+  const [language, setLanguage] = useState('')
+  const [error, setError] = useState('')
+
+
+  const createCommunityOnClick = async() => {
+    if (communityName.length === 0) {
+      setInvalidName('Fill up this field')
+    } if (description.length === 0) {
+      setInvalidDescription('Fill up this field')
+    } if (language.length === 0) {
+      setInvalidLanguage('Fill up this field')
+    } if (communityName.length < 5) {
+        setInvalidDescription('Name is too short. Take at least 5 characters.')
+    } if (description.length < 10) {
+        setInvalidDescription('Description is too short. Take at least 10 characters.')
+    } else {
+      const res = await createCommunity(communityName, language, description, !publicCommunity)
+      if (res.ok) {
+        onCommunityCreated(res.community)
+      } else {
+        setError("Error creating community. Try again later.")
+      }
+    }
+  }
   
   return (
     <div className='flex flex-col gap-3'>
     <div className='flex flex-col'>
       <label>Name of the community</label>
-      <input placeholder='Name of the community' className={invalidName ? errorStylesInput : stylesInput}></input>
+      <input placeholder='Name of the community' className={invalidName ? errorStylesInput : stylesInput} value={communityName} onChange={e => {
+        setInvalidName('')
+        setCommunityName(e.target.value)
+      }}></input>
     </div>
   
     <div className='flex flex-col'>
       <label>Language your community aims to practice</label>
       <Select 
-        value={communityData.language} 
+        value={language} 
         onValueChange={(lang) => {
-          let updated = communityData
-          updated.language = lang
-          setCommunityData(updated)}
+          setInvalidLanguage('')
+          setLanguage(lang)}
         }
         >
           <SelectTrigger className="text-black bg-gray-100 border-gray-300 border-1 h-10 rounded-md ring-transparent text-md">
@@ -505,7 +589,11 @@ const CreateCommunityForm = () => {
       
       <div className='col-span-2 flex flex-col'>
         <label>Description, what does it aim for?</label>
-        <textarea placeholder='Enter a description...' className={(invalidDescription ? errorStylesInput : stylesInput) + 'w-full h-full resize-none'}/> 
+        <textarea placeholder='Enter a description...' className={(invalidDescription ? errorStylesInput : stylesInput) + 'w-full h-full resize-none'}
+        value={description} onChange={(e) => {
+          setInvalidDescription('')
+          setDescription(e.target.value)
+        }}/> 
       </div>
     </div>
 
@@ -523,7 +611,9 @@ const CreateCommunityForm = () => {
         A join request is required, you control who can join or not.
       </label>
     </div>
-    <button className="bg-green-500 hover:bg-green-600 self-right text-white rounded-sm p-2">Create Community</button>
+    <button className="bg-green-500 hover:bg-green-600 self-right text-white rounded-sm p-2"
+      onClick={() => createCommunityOnClick()}
+    >Create Community</button>
     
 
     </div>
@@ -573,14 +663,14 @@ const LetterBoard = () => {
 
 
 interface ForumProps {
-  community: string
+  community: Community
 }
 
 const Forum : React.FC <ForumProps> = ({ community }) => {
   return (
     <div className="h-[35rem] w-[70%] border-2 border-gray-100 rounded-sm z-index-2 bg-white shadow-xl px-10 py-5 flex flex-col justify-between gap-2">
       <div>
-        <h2 className="text-gray-900 text-center">{community}'s forum</h2>
+        <h2 className="text-gray-900 text-center">{community.name}'s forum</h2>
       </div>
       <div className='flex justify-end'>
         <p className="bg-white hover:text-yellow-400 hover:bg-yellow-50 ring-gray-400 hover:ring-yellow-300 ring-2 text-gray-900 rounded-sm p-2">Publish</p>

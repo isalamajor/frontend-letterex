@@ -2,7 +2,7 @@
 
 import { Input1 } from "@/components/ui/input1";
 import { Label } from "@/components/ui/field";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeClosed } from "lucide-react";
 import { useId, useState, useEffect } from "react";
 
 interface InputPassProps {
@@ -50,7 +50,7 @@ function InputPass({ onChange, wrongPassword, styles, label = true, onEnter }: I
           tabIndex={-1}
         >
           {isVisible ? (
-            <EyeOff size={styles ? 20 : 16} strokeWidth={2} style={{ marginRight: styles ? 15 : 0 }} aria-hidden="true" />
+            <EyeClosed size={styles ? 20 : 16} strokeWidth={2} style={{ marginRight: styles ? 15 : 0 }} aria-hidden="true" />
           ) : (
             <Eye size={styles ? 20 : 16} strokeWidth={2} style={{  marginRight: styles ? 15 : 0 }} aria-hidden="true" />
           )}
