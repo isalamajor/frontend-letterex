@@ -9,6 +9,25 @@ import FriendsCheckboxList from '@/components/ui/friendsCheckBoxList'
 import { Switch } from '@/components/ui/switch'
 import { InputPasswords } from '@/components/ui/inputPasswords'
 import { InputPass } from '@/components/ui/inputPass'
+import { createContext, useContext } from 'react'
+
+type DialogConfig = SuccessDialogProps
+
+type DialogContextType = {
+  openDialog: (config: Partial<DialogConfig>) => void
+  closeDialog: () => void
+}
+
+export const DialogContext = createContext<DialogContextType | null>(null)
+
+export const useDialog = () => {
+  const ctx = useContext(DialogContext)
+  if (!ctx) {
+    throw new Error('useDialog must be used within DialogProvider')
+  }
+  return ctx
+}
+
 
 interface DialogProps {
   open: boolean;
@@ -353,9 +372,9 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   }, [handleClose])
 
   // Fallback for missing content
-  const displayTitle = title?.trim() || currentConfig.titleDefault
-  const displayDescription = description?.trim() || currentConfig.descriptionDefault
-  const displayPrimaryActionText = primaryActionText?.trim() || "OK"
+  const displayTitle = title|| currentConfig.titleDefault
+  const displayDescription = description || currentConfig.descriptionDefault
+  const displayPrimaryActionText = primaryActionText || "OK"
 
 
 

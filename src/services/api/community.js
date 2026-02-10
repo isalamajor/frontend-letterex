@@ -94,4 +94,33 @@ const requestMembership = async (communityId) => {
     }
 }
 
-export { getCommunities, createCommunity, requestMembership, getMyCommunities }
+
+
+const getMembers = async (communityId, page, itemsPerPage) => {
+    try {
+        if (!communityId) {
+            return { ok: false, error: 'An error occurred when fetching user communities' }
+        }
+        const token = sessionStorage.getItem("authToken");
+        const response = await axios.get(`${API_URL}/members/${communityId}`, {
+            headers: {
+                'Authorization': `${token}`
+            },
+            params: {
+                itemsPerPage: itemsPerPage,
+                pagination: page
+            }
+        });
+        if (response.status === 200) {
+            return { ok: true, members: response.data.members || [], total: response.data.total || 0 }
+        }
+
+        return { ok: false, error: response.data.message }
+
+    } catch (error) {
+        console.log('An error occurred when fetching user communities', error)
+        return { ok: false, error: 'An error occurred when fetching user communities' }
+    }
+}
+
+export { getCommunities, createCommunity, requestMembership, getMyCommunities, getMembers }

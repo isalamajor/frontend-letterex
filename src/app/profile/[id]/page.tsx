@@ -78,8 +78,6 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
     const fetchData = async () => {
       let userData;
       let profilePictureUrl;
-
-      console.log("USER ID: ", id);
       if (id !== "yours") {
         // Fetch user data by ID
         userData = await getUserData(id);
@@ -320,7 +318,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                   <ImageUploader onImageSelect={(f:File | null) => setImageFile(f)}
                     currentPicLocalUrl={profilePictureLocalUrl}
                     active={editing}
-                    size={innerWidth > 750 ? '125px' : null}
+                    size={innerWidth > 750 ? '125px' : null}  
                   />
                   </div>
 
@@ -453,7 +451,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                   </div>}
                 </div>
 
-                {/* Mapa 
+                {/* Mapa */} 
                 <div className="lg:w-[60%] h-[20rem] lg:h-[90%] flex flex-col items-center p-2 rounded-lg bg-[#8EBA03] bg-white border border-gray-200 border-2">
                   <MapNoSSR
                     key={user._id + "_" + editing}
@@ -463,7 +461,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
                       setLocationUser((prev) => ({ ...prev, country: newCountry }))
                     }
                   /> 
-                </div>*/} 
+                </div>
               </div>
             </div>
             
