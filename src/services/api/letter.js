@@ -1,12 +1,12 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:3090/api";
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/letter";
 
 const deleteLetters = async (letterIds) => {
   const token = sessionStorage.getItem("authToken");
   console.log("API - Deleting letters with IDs:", letterIds);
   try {
-    const response = await axios.delete(`${API_URL}/letter/delete`, {
+    const response = await axios.delete(`${API_URL}/delete`, {
       headers: {
         Authorization: `${token}`,
       },
@@ -27,7 +27,7 @@ const deleteLetters = async (letterIds) => {
 const getDiaries = async () => {
   const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/letter/diaries`, {
+    const response = await axios.get(`${API_URL}/diaries`, {
       headers: {
         Authorization: `${token}`,
       },
@@ -54,13 +54,13 @@ const getCountLetters = async (userId) => {
   try {
     let response;
     if (userId) {
-      response = await axios.get(`${API_URL}/letter/count/${userId}`, {
+      response = await axios.get(`${API_URL}/count/${userId}`, {
         headers: {
           Authorization: `${token}`,
         },
       });
     } else {
-      response = await axios.get(`${API_URL}/letter/count`, {
+      response = await axios.get(`${API_URL}/count`, {
         headers: {
           Authorization: `${token}`,
         },
@@ -85,7 +85,7 @@ const shareLetter = async (letterId, sharedWith) => {
   const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.post(
-      `${API_URL}/letter/share/${letterId}`,
+      `${API_URL}/share/${letterId}`,
       { sharedWith: sharedWith },
       {
         headers: {
@@ -110,7 +110,7 @@ const shareLetter = async (letterId, sharedWith) => {
 const getLetter = async (id) => {
   const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/letter/view/${id}`, {
+    const response = await axios.get(`${API_URL}/view/${id}`, {
       headers: {
         Authorization: `${token}`,
       },
@@ -144,7 +144,7 @@ const editLetter = async (
 
   try {
     const response = await axios.put(
-      `${API_URL}/letter/edit/${id}`,
+      `${API_URL}/edit/${id}`,
       {
         title: title,
         content: content,
@@ -180,7 +180,7 @@ const changeLetterDiary = async (letterId, diary) => {
 
   try {
     const response = await axios.put(
-      `${API_URL}/letter/edit-diary`,
+      `${API_URL}/edit-diary`,
       {
         letterId: letterId,
         diary: diary,
@@ -212,7 +212,7 @@ const saveLetter = async (title, content, diary, language, created_at) => {
 
   try {
     const response = await axios.post(
-      `${API_URL}/letter/new`,
+      `${API_URL}/new`,
       {
         title: title,
         content: content,
@@ -245,7 +245,7 @@ const saveLetter = async (title, content, diary, language, created_at) => {
 const getUserLetters = async () => {
   const token = sessionStorage.getItem("authToken");
 
-  const response = await axios.get(`${API_URL}/letter/list/`, {
+  const response = await axios.get(`${API_URL}/list/`, {
     headers: {
       Authorization: `${token}`, // Incluir el token en el encabezado
     },

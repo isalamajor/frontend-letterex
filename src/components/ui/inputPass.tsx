@@ -13,13 +13,18 @@ interface InputPassProps {
   onEnter?: () => void;
 }
 
-
-function InputPass({ onChange, wrongPassword, styles, label = true, onEnter }: InputPassProps) {
+function InputPass({
+  onChange,
+  wrongPassword,
+  styles,
+  label = true,
+  onEnter,
+}: InputPassProps) {
   const id = useId();
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [markRed, setMarkRed] = useState<boolean>(false);
 
-  useEffect(() => { 
+  useEffect(() => {
     setMarkRed(wrongPassword);
   }, [wrongPassword]);
 
@@ -35,13 +40,17 @@ function InputPass({ onChange, wrongPassword, styles, label = true, onEnter }: I
           `}
           placeholder="Password"
           type={isVisible ? "text" : "password"}
-          onChange={(e) => {setMarkRed(false);
+          onChange={(e) => {
+            setMarkRed(false);
             onChange(e.target.value);
           }}
-          onKeyDown={(event)=>{ if (event.key === "Enter" && onEnter) onEnter() }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && onEnter) onEnter();
+          }}
+          maxLength={20}
         />
         <button
-            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+          className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
           type="button"
           onClick={toggleVisibility}
           aria-label={isVisible ? "Hide password" : "Show password"}
@@ -50,14 +59,26 @@ function InputPass({ onChange, wrongPassword, styles, label = true, onEnter }: I
           tabIndex={-1}
         >
           {isVisible ? (
-            <EyeClosed size={styles ? 20 : 16} strokeWidth={2} style={{ marginRight: styles ? 15 : 0 }} aria-hidden="true" />
+            <EyeClosed
+              size={styles ? 20 : 16}
+              strokeWidth={2}
+              style={{ marginRight: styles ? 15 : 0 }}
+              aria-hidden="true"
+            />
           ) : (
-            <Eye size={styles ? 20 : 16} strokeWidth={2} style={{  marginRight: styles ? 15 : 0 }} aria-hidden="true" />
+            <Eye
+              size={styles ? 20 : 16}
+              strokeWidth={2}
+              style={{ marginRight: styles ? 15 : 0 }}
+              aria-hidden="true"
+            />
           )}
         </button>
       </div>
       {markRed && (
-        <p className="text-xs text-red-500">Incorrect password. Please try again.</p>
+        <p className="text-xs text-red-500">
+          Incorrect password. Please try again.
+        </p>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:3090/api/user";
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/user";
 
 const getUserData = async (id) => {
   const token = sessionStorage.getItem("authToken");

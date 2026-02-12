@@ -1,6 +1,6 @@
 "use client";
 import styles from "./page.module.css";
-import AnimatedForm from "@/components/animatedForm.js";
+import AnimatedForm from "@/components/animatedForm";
 
 export default function Home() {
   return (
