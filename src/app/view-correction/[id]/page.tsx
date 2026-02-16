@@ -2,67 +2,46 @@
 import { useEffect, useRef } from "react";
 import { SidebarDemo } from "@/components/sidebardemo";
 import Link from "next/link";
-import { useState } from "react"
-import { parseDate } from "@internationalized/date"
+import { useState } from "react";
 import { getLetterToCorrect } from "@/services/api";
-import { Check, X, Eye, EyeOff, CirclePlus  } from "lucide-react";
+import { HeartCrack, X } from "lucide-react";
 import { use } from "react";
 import TextCorrections from "@/components/textCorrections";
-
-
-interface Correccion {
-  textOriginal: string;
-  textCorrected: string;
-  startIndex: number;
-  endIndex: number;
-}
-
+import { CorrectedLetter } from "../../../../types";
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   return (
     <div className="page-container">
       <SidebarDemo>
-        <CorrectLetterPageContent id={id}/>
+        <CorrectLetterPageContent id={id} />
       </SidebarDemo>
     </div>
   );
 }
 
-
-
 const CorrectLetterPageContent = ({ id }: { id: string }) => {
-  
   const textRef = useRef<HTMLDivElement | null>(null);
   const correctionRef = useRef<HTMLDivElement | null>(null);
-  const [currentCorrectionText, setcurrentCorrectionText] = useState<string>("");
-  const [title, setTitle] = useState("");
-  const [letterContent, setLetterContent] = useState("");
-  const [date, setDate] = useState(() => parseDate(new Date().toISOString().split("T")[0]));
-  const [correctionMode, setCorrectionMode] = useState(false);
-  const [selectionInfo, setSelectionInfo] = useState<{ text: string, rect: DOMRect | null, startIndex:number, endIndex:number } | null>(null);
-  const [corrections, setCorrections] = useState<Correccion[]>([]);
-  const [comments, setComments] = useState<string>("");
-  const [sentBack, setSentBack] = useState(false);
-  const [commentBoxOpen, setCommentBoxOpen] = useState(true);
-
-  
-  
+  const [currentCorrectionText, setcurrentCorrectionText] =
+    useState<string>("");
+  const [selectionInfo, setSelectionInfo] = useState<{
+    text: string;
+    rect: DOMRect | null;
+    startIndex: number;
+    endIndex: number;
+  } | null>(null);
+  const [letter, setLetter] = useState<CorrectedLetter | null>(null);
 
   useEffect(() => {
     (async () => {
       const letterData = await getLetterToCorrect(id);
-      console.log("Letter data:", letterData);
+      console.log("letterData component", letterData);
       if (!letterData) {
         console.error("No letter data found for ID:", id);
         return;
       }
-      setTitle(letterData.originalLetter.title || "");
-      setLetterContent(letterData.originalLetter.content || "");
-      setDate(parseDate(new Date(letterData.originalLetter.created_at).toISOString().split("T")[0]));
-      setCorrections(letterData.corrections || []);
-      setComments(letterData.comments || "");
-      setSentBack(letterData.sentBack || false);
+      setLetter(letterData);
     })();
   }, [id]);
 
@@ -76,143 +55,146 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         setSelectionInfo(null);
       }
     };
-  
+
     // Añadir el listener con un pequeño delay
     const timeout = setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside);
     }, 0); // se ejecuta después del click actual
-  
+
     return () => {
       clearTimeout(timeout);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [selectionInfo]);
-  
 
-  return (
+  if (!letter) {
+    return (
       <div className="rounded-tl-2xl bg-white border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-full h-full flex justify-center align-center items-stretch h-screen">
-            <div className="my-4 w-[95%] rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-10 sm:px-20 flex flex-col justify-around">
-
-              {/* Title field */}
-              <h1 className="placeholder-gray-400 text-center font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03]"
-              >{title}</h1>
-              
-              
-              {/* Date field */}
-              <div className="flex flex-col text-black justify-end text-center lg:text-right ">
-                <p>{date.toString()}</p>
-              </div>
-
-
-              {/* Letter content field */}
-              <div
-                onMouseUp={() => {
-                  if (!correctionMode) return;
-
-                  const selection = window.getSelection();
-                  if (selection && selection.toString().trim()) {
-                    const range = selection.getRangeAt(0);
-
-                    // Crea un rango desde el inicio del contenedor hasta el inicio de la selección
-                    const preRange = document.createRange();
-                    if (!textRef.current) return;
-                    preRange.setStart(textRef.current, 0);
-                    preRange.setEnd(range.startContainer, range.startOffset);
-
-                    const startIndex = preRange.toString().length;
-                    const endIndex = startIndex + range.toString().length;
-
-                    const rect = range.getBoundingClientRect();
-
-                    setSelectionInfo({
-                      text: selection.toString(),
-                      rect,
-                      startIndex,
-                      endIndex
-                    });
-                  }
-                }}
-                className="w-full min-h-[55vh] sm:min-h-[58vh] pt-5 pb-10 text-gray-900 outline-none rounded cursor-text text-xl leading-loose">
-                <TextCorrections
-                  ref={textRef}
-                  text={letterContent}
-                  corrections={corrections}
-                  onCorrectionClick={(correction, rect) => {
-                    setcurrentCorrectionText(correction.textCorrected);
-                    setSelectionInfo({
-                      text: correction.textOriginal,
-                      rect,
-                      startIndex: correction.startIndex,
-                      endIndex: correction.endIndex
-                    }
-                    )}}
-                />
-              </div>
-
-              {selectionInfo && selectionInfo.rect && (
-                <div
-                  ref={correctionRef}
-                  style={{
-                    position: "absolute",
-                    top: selectionInfo.rect.bottom + window.scrollY + 8,
-                    left: selectionInfo.rect.left + window.scrollX,
-                    background: "white",
-                    border: "1px solid #ccc",
-                    borderRadius: "8px",
-                    padding: "8px",
-                    zIndex: 1000,
-                  }}
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <p className="text-sm text-gray-600 mb-1">
-                    {!sentBack ? '🖍️ Correcting' : '🖍️ Correction'}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <X
-                        onClick={() => {
-                          setSelectionInfo(null);
-                          // Aquí podrías agregar la lógica para guardar la corrección
-                          console.log("Correction saved for:", selectionInfo.text);
-                        }}
-                        className="w-5 h-5 text-blue-500 hover:text-white hover:bg-blue-500 hover:rounded"
-                      ></X>
-                      </div>
-                  </div>
-                  <textarea
-                    className="border w-64 p-2 text-sm rounded text-gray-800"
-                    rows={3}
-                    disabled={sentBack}
-                    placeholder="Enter your correction..."
-                    value={currentCorrectionText}
-                    onChange={(e) => {setcurrentCorrectionText(e.target.value);}}
-                  />
-                </div>
-              )}
-
-            { /* Comment box */}
-            <div className="w-full my-3">
-              <textarea
-                placeholder={"No additional comments"}
-                value={comments}
-                disabled={true}
-                className="px-5 py-4 w-full text-gray-800 bg-gray-50 rounded-lg outline-none
-                  resize-none
-                  opacity-100"
-                />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-between h-[5rem] col items-center gap-4 mt-4">
-              
-              <Link href={"/homepage"}>
-                <button>
-                    <div className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
-                    Back
-                    </div>
-                </button>
-              </Link>
-            </div>
+        <div className="h-full flex flex-col gap-5 justify-center items-center text-gray-800">
+          <h3>Letter not found. Try again later.</h3>
+          <HeartCrack size={100} strokeWidth={1} />
         </div>
       </div>
+    );
+  }
+  return (
+    <div className="rounded-tl-2xl bg-white border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-full h-full flex justify-center align-center items-stretch h-screen">
+      <div className="my-4 w-[95%] rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-10 sm:px-20 flex flex-col justify-around">
+        {/* Title field */}
+        <h1 className="placeholder-gray-400 text-center font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03]">
+          {letter.title}
+        </h1>
+
+        {/* Date field */}
+        <div className="flex flex-col text-gray-800 justify-end text-center lg:text-right ">
+          <p>
+            Written day{" "}
+            {letter.date
+              .toDate("UTC")
+              .toLocaleDateString("en-CA", { timeZone: "UTC" })}
+          </p>
+          {letter.reviewer.nickname && (
+            <p className="flex flex-row justify-end items-center">
+              Corrected by
+              <img
+                className="rounded-full w-6 h-6 border border-1 border-gray-500 ml-2 mr-0.5"
+                src={`${process.env.NEXT_PUBLIC_PICTURES_BASE_URL}/${letter.reviewer.image}`}
+              />
+              <span
+                className="text-blue-500 cursor-pointer"
+                onClick={() =>
+                  (window.location.href = `/profile/${letter.reviewer.id}`)
+                }
+              >
+                {letter.reviewer.nickname}
+              </span>
+            </p>
+          )}
+        </div>
+
+        {/* Letter content field */}
+        <div className="w-full min-h-[55vh] sm:min-h-[58vh] pt-5 pb-10 text-gray-900 outline-none rounded cursor-text text-xl leading-loose">
+          <TextCorrections
+            ref={textRef}
+            text={letter.content}
+            corrections={letter.corrections || []}
+            onCorrectionClick={(correction, rect) => {
+              setcurrentCorrectionText(correction.textCorrected);
+              setSelectionInfo({
+                text: correction.textOriginal,
+                rect,
+                startIndex: correction.startIndex,
+                endIndex: correction.endIndex,
+              });
+            }}
+          />
+        </div>
+
+        {selectionInfo && selectionInfo.rect && (
+          <div
+            ref={correctionRef}
+            style={{
+              position: "absolute",
+              top: selectionInfo.rect.bottom + window.scrollY + 8,
+              left: selectionInfo.rect.left + window.scrollX,
+              background: "white",
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+              padding: "8px",
+              zIndex: 1000,
+            }}
+          >
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-sm text-gray-600 mb-1">
+                {!letter.sentBack ? "🖍️ Correcting" : "🖍️ Correction"}
+              </p>
+              <div className="flex items-center gap-2">
+                <X
+                  onClick={() => {
+                    setSelectionInfo(null);
+                    // Aquí podrías agregar la lógica para guardar la corrección
+                    console.log("Correction saved for:", selectionInfo.text);
+                  }}
+                  className="w-5 h-5 text-blue-500 hover:text-white hover:bg-blue-500 hover:rounded"
+                ></X>
+              </div>
+            </div>
+            <textarea
+              className="border w-64 p-2 text-sm rounded text-gray-800"
+              rows={3}
+              disabled={letter.sentBack}
+              placeholder="Enter your correction..."
+              value={currentCorrectionText}
+              onChange={(e) => {
+                setcurrentCorrectionText(e.target.value);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Comment box */}
+        <div className="w-full my-3">
+          <textarea
+            placeholder={"No additional comments"}
+            value={letter.comments}
+            disabled={true}
+            className="px-5 py-4 w-full text-gray-800 bg-gray-50 rounded-lg outline-none
+                  resize-none
+                  opacity-100"
+          />
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-between h-[5rem] col items-center gap-4 mt-4">
+          <Link href={"/homepage"}>
+            <button>
+              <div className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
+                Back
+              </div>
+            </button>
+          </Link>
+        </div>
+      </div>
+    </div>
   );
-}
+};

@@ -17,6 +17,7 @@ interface LetterCardProps {
   }[];
   resetSelection?: boolean;
   deleteMode: boolean;
+  swipeOpen: boolean;
   onSelectionChange: (letterId: string) => void;
 }
 
@@ -28,17 +29,10 @@ const LetterCard: React.FC<LetterCardProps> = ({
   language,
   sharedWith,
   deleteMode,
+  swipeOpen,
   onSelectionChange,
 }) => {
   const [isSelected, setIsSelected] = useState(false);
-  const [widthClass, setWidthClass] = useState("w-full");
-
-  const handlers = useSwipeable({
-    onSwipedLeft: () => setWidthClass("w-[80%]"),
-    onSwipedRight: () => setWidthClass("w-full"),
-    preventScrollOnSwipe: true,
-    trackMouse: true, // opcional: también permite swipes con el ratón
-  });
 
   // Si cambia el modo delete, resetea la selección
   useEffect(() => {
@@ -64,9 +58,8 @@ const LetterCard: React.FC<LetterCardProps> = ({
     <div className="block w-full relative  group">
       <div
         className={`px-8 py-4 rounded-lg bg-gray-50 shadow-md relative h-[12vh]
-      group transition-all duration-300 ${widthClass} group-hover:w-[80%] ${deleteMode ? "w-[80%]" : "w-full"}`}
+      group transition-all duration-300 group-hover:w-[80%] ${deleteMode || swipeOpen ? "w-[80%]" : "w-full"}`}
         onClick={goToEditLetter(id)}
-        {...handlers}
       >
         {/* Fecha y Diario */}
         <div className="flex items-center justify-between mb-4">
@@ -104,21 +97,11 @@ const LetterCard: React.FC<LetterCardProps> = ({
         </div>
       </div>
       <div
-        className={`absolute h-full w-[17%] top-1/2 right-0 transform -translate-y-1/2 bg-gray-50 text-black px-4 py-2 mr-3 ml-0 rounded-lg group-hover:opacity-100 transition-opacity duration-200 group-hover:delay-200 text-center flex items-center justify-center  ${deleteMode ? "opacity-100 pb-5" : "opacity-0"}`}
+        className={`absolute h-full w-[17%] top-1/2 right-0 transform -translate-y-1/2 bg-gray-50 text-black px-4 py-2 mr-3 ml-0 rounded-lg group-hover:opacity-100 transition-opacity duration-200 group-hover:delay-200 text-center flex items-center justify-center  ${deleteMode || swipeOpen ? "opacity-100 pb-5" : "opacity-0"}`}
       >
         <div className="flex flex-col gap-2 px-2">
           {deleteMode ? (
             <>
-              {/*<Checkbox
-              isSelected={isSelected}
-              onChange={() => {}}
-              className="absolute top-2 left-2 z-10"
-              onClick={(e) => { e.stopPropagation(); setIsSelected(!isSelected); }} // Evita que active el click del card
-            >
-              <div className="checkbox-indicator w-5 h-5 border-2 border-gray-400 rounded bg-white flex items-center justify-center">
-                {isSelected && <span className="text-blue-600">✓</span>}
-              </div>
-            </Checkbox>*/}
               <p className="text-xs">Select to delete</p>
               <input
                 type="checkbox"

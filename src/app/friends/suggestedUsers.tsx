@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { getSuggestedUsers, getNonFriendsByFilter } from "@/services/api";
-import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { Ghost, Search } from "lucide-react";
 import AddFriendCard from "@/components/addFriendCard";
+import { useDialog } from "@/context/dialogContext";
 
 interface NonAddedList {
   users: {
@@ -23,6 +23,7 @@ const SuggestedUsers = () => {
   const [suggested, setSuggested] = useState<NonAddedList["users"]>([]);
   const [queryResults, setQueryResults] = useState<NonAddedList["users"]>([]);
   const [query, setQuery] = useState("");
+  const { openDialog, closeDialog } = useDialog();
 
   useEffect(() => {
     const fetchNonFriends = async () => {
@@ -42,34 +43,6 @@ const SuggestedUsers = () => {
 
     return () => clearTimeout(timeout);
   }, [query]);
-
-  // Dialog
-  const [dialogConfig, setDialogConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    primaryActionText: string;
-    autoDismiss: boolean;
-    size: "sm" | "md" | "lg";
-    type: DialogType;
-  }>({
-    isOpen: false,
-    title: "Payment Successful!",
-    description:
-      "Your payment has been processed successfully. You will receive a confirmation email shortly.",
-    primaryActionText: "View Receipt",
-    autoDismiss: false,
-    size: "md",
-    type: "success",
-  });
-
-  const openDialog = (config: Partial<typeof dialogConfig>) => {
-    setDialogConfig((prev) => ({ ...prev, ...config, isOpen: true }));
-  };
-
-  const closeDialog = () => {
-    setDialogConfig((prev) => ({ ...prev, isOpen: false }));
-  };
 
   return (
     <>
@@ -123,21 +96,6 @@ const SuggestedUsers = () => {
             </div>
           )}
         </>
-
-        <SuccessDialog
-          isOpen={dialogConfig.isOpen}
-          onClose={closeDialog}
-          title={dialogConfig.title}
-          description={dialogConfig.description}
-          primaryActionText={dialogConfig.primaryActionText}
-          autoDismiss={dialogConfig.autoDismiss}
-          autoDismissDelay={2000}
-          size={dialogConfig.size}
-          type={dialogConfig.type}
-          onPrimaryAction={() => {
-            console.log("Primary action clicked for type:", dialogConfig.type);
-          }}
-        />
       </div>
     </>
   );

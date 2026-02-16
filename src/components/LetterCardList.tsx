@@ -6,7 +6,7 @@ import { getUserLetters, changeLetterDiary } from "../services/api";
 import { BookCopy, BookX } from "lucide-react";
 
 interface Letter {
-  _id: string;
+  id: string;
   created_at: string;
   diary: string | null;
   title: string;
@@ -27,6 +27,7 @@ interface ChildProps {
   resetSelection: boolean;
   onDeleteListChange: (letterIds: string[]) => void;
   reFetchLetters: boolean;
+  allLetterSwipeOpen: boolean;
 }
 
 interface DraggableItemProps {
@@ -49,6 +50,7 @@ const LetterCardList = ({
   resetSelection,
   onDeleteListChange,
   reFetchLetters,
+  allLetterSwipeOpen,
 }: ChildProps) => {
   const [letters, setletters] = useState<Letter[]>([]);
   const [diaryOrganised, setDiaryOrganised] = useState<boolean>(false);
@@ -124,8 +126,6 @@ const LetterCardList = ({
       const newIds = prevIds.includes(letterId)
         ? prevIds.filter((id) => id !== letterId)
         : [...prevIds, letterId];
-
-      console.log("Nuevo selectedToDeleteIds:", newIds);
       onDeleteListChange(newIds); // pasamos el valor actualizado a la función
       return newIds;
     });
@@ -234,13 +234,13 @@ const LetterCardList = ({
               })
               .map((letter, index) => (
                 <DraggableItem
-                  id={letter._id}
+                  id={letter.id}
                   key={index}
                   diaryName={letter.diary || "Unclassified"}
                 >
                   <div
                     className="flex flex-row group relative cursor-pointer"
-                    onClick={goToEditLetter(letter._id)}
+                    onClick={goToEditLetter(letter.id)}
                   >
                     <p className="flex rounded-l-lg bg-blue-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
                       <span className="block group-hover:hidden transition-opacity duration-900">
@@ -276,7 +276,7 @@ const LetterCardList = ({
       <div className="flex flex-col gap-4 h-full sm:h-[70vh] custom-scroll overflow-y-auto pb-10">
         {filteredLetters.map((letter, index) => (
           <LetterCard
-            id={letter._id}
+            id={letter.id}
             created_at={letter.created_at}
             diary={letter.diary}
             title={letter.title}
@@ -284,6 +284,7 @@ const LetterCardList = ({
             sharedWith={letter.sharedWith}
             key={index}
             deleteMode={deleteMode || false}
+            swipeOpen={allLetterSwipeOpen || false}
             resetSelection={resetSelection}
             onSelectionChange={toggleDeleteItem}
           />

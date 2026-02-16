@@ -9,7 +9,14 @@ import {
 } from "@/services/api";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Search, RefreshCw, Trash2, X } from "lucide-react";
+import {
+  Search,
+  RefreshCw,
+  Trash2,
+  X,
+  EyeClosedIcon,
+  EyeIcon,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -20,6 +27,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner-1";
+import { useDialog } from "@/context/dialogContext";
 
 export default function Home() {
   return (
@@ -65,6 +73,9 @@ const HomepageContent = () => {
   const [toDeleteLetters, setToDeleteLetters] = useState<string[]>([]);
   const [sectionVisible, setSectionVisible] = useState<number>(0); // 0 for both, 1 for written, 2 for received
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [allLetterSwipeOpen, setAllLetterSwipeOpen] = useState<boolean>(false);
+
+  const { openDialog, closeDialog } = useDialog();
 
   useEffect(() => {
     setDeleteLettersMode(false);
@@ -126,7 +137,6 @@ const HomepageContent = () => {
         autoDismiss: false,
         onConfirmationPositive: async () => {
           deletedCount = await deleteLetters(toDeleteLetters);
-          setDeleteLettersMode(false);
           setResetSelection(!resetSelection);
           closeDialog();
           if (deletedCount < 0) {
@@ -136,7 +146,6 @@ const HomepageContent = () => {
               type: "error",
               primaryActionText: "Ok",
               autoDismiss: true,
-              autoDismissDelay: 10000,
             });
           } else {
             setResetSelection(!resetSelection);
@@ -151,37 +160,6 @@ const HomepageContent = () => {
     }
   };
 
-  // Dialog
-  const [dialogConfig, setDialogConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    primaryActionText: string;
-    autoDismiss: boolean;
-    size: "sm" | "md" | "lg";
-    type: DialogType;
-    onConfirmationPositive?: () => void;
-    autoDismissDelay: number;
-  }>({
-    isOpen: false,
-    title: "Payment Successful!",
-    description:
-      "Your payment has been processed successfully. You will receive a confirmation email shortly.",
-    primaryActionText: "View Receipt",
-    autoDismiss: true,
-    size: "md",
-    type: "success",
-    onConfirmationPositive: undefined,
-    autoDismissDelay: 10000,
-  });
-
-  const openDialog = (config: Partial<typeof dialogConfig>) => {
-    setDialogConfig((prev) => ({ ...prev, ...config, isOpen: true }));
-  };
-
-  const closeDialog = () => {
-    setDialogConfig((prev) => ({ ...prev, isOpen: false }));
-  };
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -241,16 +219,26 @@ const HomepageContent = () => {
               )}
               <div className="flex justify-center sm:justify-end">
                 {!noLetters && (
-                  <button
-                    className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 mb-4 hover:bg-gray-50"
-                    onClick={() => {
-                      setOrderDiariesEvent(orderDiariesEvent + 1);
-                    }}
-                  >
-                    {orderDiariesEvent % 2 === 0
-                      ? "📚 Order by diary"
-                      : "✉️ Show all"}
-                  </button>
+                  <>
+                    <button
+                      className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 mb-4 mr-2 hover:bg-gray-50"
+                      onClick={() => {
+                        setAllLetterSwipeOpen(!allLetterSwipeOpen);
+                      }}
+                    >
+                      {allLetterSwipeOpen ? <EyeClosedIcon /> : <EyeIcon />}
+                    </button>
+                    <button
+                      className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 mb-4 hover:bg-gray-50"
+                      onClick={() => {
+                        setOrderDiariesEvent(orderDiariesEvent + 1);
+                      }}
+                    >
+                      {orderDiariesEvent % 2 === 0
+                        ? "📚 Order by diary"
+                        : "✉️ Show all"}
+                    </button>
+                  </>
                 )}
                 <Link href={"/new-letter"}>
                   <button className="cursor-pointer ml-2 text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 mb-4 hover:bg-gray-50 text-res">
@@ -265,7 +253,7 @@ const HomepageContent = () => {
                           className="cursor-pointer text-white border border-lightblack rounded-sm bg-red-500 shadow-md p-2 ml-2 mb-4 hover:bg-red-700"
                           onClick={receiveDataAndDelete}
                         >
-                          <Trash2></Trash2>
+                          <Trash2 />
                         </button>
                         <button
                           className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 shadow-md p-2 ml-2 mb-4 hover:bg-gray-50"
@@ -299,6 +287,7 @@ const HomepageContent = () => {
                 setToDeleteLetters(ids);
               }}
               reFetchLetters={reFetchLetters}
+              allLetterSwipeOpen={allLetterSwipeOpen}
             ></LetterCardList>
           </div>
         )}
@@ -393,18 +382,6 @@ const HomepageContent = () => {
           </div>
         )}
       </div>
-      <SuccessDialog
-        isOpen={dialogConfig.isOpen}
-        onClose={closeDialog}
-        title={dialogConfig.title}
-        description={dialogConfig.description}
-        primaryActionText={dialogConfig.primaryActionText}
-        autoDismiss={dialogConfig.autoDismiss}
-        size={dialogConfig.size}
-        type={dialogConfig.type}
-        onConfirmationPositive={dialogConfig.onConfirmationPositive}
-        autoDismissDelay={dialogConfig.autoDismissDelay}
-      />
     </div>
   );
 };

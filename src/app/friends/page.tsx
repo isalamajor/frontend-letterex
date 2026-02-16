@@ -12,7 +12,7 @@ const ITEMS_PER_PAGE = 6;
 
 interface FriendList {
   friends: {
-    _id: string;
+    id: string;
     nickname: string;
     image: string;
     lettersExchanged: number;
@@ -21,9 +21,9 @@ interface FriendList {
 
 interface FriendRequestList {
   senders: {
-    _id: string;
+    id: string;
     sender: {
-      _id: string;
+      id: string;
       nickname: string;
       image: string;
       profilePictureUrl: string;
@@ -88,7 +88,7 @@ const SocialPageContent = () => {
                 {friendRequests.length > 0 ? (
                   <div className="grid grid-cols-2 gap-4 h-[80%] overflow-auto w-full pb-15">
                     {friendRequests.map((request) => (
-                      <div key={request.sender._id} className="col-span-1">
+                      <div key={request.sender.id} className="col-span-1">
                         <FriendRequestCard
                           {...request.sender}
                           onAcceptSuccess={refreshData}
@@ -120,7 +120,7 @@ const SocialPageContent = () => {
                           currentPage * ITEMS_PER_PAGE,
                         )
                         .map((friend) => (
-                          <div key={friend._id} className="col-span-1">
+                          <div key={friend.id} className="col-span-1">
                             <FriendCard {...friend} />
                           </div>
                         ))}

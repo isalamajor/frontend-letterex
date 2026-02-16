@@ -4,7 +4,7 @@ import { SidebarDemo } from "@/components/sidebardemo";
 import Link from "next/link";
 import { useState } from "react";
 import { parseDate } from "@internationalized/date";
-import { Check, X, Trash, SquareDashed } from "lucide-react";
+import { Check, X, Trash, SquareDashed, HeartCrack } from "lucide-react";
 import { use } from "react";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner-1";
@@ -15,12 +15,7 @@ import {
   getLetterToCorrect,
 } from "@/services/api";
 
-interface Correccion {
-  textOriginal: string;
-  textCorrected: string;
-  startIndex: number;
-  endIndex: number;
-}
+import { CorrectedLetter, Correction } from "../../../../types";
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -38,14 +33,11 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   const correctionRef = useRef<HTMLDivElement | null>(null);
   const [currentCorrectionText, setCurrentCorrectionText] =
     useState<string>("");
-  const [editingCorrection, setEditingCorrection] = useState<Correccion | null>(
+  const [editingCorrection, setEditingCorrection] = useState<Correction | null>(
     null,
   );
   const [overlapping, setOverlapping] = useState<boolean>(false);
   const [valuesChanged, setValuesChanged] = useState(false);
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [letterContent, setLetterContent] = useState("");
   const [date, setDate] = useState(() =>
     parseDate(new Date().toISOString().split("T")[0]),
   );
@@ -57,16 +49,16 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     startIndex: number;
     endIndex: number;
   } | null>(null);
-  const [corrections, setCorrections] = useState<Correccion[]>([]);
-  const [sentBack, setSentBack] = useState(false);
-  const [comment, setComment] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [letter, setLetter] = useState<CorrectedLetter | null>(null);
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target;
     textarea.style.height = "auto"; // reset height
     textarea.style.height = textarea.scrollHeight + "px"; // set height to scrollHeight
-    setComment(e.target.value);
+    if (letter) {
+      setLetter({ ...letter, comments: e.target.value });
+    }
     setValuesChanged(true);
   };
 
@@ -106,23 +98,11 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       const letterData = await getLetterToCorrect(id);
       console.log("Letter data:", letterData);
       if (!letterData) {
+        setIsLoading(false);
         console.error("No letter data found for ID:", id);
         return;
       }
-      setAuthor(letterData.sender.nickname || "");
-      setTitle(letterData.originalLetter.title || "");
-      setLetterContent(letterData.originalLetter.content || "");
-      setDate(
-        parseDate(
-          new Date(letterData.originalLetter.created_at)
-            .toISOString()
-            .split("T")[0],
-        ),
-      );
-      setDeleted(letterData.originalLetter.deleted || false);
-      setCorrections(letterData.corrections || []);
-      setSentBack(letterData.sentBack || false);
-      setComment(letterData.comments || "");
+      setLetter(letterData);
       setIsLoading(false);
     })();
   }, [id]);
@@ -164,14 +144,19 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
 
     if (text.length === 0) return;
 
-    const newCorrection: Correccion = {
+    const newCorrection: Correction = {
       textOriginal: text,
       textCorrected: currentCorrectionText,
       startIndex,
       endIndex,
     };
 
-    setCorrections([...corrections, newCorrection]);
+    if (letter) {
+      setLetter({
+        ...letter,
+        corrections: [...letter.corrections, newCorrection],
+      });
+    }
     setSelectionInfo(null);
     setCurrentCorrectionText("");
     setEditingCorrection(null);
@@ -179,8 +164,8 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   };
 
   const editCorrection = () => {
-    if (!editingCorrection || !currentCorrectionText) return;
-    const updatedCorrections = corrections.map((correction) => {
+    if (!editingCorrection || !currentCorrectionText || !letter) return;
+    const updatedCorrections = letter.corrections.map((correction) => {
       if (
         correction.startIndex === editingCorrection.startIndex &&
         correction.endIndex === editingCorrection.endIndex
@@ -192,18 +177,20 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       }
       return correction;
     });
-    setCorrections(updatedCorrections);
+    setLetter({ ...letter, corrections: updatedCorrections });
     setEditingCorrection(null);
     setCurrentCorrectionText("");
     setSelectionInfo(null);
     setValuesChanged(true);
-    console.log("Correction edited:", updatedCorrections);
   };
 
   const saveCorrectionOnClick = async () => {
     setCorrectionMode(false);
-    if (!id) return;
-    if (corrections.length === 0 && (!comment || comment === "")) {
+    if (!id || !letter) return;
+    if (
+      letter.corrections.length === 0 &&
+      (!letter.comments || letter.comments === "")
+    ) {
       openDialog({
         title: "Add some corrections...",
         description: "First add some corrections or comments to the letter",
@@ -215,9 +202,12 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       return;
     }
     try {
-      const response = await updateLetterCorrections(id, corrections, comment);
+      const response = await updateLetterCorrections(
+        id,
+        letter.corrections,
+        letter.comments,
+      );
       if (response === 0) {
-        console.log("Corrections saved successfully:", response);
         setValuesChanged(false);
         openDialog({
           title: "Corrections saved",
@@ -237,12 +227,12 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
 
   const sendBackOnClick = async () => {
     setCorrectionMode(false);
-    if (!id) return;
+    if (!id || !letter) return;
     const sendBack = async () => {
       closeDialog();
       const response = await sendLetterBack(id);
       if (response === 0) {
-        setSentBack(true);
+        setLetter({ ...letter, sentBack: true });
         openDialog({
           title: "Letter sent back",
           description: "The letter has been sent back successfully.",
@@ -293,19 +283,44 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     );
   }
 
+  if (!letter) {
+    return (
+      <div className="rounded-tl-2xl bg-white border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-full h-full flex justify-center align-center items-stretch h-screen">
+        <div className="h-full flex flex-col gap-5 justify-center items-center text-gray-800">
+          <h3>Letter not found. Try again later.</h3>
+          <HeartCrack size={100} strokeWidth={1} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-screen overflow-hidden">
       <div className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-10 sm:px-20 flex flex-col">
         {/* Title field */}
         <p className="placeholder-gray-400 text-center text-2xl font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03]">
-          {title}
+          {letter.title}
         </p>
 
         {/* Date field */}
         <div className="flex flex-col text-black justify-end text-right ">
-          <p>
-            By <span className="font-semibold">{author}</span>
-          </p>
+          {letter.reviewer.nickname && (
+            <p className="flex flex-row justify-end items-center">
+              By
+              <img
+                className="rounded-full w-6 h-6 border border-1 border-gray-500 ml-2 mr-0.5"
+                src={`${process.env.NEXT_PUBLIC_PICTURES_BASE_URL}/${letter.sender.image}`}
+              />
+              <span
+                className="text-blue-500 cursor-pointer"
+                onClick={() =>
+                  (window.location.href = `/profile/${letter.sender.id}`)
+                }
+              >
+                {letter.sender.nickname}
+              </span>
+            </p>
+          )}
           <p>{date.toString()}</p>
           {deleted && (
             <>
@@ -322,7 +337,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
 
         {/* Correcting tools */}
 
-        {!sentBack && (
+        {!letter.sentBack && (
           <button
             onClick={() => setCorrectionMode(!correctionMode)}
             className={`flex flex-row gap-1 py-1 px-2 w-fit shadow border border-gray-300 rounded-md bg-white  ${correctionMode ? "text-gray-600" : "text-red-500"} `}
@@ -356,7 +371,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
               const endIndex = startIndex + range.toString().length;
 
               // Check overlapping
-              const overlapping = corrections.some(
+              const overlapping = letter.corrections.some(
                 (c) => startIndex < c.endIndex && endIndex > c.startIndex,
               );
               if (overlapping) {
@@ -380,8 +395,8 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         >
           <TextCorrections
             ref={textRef}
-            text={letterContent}
-            corrections={corrections}
+            text={letter.content}
+            corrections={letter.corrections}
             onCorrectionClick={(correction, rect) => {
               setEditingCorrection(correction);
               setCurrentCorrectionText(correction.textCorrected);
@@ -411,10 +426,10 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           >
             <div className="flex justify-between items-center mb-2">
               <p className="text-sm text-gray-600 mb-1">
-                {!sentBack ? "🖍️ Correcting" : "🖍️ Correction"}
+                {!letter.sentBack ? "🖍️ Correcting" : "🖍️ Correction"}
               </p>
               <div className="flex items-center gap-2">
-                {!sentBack && (
+                {!letter.sentBack && (
                   <>
                     <Check
                       className="w-5 h-5 text-green-500 hover:text-white hover:bg-green-500 hover:rounded"
@@ -430,13 +445,14 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                       className="w-5 h-5 p-0.5 text-red-500 cursor-pointer hover:text-white hover:bg-red-500 hover:rounded"
                       onClick={() => {
                         if (!editingCorrection) return;
-                        setCorrections(
-                          corrections.filter(
+                        setLetter({
+                          ...letter,
+                          corrections: letter.corrections.filter(
                             (c) =>
                               c.startIndex !== editingCorrection.startIndex ||
                               c.endIndex !== editingCorrection.endIndex,
                           ),
-                        );
+                        });
                         setEditingCorrection(null);
                         setCurrentCorrectionText("");
                         setSelectionInfo(null);
@@ -457,7 +473,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
             <textarea
               className="border w-64 p-2 text-sm rounded text-gray-800"
               rows={3}
-              disabled={sentBack}
+              disabled={letter.sentBack}
               placeholder="Enter your correction..."
               value={currentCorrectionText}
               onChange={(e) => {
@@ -472,13 +488,13 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         <div className="w-full my-3">
           <textarea
             placeholder={
-              sentBack
+              letter.sentBack
                 ? "No additional comments"
                 : "You may add general comments here..."
             }
-            value={comment}
+            value={letter.comments}
             onChange={handleInput}
-            disabled={sentBack}
+            disabled={letter.sentBack}
             className="px-5 py-4 w-full text-gray-800 bg-gray-50 rounded-lg outline-none
                   resize-none
                   opacity-100"
@@ -496,9 +512,10 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           </Link>
 
           <div className="flex flex-row justify-end h-[5%] col items-center gap-4">
-            {!sentBack ? (
+            {!letter.sentBack ? (
               <>
-                {valuesChanged || (corrections.length === 0 && !comment) ? (
+                {valuesChanged ||
+                (letter.corrections.length === 0 && !letter.comments) ? (
                   <button onClick={saveCorrectionOnClick}>
                     <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
                       💾 Save correction

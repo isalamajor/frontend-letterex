@@ -6,14 +6,14 @@ import { useState } from "react";
 import { acceptFriendRequest, declineFriendRequest } from "@/services/api";
 
 interface User {
-  _id: string;
+  id: string;
   nickname: string;
   image: string;
   onAcceptSuccess: () => void;
 }
 
 const FriendRequestCard: React.FC<User> = ({
-  _id,
+  id,
   nickname,
   image,
   onAcceptSuccess,
@@ -47,7 +47,7 @@ const FriendRequestCard: React.FC<User> = ({
   };
 
   const acceptOnClick = async () => {
-    const result = await acceptFriendRequest(_id);
+    const result = await acceptFriendRequest(id);
     if (result === 0) {
       onAcceptSuccess();
     } else {
@@ -61,7 +61,7 @@ const FriendRequestCard: React.FC<User> = ({
   };
 
   const declineOnClick = async () => {
-    const result = await declineFriendRequest(_id);
+    const result = await declineFriendRequest(id);
     if (result === 0) {
       onAcceptSuccess();
     } else {
@@ -75,7 +75,7 @@ const FriendRequestCard: React.FC<User> = ({
   };
 
   const goToProfile = () => {
-    window.location.href = `/profile/${_id}`;
+    window.location.href = `/profile/${id}`;
   };
 
   return (

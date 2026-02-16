@@ -2,20 +2,20 @@
 import React from "react";
 
 interface Friend {
-  _id: string;
+  id: string;
   nickname: string;
   image: string;
   lettersExchanged: number;
 }
 
 const FriendCard: React.FC<Friend> = ({
-  _id,
+  id,
   nickname,
   image,
   lettersExchanged,
 }) => {
   const goToProfile = () => {
-    window.location.href = `/profile/${_id}`;
+    window.location.href = `/profile/${id}`;
   };
 
   return (

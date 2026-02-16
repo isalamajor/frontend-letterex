@@ -10,12 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  SuccessDialog,
-  DialogType,
-  DialogContext,
-  useDialog,
-} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner-1";
 import {
   MessageCirclePlus,
@@ -56,7 +50,7 @@ import {
   deleteTopic,
   getCommunityTopics,
 } from "../../services/api/suggestedTopic";
-import { merge } from "topojson-client";
+import { useDialog } from "@/context/dialogContext";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -76,50 +70,7 @@ const CommunityPageContent = () => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [showExplorePage, setShowExplorePage] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Dialog
-  const [dialogConfig, setDialogConfig] = useState<{
-    isOpen?: boolean;
-    onClose?: () => void;
-    title?: string;
-    description?: string;
-    primaryActionText?: string;
-    onPrimaryAction?: () => void;
-    autoDismiss?: boolean;
-    autoDismissDelay?: number;
-    showCloseButton?: boolean;
-    size?: "sm" | "md" | "lg";
-    type?: DialogType;
-    letterId?: string;
-    sharedWith?: string[];
-    onShareSuccess?: (shareLetterResult: number) => void;
-    onNewDiaryCreated?: (diaryName: string) => void;
-    prevNewDiaryName?: string;
-    onConfirmationPositive?: () => void | Promise<void>;
-  }>({
-    isOpen: false,
-    title: "",
-    description: "",
-    primaryActionText: "",
-    autoDismiss: false,
-    size: "md",
-    type: "error",
-  });
-
-  const openDialog = (config: Partial<typeof dialogConfig>) => {
-    setDialogConfig((prev) => ({
-      ...prev,
-      ...config,
-      isOpen: true,
-    }));
-  };
-
-  const closeDialog = () => {
-    setDialogConfig((prev) => ({
-      ...prev,
-      isOpen: false,
-    }));
-  };
+  const { openDialog, closeDialog } = useDialog();
 
   useEffect(() => {
     const fetchCommunities = async () => {
@@ -134,9 +85,7 @@ const CommunityPageContent = () => {
           title: "Server Error",
           description: "An error occurred obtaining data",
           primaryActionText: "OK",
-          size: "md",
           type: "error",
-          autoDismiss: false,
         });
         setShowExplorePage(true);
       }
@@ -154,7 +103,7 @@ const CommunityPageContent = () => {
   }
 
   return (
-    <DialogContext.Provider value={{ openDialog, closeDialog }}>
+    <>
       {showExplorePage ? (
         <div className="text-gray-900 p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
           <div className="flex  items-center flex-col mb-5">
@@ -203,23 +152,12 @@ const CommunityPageContent = () => {
               primaryActionText: "OK",
               size: "md",
               type: "error",
-              autoDismiss: false,
+              autoDismiss: true,
             });
           }}
         />
       )}
-      <SuccessDialog
-        isOpen={dialogConfig.isOpen}
-        onClose={closeDialog}
-        title={dialogConfig.title}
-        description={dialogConfig.description}
-        primaryActionText={dialogConfig.primaryActionText}
-        autoDismiss={dialogConfig.autoDismiss}
-        autoDismissDelay={2000}
-        size={dialogConfig.size}
-        type={dialogConfig.type}
-      />
-    </DialogContext.Provider>
+    </>
   );
 };
 
@@ -520,7 +458,7 @@ const MemberList = ({
             "An error ocurred when fetching community members. Try again later.",
           type: "error",
           primaryActionText: "Ok",
-          autoDismiss: false,
+          autoDismiss: true,
         });
       }
     };

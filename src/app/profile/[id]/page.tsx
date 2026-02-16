@@ -26,6 +26,7 @@ import { ImageUploader } from "@/components/imageUploader";
 import { Spinner } from "@/components/ui/spinner-1";
 const MapNoSSR = dynamic(() => import("@/components/ui/map"), { ssr: false });
 import rawLanguages from "@/components/languages.json";
+import { useDialog } from "@/context/dialogContext";
 const languagesData = rawLanguages.languages as {
   name: string;
   image: string;
@@ -84,6 +85,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
     string | null
   >(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { openDialog, closeDialog } = useDialog();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,9 +95,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
       if (id !== "yours") {
         // Fetch user data by ID
         userData = await getUserData(id);
-        console.log(userData);
         profilePictureUrl = `http://localhost:3090/uploads/profile_pictures/${userData.image}`;
-        console.log("profilePictureUrl: ", profilePictureUrl);
       } else {
         // Get languages from sessionStorage
         userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
@@ -244,8 +244,6 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
           type: "success",
         });
       }
-
-      console.log("Bio and location saved:", response);
     } catch (_error) {
       openDialog({
         title: "Failed to save changes",
@@ -255,34 +253,6 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
         type: "error",
       });
     }
-  };
-
-  // Dialog
-  const [dialogConfig, setDialogConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    primaryActionText: string;
-    autoDismiss: boolean;
-    size: "sm" | "md" | "lg";
-    type: DialogType;
-  }>({
-    isOpen: false,
-    title: "Payment Successful!",
-    description:
-      "Your payment has been processed successfully. You will receive a confirmation email shortly.",
-    primaryActionText: "View Receipt",
-    autoDismiss: false,
-    size: "md",
-    type: "success",
-  });
-
-  const openDialog = (config: Partial<typeof dialogConfig>) => {
-    setDialogConfig((prev) => ({ ...prev, ...config, isOpen: true }));
-  };
-
-  const closeDialog = () => {
-    setDialogConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
   if (isLoading) {
@@ -605,23 +575,6 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
           </div>
         </div>
       </div>
-      <SuccessDialog
-        isOpen={dialogConfig.isOpen}
-        onClose={closeDialog}
-        title={dialogConfig.title}
-        description={dialogConfig.description}
-        primaryActionText={dialogConfig.primaryActionText}
-        autoDismiss={dialogConfig.autoDismiss}
-        autoDismissDelay={2000}
-        size={dialogConfig.size}
-        type={dialogConfig.type}
-        onPrimaryAction={() => {
-          console.log("Primary action clicked for type:", dialogConfig.type);
-        }}
-        letterId={"dialog-profile"}
-        sharedWith={[]}
-        onShareSuccess={() => {}}
-      />
     </div>
   );
 };

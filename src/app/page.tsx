@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <AnimatedForm></AnimatedForm>
+        <AnimatedForm />
       </main>
       {/*<footer className={styles.footer}>
         <a

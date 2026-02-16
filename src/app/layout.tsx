@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
+import { DialogProvider } from "@/context/dialogContext";
 
 const lexend = Lexend({
   variable: "--font-lexend",
@@ -19,12 +20,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${lexend.variable}`}
-    >
+    <html lang="en" className={`${lexend.variable}`}>
       <body>
-        {children}
+        <DialogProvider>{children}</DialogProvider>
       </body>
     </html>
   );

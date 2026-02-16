@@ -108,6 +108,7 @@ const shareLetter = async (letterId, sharedWith) => {
 };
 
 const getLetter = async (id) => {
+  if (!id) return null;
   const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.get(`${API_URL}/view/${id}`, {

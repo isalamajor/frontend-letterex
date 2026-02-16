@@ -1,28 +1,38 @@
+"use client";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 
 type DialogSize = "sm" | "md" | "lg";
 
+const defaultConfig: DialogConfig = {
+  isOpen: false,
+  title: "All done!",
+  description: "Action performed successfully",
+  primaryActionText: "OK",
+  autoDismiss: true,
+  autoDismissDelay: 6000,
+  size: "md",
+  type: "success",
+};
+
 type DialogConfig = {
   isOpen: boolean;
+  onClose?: () => void;
   title: string;
   description: string;
   primaryActionText: string;
-  autoDismiss: boolean;
+  onPrimaryAction?: () => void;
+  autoDismiss?: boolean;
   autoDismissDelay?: number;
-  size: DialogSize;
+  showCloseButton?: boolean;
+  size: "sm" | "md" | "lg";
   type: DialogType;
-};
-
-const defaultConfig: DialogConfig = {
-  isOpen: false,
-  title: "",
-  description: "",
-  primaryActionText: "OK",
-  autoDismiss: true,
-  autoDismissDelay: 2000,
-  size: "md",
-  type: "success",
+  letterId?: string;
+  sharedWith?: string[];
+  onShareSuccess?: (shareLetterResult: number) => void;
+  onNewDiaryCreated?: (diaryName: string) => void;
+  prevNewDiaryName?: string;
+  onConfirmationPositive?: () => void | Promise<void>;
 };
 
 const DialogContext = createContext<{
