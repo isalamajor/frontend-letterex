@@ -7,7 +7,7 @@ import { getLetterToCorrect } from "@/services/api";
 import { HeartCrack, X } from "lucide-react";
 import { use } from "react";
 import TextCorrections from "@/components/textCorrections";
-import { CorrectedLetter } from "../../../../types";
+import { CorrectedLetter } from "../../../lib/types";
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

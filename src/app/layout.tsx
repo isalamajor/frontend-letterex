@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${lexend.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <DialogProvider>{children}</DialogProvider>
       </body>
     </html>

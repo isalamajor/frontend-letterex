@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap");
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
@@ -118,15 +118,12 @@
   --color-ds-red-800: var(----ds-red-800);
   --color-ds-gray-alpha-100: var(----ds-gray-alpha-100);
   @keyframes fade-spin {
-  0% {
-    opacity: 0.15;
-
+    0% {
+      opacity: 0.15;
     }
-  100% {
-    opacity: 1;
-
+    100% {
+      opacity: 1;
     }
-
   }
   --color-gray-800: var(--ds-gray-800);
   --color-success: var(--geist-success);
@@ -137,8 +134,7 @@
   --color-geist-warning: var(----geist-warning);
   --color-geist-error: var(----geist-error);
   --color-geist-success: var(----geist-success);
-  --color-ds-gray-800: var(----ds-gray-800)
-
+  --color-ds-gray-800: var(----ds-gray-800);
 }
 
 :root {
@@ -174,7 +170,7 @@
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0); 
+  --sidebar-ring: oklch(0.708 0 0);
   --context-card-border: hsla(0, 0%, 92%, 1);
   --ds-red-900: oklch(54.99% 0.232 25.29);
   --ds-gray-700: rgb(69, 68, 68);
@@ -191,24 +187,40 @@
   --ds-gray-alpha-400: hsla(0, 0%, 0%, 0.08);
   --ds-background-100: hsla(0, 0%, 100%, 1);
   --ds-focus-color: var(--ds-blue-700);
-  --ds-focus-ring: 0 0 0 2px var(--ds-background-100), 0 0 0 4px var(--ds-focus-color);
+  --ds-focus-ring:
+    0 0 0 2px var(--ds-background-100), 0 0 0 4px var(--ds-focus-color);
   --ds-shadow-border: 0 0 0 1px rgba(0, 0, 0, 0.08);
   --ds-shadow-small: 0px 2px 2px rgba(0, 0, 0, 0.04);
   --ds-gray-alpha-500: hsla(0, 0%, 0%, 0.21);
   --ds-background-200: hsla(0, 0%, 98%, 1);
   --geist-foreground: #000;
-  --ds-input-ring: 0 0 0 1px var(--ds-gray-alpha-600), 0 0 0 4px rgba(0, 0, 0, .16);
-  --ds-input-error-ring: 0 0 0 1px var(--ds-red-900), 0 0 0 4px var(--ds-red-300);
-  --ds-input-error-hover-ring: 0 0 0 1px var(--ds-red-900), 0 0 0 4px var(--ds-red-500);
+  --ds-input-ring:
+    0 0 0 1px var(--ds-gray-alpha-600), 0 0 0 4px rgba(0, 0, 0, 0.16);
+  --ds-input-error-ring:
+    0 0 0 1px var(--ds-red-900), 0 0 0 4px var(--ds-red-300);
+  --ds-input-error-hover-ring:
+    0 0 0 1px var(--ds-red-900), 0 0 0 4px var(--ds-red-500);
   --ds-shadow-border-small: var(--ds-shadow-border), var(--ds-shadow-small);
-  --ds-shadow-medium: 0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 8px -8px rgba(0, 0, 0, 0.04);
+  --ds-shadow-medium:
+    0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 8px -8px rgba(0, 0, 0, 0.04);
   --ds-shadow-border-medium: var(--ds-shadow-border), var(--ds-shadow-medium);
-  --ds-shadow-large: 0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 16px -4px rgba(0, 0, 0, 0.04);
+  --ds-shadow-large:
+    0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 16px -4px rgba(0, 0, 0, 0.04);
   --ds-shadow-border-large: var(--ds-shadow-border), var(--ds-shadow-large);
-  --ds-shadow-tooltip: var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 4px 8px rgba(0, 0, 0, 0.04);
-  --ds-shadow-menu: var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 4px 8px -4px rgba(0, 0, 0, 0.04), 0px 16px 24px -8px rgba(0, 0, 0, 0.06);
-  --ds-shadow-modal: var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 8px 16px -4px rgba(0, 0, 0, 0.04), 0px 24px 32px -8px rgba(0, 0, 0, 0.06);
-  --ds-shadow-fullscreen: var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 8px 16px -4px rgba(0, 0, 0, 0.04), 0px 24px 32px -8px rgba(0, 0, 0, 0.06);
+  --ds-shadow-tooltip:
+    var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02),
+    0px 4px 8px rgba(0, 0, 0, 0.04);
+  --ds-shadow-menu:
+    var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02),
+    0px 4px 8px -4px rgba(0, 0, 0, 0.04), 0px 16px 24px -8px rgba(0, 0, 0, 0.06);
+  --ds-shadow-modal:
+    var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02),
+    0px 8px 16px -4px rgba(0, 0, 0, 0.04),
+    0px 24px 32px -8px rgba(0, 0, 0, 0.06);
+  --ds-shadow-fullscreen:
+    var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02),
+    0px 8px 16px -4px rgba(0, 0, 0, 0.04),
+    0px 24px 32px -8px rgba(0, 0, 0, 0.06);
   --ds-red-300: oklch(94.33% 0.0369 15.011509923860523);
   --ds-red-500: oklch(84.47% 0.1018 17.71);
   --ds-gray-alpha-600: hsla(0, 0%, 0%, 0.34);
@@ -275,19 +287,37 @@
   --ds-shadow-border: 0 0 0 1px rgba(255, 255, 255, 0.145);
   --ds-shadow-small: 0px 1px 2px rgba(0, 0, 0, 0.16);
   --ds-gray-alpha-500: hsla(0, 0%, 100%, 0.24);
-  --ds-background-100: hsla(0,0%,4%, 1);
+  --ds-background-100: hsla(0, 0%, 4%, 1);
   --ds-background-200: hsla(0, 0%, 0%, 1);
   --geist-foreground: #fff;
-  --ds-input-ring: 0 0 0 1px var(--ds-gray-alpha-600), 0 0 0 4px rgba(255, 255, 255, .24);
-  --ds-shadow-border-small: var(--ds-shadow-border), 0px 1px 2px rgba(0, 0, 0, 0.16);
-  --ds-shadow-medium: 0px 2px 2px rgba(0, 0, 0, 0.32), 0px 8px 8px -8px rgba(0, 0, 0, 0.16);
-  --ds-shadow-border-medium: var(--ds-shadow-border), 0px 2px 2px rgba(0, 0, 0, 0.32), 0px 8px 8px -8px rgba(0, 0, 0, 0.16);
-  --ds-shadow-large: 0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 16px -4px rgba(0, 0, 0, 0.04);
-  --ds-shadow-border-large: var(--ds-shadow-border), 0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 16px -4px rgba(0, 0, 0, 0.04);
-  --ds-shadow-tooltip: var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 4px 8px rgba(0, 0, 0, 0.04);
-  --ds-shadow-menu: var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 4px 8px -4px rgba(0, 0, 0, 0.04), 0px 16px 24px -8px rgba(0, 0, 0, 0.06);
-  --ds-shadow-modal: var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 8px 16px -4px rgba(0, 0, 0, 0.04), 0px 24px 32px -8px rgba(0, 0, 0, 0.06);
-  --ds-shadow-fullscreen: var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 8px 16px -4px rgba(0, 0, 0, 0.04), 0px 24px 32px -8px rgba(0, 0, 0, 0.06);
+  --ds-input-ring:
+    0 0 0 1px var(--ds-gray-alpha-600), 0 0 0 4px rgba(255, 255, 255, 0.24);
+  --ds-shadow-border-small:
+    var(--ds-shadow-border), 0px 1px 2px rgba(0, 0, 0, 0.16);
+  --ds-shadow-medium:
+    0px 2px 2px rgba(0, 0, 0, 0.32), 0px 8px 8px -8px rgba(0, 0, 0, 0.16);
+  --ds-shadow-border-medium:
+    var(--ds-shadow-border), 0px 2px 2px rgba(0, 0, 0, 0.32),
+    0px 8px 8px -8px rgba(0, 0, 0, 0.16);
+  --ds-shadow-large:
+    0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 16px -4px rgba(0, 0, 0, 0.04);
+  --ds-shadow-border-large:
+    var(--ds-shadow-border), 0px 2px 2px rgba(0, 0, 0, 0.04),
+    0px 8px 16px -4px rgba(0, 0, 0, 0.04);
+  --ds-shadow-tooltip:
+    var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02),
+    0px 4px 8px rgba(0, 0, 0, 0.04);
+  --ds-shadow-menu:
+    var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02),
+    0px 4px 8px -4px rgba(0, 0, 0, 0.04), 0px 16px 24px -8px rgba(0, 0, 0, 0.06);
+  --ds-shadow-modal:
+    var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02),
+    0px 8px 16px -4px rgba(0, 0, 0, 0.04),
+    0px 24px 32px -8px rgba(0, 0, 0, 0.06);
+  --ds-shadow-fullscreen:
+    var(--ds-shadow-border), 0px 1px 1px rgba(0, 0, 0, 0.02),
+    0px 8px 16px -4px rgba(0, 0, 0, 0.04),
+    0px 24px 32px -8px rgba(0, 0, 0, 0.06);
   --ds-red-300: oklch(31.47% 0.1105 20.96);
   --ds-red-500: oklch(40.68% 0.1479 23.16);
   --ds-gray-alpha-600: hsla(0, 0%, 100%, 0.51);
@@ -307,26 +337,25 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground text-[3vw] sm:text-[1vw] ;
+    @apply bg-background text-foreground text-[3vw] sm:text-[1vw];
   }
   .ql-editor {
     @apply font-sans text-base;
   }
   h1 {
-        @apply text-[6vw] sm:text-[2vw];
+    @apply text-[6vw] sm:text-[2vw];
   }
 
   h2 {
-      @apply text-[4.5vw] sm:text-[1.5vw] font-bold; 
+    @apply text-[4.5vw] sm:text-[1.5vw] font-bold;
   }
 
   h3 {
-      @apply text-[3.5vw] sm:text-[1.2vw]; 
+    @apply text-[3.5vw] sm:text-[1.2vw];
   }
 
-  
   h4 {
-      @apply text-[3vw] sm:text-[1.1vw]; 
+    @apply text-[3vw] sm:text-[1.1vw];
   }
 }
 
@@ -342,8 +371,6 @@
   }
 
   .text-res {
-    @apply text-[3vw] sm:text-[1vw] 
-    }
-
+    @apply text-[3vw] sm:text-[1vw];
+  }
 }
-

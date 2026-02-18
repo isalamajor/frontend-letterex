@@ -1,21 +1,30 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { SidebarDemo } from "@/components/sidebardemo";
 import Link from "next/link";
 import { useState } from "react";
 import { parseDate } from "@internationalized/date";
-import { Check, X, Trash, SquareDashed, HeartCrack } from "lucide-react";
+import {
+  Check,
+  X,
+  Trash,
+  Trash2,
+  SquareDashed,
+  HeartCrack,
+} from "lucide-react";
 import { use } from "react";
-import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner-1";
 import TextCorrections from "@/components/textCorrections";
 import {
   updateLetterCorrections,
   sendLetterBack,
   getLetterToCorrect,
+  deleteCorrectedLetter,
 } from "@/services/api";
 
-import { CorrectedLetter, Correction } from "../../../../types";
+import { CorrectedLetter, Correction } from "../../../lib/types";
+import { useDialog } from "@/context/dialogContext";
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -29,6 +38,7 @@ export default function Home({ params }: { params: Promise<{ id: string }> }) {
 }
 
 const CorrectLetterPageContent = ({ id }: { id: string }) => {
+  const router = useRouter();
   const textRef = useRef<HTMLDivElement | null>(null);
   const correctionRef = useRef<HTMLDivElement | null>(null);
   const [currentCorrectionText, setCurrentCorrectionText] =
@@ -41,7 +51,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   const [date, setDate] = useState(() =>
     parseDate(new Date().toISOString().split("T")[0]),
   );
-  const [deleted, setDeleted] = useState(false);
   const [correctionMode, setCorrectionMode] = useState(false);
   const [selectionInfo, setSelectionInfo] = useState<{
     text: string;
@@ -51,6 +60,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [letter, setLetter] = useState<CorrectedLetter | null>(null);
+  const { openDialog, closeDialog } = useDialog();
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target;
@@ -60,36 +70,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       setLetter({ ...letter, comments: e.target.value });
     }
     setValuesChanged(true);
-  };
-
-  // Dialog
-  const [dialogConfig, setDialogConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    primaryActionText: string;
-    autoDismiss: boolean;
-    size: "sm" | "md" | "lg";
-    type: DialogType;
-    onConfirmationPositive?: () => void | Promise<void>;
-  }>({
-    isOpen: false,
-    title: "Payment Successful!",
-    description:
-      "Your payment has been processed successfully. You will receive a confirmation email shortly.",
-    primaryActionText: "View Receipt",
-    autoDismiss: true,
-    size: "md",
-    type: "success",
-    onConfirmationPositive: undefined,
-  });
-
-  const openDialog = (config: Partial<typeof dialogConfig>) => {
-    setDialogConfig((prev) => ({ ...prev, ...config, isOpen: true }));
-  };
-
-  const closeDialog = () => {
-    setDialogConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
   useEffect(() => {
@@ -237,8 +217,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           title: "Letter sent back",
           description: "The letter has been sent back successfully.",
           primaryActionText: "OK",
-          autoDismiss: true,
-          size: "md",
           type: "success",
         });
       } else {
@@ -246,8 +224,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           title: "Failed to send back",
           description: "There was an error sending letter back :(",
           primaryActionText: "OK",
-          autoDismiss: true,
-          size: "md",
           type: "error",
         });
       }
@@ -259,7 +235,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           "Once you send it back, you won't be able to make any more changes.",
         primaryActionText: "Send Back",
         autoDismiss: false,
-        size: "md",
         type: "askConfirmation",
         onConfirmationPositive: sendBack,
       });
@@ -272,6 +247,33 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         size: "md",
         type: "error",
       });
+    }
+  };
+
+  const deleteLetterForMe = async () => {
+    if (letter && letter.id) {
+      const res = await deleteCorrectedLetter(letter.id);
+      if (res === 0) {
+        openDialog({
+          title: "Letter correction deleted successfully",
+          description: "Let's get back to your dashboard :)",
+          type: "success",
+          showCloseButton: false,
+          autoDismiss: true,
+          autoDismissDelay: 3000,
+        });
+        // Hacer el router.push después del openDialog para que se cargue en el fondo
+        setTimeout(() => {
+          router.push("/homepage");
+        }, 3000);
+      } else {
+        openDialog({
+          title: "Failed to delete correction",
+          description: "Try again later...",
+          primaryActionText: "OK",
+          type: "error",
+        });
+      }
     }
   };
 
@@ -322,7 +324,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
             </p>
           )}
           <p>{date.toString()}</p>
-          {deleted && (
+          {letter.deleted && (
             <>
               <p className="text-red-400 font-semibold">
                 This letter has been deleted by the author.
@@ -523,7 +525,13 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                   </button>
                 ) : (
                   <>
-                    {!deleted && (
+                    {letter.deleted ? (
+                      <button onClick={deleteLetterForMe}>
+                        <div className="h-[100%] w-auto flex gap-1 items-center justify-center bg-white text-red-400 border-1 border-red-400 rounded py-2 px-4 hover:bg-red-100 ">
+                          <Trash2 size={16} /> Delete for me
+                        </div>
+                      </button>
+                    ) : (
                       <button onClick={sendBackOnClick}>
                         <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
                           📬 Send Back
@@ -546,25 +554,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           </div>
         </div>
       </div>
-      <SuccessDialog
-        isOpen={dialogConfig.isOpen}
-        onClose={closeDialog}
-        title={dialogConfig.title}
-        description={dialogConfig.description}
-        primaryActionText={dialogConfig.primaryActionText}
-        autoDismiss={dialogConfig.autoDismiss}
-        autoDismissDelay={2000}
-        size={dialogConfig.size}
-        type={dialogConfig.type}
-        onPrimaryAction={() => {
-          console.log("Primary action clicked for type:", dialogConfig.type);
-        }}
-        letterId={id}
-        sharedWith={[]}
-        onShareSuccess={() => {}}
-        onConfirmationPositive={dialogConfig.onConfirmationPositive}
-      />
-
       {correctionMode && <EmojiCursor />}
     </div>
   );

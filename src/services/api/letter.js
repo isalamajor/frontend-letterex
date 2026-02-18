@@ -251,6 +251,7 @@ const getUserLetters = async () => {
       Authorization: `${token}`, // Incluir el token en el encabezado
     },
   });
+  console.log("getUserLetters", response.data.letters);
   if (response.status === 200) {
     return response.data.letters;
   }

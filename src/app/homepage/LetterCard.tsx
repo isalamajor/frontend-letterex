@@ -1,24 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useSwipeable } from "react-swipeable";
 import { Tooltip } from "react-tooltip";
+import type { Letter } from "@/lib/types";
 
-interface LetterCardProps {
-  id: string;
-  created_at: string;
-  diary: string | null;
-  title: string;
-  language: string;
-  sharedWith: {
-    nickname: string;
-    image: string;
-    correctionSentBack: boolean;
-    correctedLetterId: string;
-  }[];
-  resetSelection?: boolean;
+interface LetterCardProps extends Letter {
   deleteMode: boolean;
   swipeOpen: boolean;
   onSelectionChange: (letterId: string) => void;
+  resetSelection?: boolean;
 }
 
 const LetterCard: React.FC<LetterCardProps> = ({
@@ -83,7 +72,7 @@ const LetterCard: React.FC<LetterCardProps> = ({
             {(sharedWith || []).map((user, index) => (
               <img
                 key={index}
-                src={`http://localhost:3090/uploads/profile_pictures//${user.image}`}
+                src={`http://localhost:3090/uploads/profile_pictures/${user.image}`}
                 alt={user.image}
                 className="w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600"
               />
@@ -155,7 +144,7 @@ const LetterCard: React.FC<LetterCardProps> = ({
               );
             })
           ) : (
-            <p className="text-base">Share this letter! 📬</p>
+            <p className="text-sm">Share this letter! 📬</p>
           )}
         </div>
       </div>

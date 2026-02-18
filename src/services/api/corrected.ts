@@ -1,5 +1,5 @@
 import axios from "axios";
-import { UserInvolved, Correction, CorrectedLetter } from "../../../types";
+import { UserInvolved, Correction, CorrectedLetter } from "../../lib/types";
 import { parseDate } from "@internationalized/date";
 import { CalendarDate } from "@internationalized/date";
 
@@ -131,11 +131,11 @@ const getLetterToCorrect = async (
         },
       },
     );
-    console.log(response);
     if (response.status === 200) {
       const letterData = response.data.correctedLetter;
       console.log("letterData api", letterData);
       return {
+        id: letterData.id,
         title: letterData.originalLetter.title,
         author: letterData.originalLetter.author,
         content: letterData.originalLetter.content,
@@ -143,9 +143,9 @@ const getLetterToCorrect = async (
           letterData.originalLetter.created_at.split("T")[0],
         ) as CalendarDate,
         corrections: letterData.corrections,
-        comments: letterData.originalLetter.comments,
+        comments: letterData.comments,
         sentBack: letterData.sentBack,
-        deleted: letterData.deleted,
+        deleted: letterData.originalLetter.deleted,
         sender: { ...letterData.sender },
         reviewer: { ...letterData.reviewer },
       };

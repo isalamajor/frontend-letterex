@@ -14,13 +14,10 @@ import { parseDate } from "@internationalized/date";
 import { DateField, DateInput } from "@/components/ui/datefield";
 import { Label } from "@/components/ui/field";
 import { getDiaries, saveLetter } from "@/services/api";
-import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { BookOpen } from "lucide-react";
-import Quill from "quill";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import "react-quill-new/dist/quill.bubble.css";
-import { log } from "console";
 import { useDialog } from "@/context/dialogContext";
 
 export default function Home() {
@@ -60,7 +57,6 @@ const NewLetterPageContent = () => {
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitleError(false);
-    console.log("Title changed:", event.target.value);
     setTitle(event.target.value);
   };
 
@@ -104,7 +100,7 @@ const NewLetterPageContent = () => {
     const res = await saveLetter(title, letterContent, diary, language, date);
 
     if (res) {
-      router.push("/edit-letter/" + res._id);
+      router.push("/edit-letter/" + res.id);
     } else {
       console.error("Error saving letter.");
     }
@@ -258,20 +254,18 @@ const NewLetterPageContent = () => {
           {/* Buttons */}
           <div className="flex justify-between h-[5%] items-end gap-4 mt-4">
             <Link href={"/homepage"}>
-              <button className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
+              <button className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945]">
                 Back
               </button>
             </Link>
-            <div className="flex flex-row justify-end h-[5%] col items-center gap-4 mt-4">
-              <button
-                onClick={() => {
-                  SaveLetterOnClick();
-                }}
-                className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors"
-              >
-                💾 Save Letter
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                SaveLetterOnClick();
+              }}
+              className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b]"
+            >
+              💾 Save Letter
+            </button>
           </div>
         </div>
       </div>

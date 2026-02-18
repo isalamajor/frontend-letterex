@@ -25,7 +25,7 @@ type DialogConfig = {
   autoDismiss?: boolean;
   autoDismissDelay?: number;
   showCloseButton?: boolean;
-  size: "sm" | "md" | "lg";
+  size: DialogSize;
   type: DialogType;
   letterId?: string;
   sharedWith?: string[];

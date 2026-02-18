@@ -2,21 +2,9 @@
 import LetterCardList from "@/components/LetterCardList";
 import ReceivedLetterList from "@/components/ReceivedLetterList";
 import { SidebarDemo } from "@/components/sidebardemo";
-import {
-  getUserLetters,
-  getReceivedLetters,
-  deleteLetters,
-} from "@/services/api";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import {
-  Search,
-  RefreshCw,
-  Trash2,
-  X,
-  EyeClosedIcon,
-  EyeIcon,
-} from "lucide-react";
+import { getReceivedLetters } from "@/services/api";
+import { useState, useEffect, useCallback } from "react";
+import { Search, RefreshCw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,9 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner-1";
-import { useDialog } from "@/context/dialogContext";
+import { ReceivedLetterListProps } from "../../lib/types";
+import { LetterCardBlock } from "./LetterCardBlock";
 
 export default function Home() {
   return (
@@ -37,130 +25,105 @@ export default function Home() {
   );
 }
 
-interface ReceivedLetterListProps {
-  letters: {
-    _id: string;
-    originalLetter: {
-      _id: string;
-      author: string;
-      title: string;
-      language: string;
-      created_at: string;
-    };
-    sender: {
-      nickname: string;
-      avatar: string;
-    };
-    sentBack: boolean;
-    corrected_at: string;
-    seen: boolean;
-  }[];
-}
-
 const HomepageContent = () => {
-  const [orderDiariesEvent, setOrderDiariesEvent] = useState(0);
-  const [filterSenders, setFilterSenders] = useState("");
-  const [sendersList, setSendersList] = useState<string[]>([]);
-  const [noLetters, setNoLetters] = useState<boolean>(true);
-  const [noReceivedLetters, setNoReceivedLetters] = useState<boolean>(true);
-  const [searchFilter, setSearchFilter] = useState<string>("");
-  const [searchFilterReceived, setSearchFilterReceived] = useState<string>("");
-  const [showOnlyPending, setShowOnlyPending] = useState<boolean>(false);
-  const [rotation, setRotation] = useState(0); // Spin Icon Refresh
-  const [deleteLettersMode, setDeleteLettersMode] = useState(false);
-  const [resetSelection, setResetSelection] = useState(false);
-  const [reFetchLetters, setReFetchLetters] = useState(false);
-  const [toDeleteLetters, setToDeleteLetters] = useState<string[]>([]);
-  const [sectionVisible, setSectionVisible] = useState<number>(0); // 0 for both, 1 for written, 2 for received
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [allLetterSwipeOpen, setAllLetterSwipeOpen] = useState<boolean>(false);
+  const [senderFilter, setSenderFilter] = useState<string>("");
+  // Filtros de búsqueda y ordenamiento
+  const [filters, setFilters] = useState({
+    received: "",
+    senders: "",
+    onlyPending: false,
+  });
 
-  const { openDialog, closeDialog } = useDialog();
+  // Estado de UI/Visual
+  const [ui, setUI] = useState({
+    sectionVisible: 0, // 0 for both, 1 for written, 2 for received
+    isLoading: true,
+  });
+
+  // Datos del servidor
+  const [data, setData] = useState({
+    noReceivedLetters: true,
+    sendersList: [] as string[],
+  });
+
+  // Triggers/eventos
+  const [triggers, setTriggers] = useState({
+    rotation: 0,
+  });
+
+  // Helpers para actualizar estados
+  const updateFilters = useCallback(
+    (updates: Partial<typeof filters>) =>
+      setFilters((prev) => ({ ...prev, ...updates })),
+    [],
+  );
+  const updateUI = useCallback(
+    (updates: Partial<typeof ui>) => setUI((prev) => ({ ...prev, ...updates })),
+    [],
+  );
+  const updateData = useCallback(
+    (updates: Partial<typeof data>) =>
+      setData((prev) => ({ ...prev, ...updates })),
+    [],
+  );
+  const updateTriggers = useCallback(
+    (updates: Partial<typeof triggers>) =>
+      setTriggers((prev) => ({ ...prev, ...updates })),
+    [],
+  );
 
   useEffect(() => {
-    setDeleteLettersMode(false);
-    setIsLoading(true);
-
-    const fetchletters = async () => {
-      const response = await getUserLetters();
-      if (!response || response.length === 0) {
-        setNoLetters(true);
-      } else {
-        setNoLetters(false);
-      }
-    };
+    updateUI({ isLoading: true });
 
     const fetchReceivedLetters = async () => {
       const lettersRecList: ReceivedLetterListProps["letters"] =
         await getReceivedLetters();
       if (!lettersRecList || lettersRecList.length === 0) {
-        setNoReceivedLetters(true);
+        updateData({ noReceivedLetters: true });
       } else {
-        setNoReceivedLetters(false);
-        setSendersList([
-          ...new Set(lettersRecList.map((letter) => letter.sender.nickname)),
-        ]);
+        updateData({
+          noReceivedLetters: false,
+          sendersList: [
+            ...new Set(lettersRecList.map((letter) => letter.sender.nickname)),
+          ],
+        });
       }
     };
 
     const selectSectionVisible = () => {
       if (window.innerWidth < 768) {
-        setSectionVisible(1);
+        updateUI({ sectionVisible: 1 });
       }
     };
 
-    Promise.all([fetchletters(), fetchReceivedLetters()]).then(() => {
+    Promise.all([fetchReceivedLetters()]).then(() => {
       selectSectionVisible();
-      setIsLoading(false);
+      updateUI({ isLoading: false });
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Action to change the value of the sender selected in Letters Received
-  const trySetFilterSenders = (newSender: string) => {
-    if (newSender === "None") {
-      setFilterSenders("");
-    } else {
-      setFilterSenders(newSender);
-    }
-  };
+  const trySetFilterSenders = useCallback((newSender: string) => {
+    //updateFilters({ senders: newSender === "None" ? "" : newSender });
+    setSenderFilter(newSender === "None" ? "" : newSender);
+  }, []);
 
-  const receiveDataAndDelete = async () => {
-    if (toDeleteLetters.length < 1) return;
-    let deletedCount = 0;
-    if (deleteLettersMode) {
-      // Delete
-      openDialog({
-        title: "Are you sure you want to delete the selected letters?",
-        description: "This action cannot be undone.",
-        type: "askConfirmation",
-        primaryActionText: "Cancel",
-        autoDismiss: false,
-        onConfirmationPositive: async () => {
-          deletedCount = await deleteLetters(toDeleteLetters);
-          setResetSelection(!resetSelection);
-          closeDialog();
-          if (deletedCount < 0) {
-            openDialog({
-              title: "Error",
-              description: "An error occurred while deleting the letters.",
-              type: "error",
-              primaryActionText: "Ok",
-              autoDismiss: true,
-            });
-          } else {
-            setResetSelection(!resetSelection);
-            setReFetchLetters(!reFetchLetters);
-            closeDialog();
-            setSearchFilter("");
-          }
-        },
-      });
-    } else {
-      setDeleteLettersMode(true);
-    }
-  };
+  const handleReceivedSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      updateFilters({ received: e.target.value });
+    },
+    [updateFilters],
+  );
 
-  if (isLoading) {
+  const handlePendingSwitchChange = useCallback(
+    (value: string | null) => {
+      updateFilters({ onlyPending: value === "pending" });
+    },
+    [updateFilters],
+  );
+
+  if (ui.isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spinner size={40} color="gray" />
@@ -183,124 +146,40 @@ const HomepageContent = () => {
       <div className="flex flex-col pb-10 sm:pb-0 sm:flex-row gap-2 flex-1 sm:scrolling-auto h-[90%]">
         <div className="flex flex-row gap-2 justify-center sm:hidden">
           <button
-            onClick={() => setSectionVisible(1)}
-            className={`rounded-full border border-1 px-3 py-1 ${sectionVisible === 1 ? "border-black bg-gray-300 text-gray-900" : " border-gray-500 bg-gray-100 text-gray-800"}`}
+            onClick={() => updateUI({ sectionVisible: 1 })}
+            className={`rounded-full border border-1 px-3 py-1 ${ui.sectionVisible === 1 ? "border-black bg-gray-300 text-gray-900" : " border-gray-500 bg-gray-100 text-gray-800"}`}
           >
             Letters written
           </button>
           <button
-            onClick={() => setSectionVisible(2)}
-            className={`rounded-full border border-1 px-3 py-1 ${sectionVisible === 2 ? "border-black bg-gray-300 text-gray-900" : " border-gray-500 bg-gray-100 text-gray-800"}`}
+            onClick={() => updateUI({ sectionVisible: 2 })}
+            className={`rounded-full border border-1 px-3 py-1 ${ui.sectionVisible === 2 ? "border-black bg-gray-300 text-gray-900" : " border-gray-500 bg-gray-100 text-gray-800"}`}
           >
             Letters received
           </button>
         </div>
         {/* Letters written */}
 
-        {sectionVisible !== 2 && (
+        {ui.sectionVisible !== 2 && (
           <div className="flex-1 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8">
             <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#57A02D] via-[#39c167] to-[#004D40] p-4 transition-transform duration-300 animate-gradient">
               Letters written
             </h2>
-
-            <div
-              className={`flex gap-2 flex-col lg:flex-row ${noLetters ? "justify-end" : "justify-between"}`}
-            >
-              {!noLetters && (
-                <div className="flex flex-row gap-2 cursor-pointer border border-lightblack text-gray-700 rounded-sm py-2 px-4 sm:mb-4 bg-gray-50">
-                  <Search className="text-gray-500"></Search>
-                  <input
-                    placeholder="Search a letter..."
-                    className="w-full outline-none"
-                    value={searchFilter}
-                    onChange={(e) => setSearchFilter(e.target.value)}
-                  ></input>
-                </div>
-              )}
-              <div className="flex justify-center sm:justify-end">
-                {!noLetters && (
-                  <>
-                    <button
-                      className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 mb-4 mr-2 hover:bg-gray-50"
-                      onClick={() => {
-                        setAllLetterSwipeOpen(!allLetterSwipeOpen);
-                      }}
-                    >
-                      {allLetterSwipeOpen ? <EyeClosedIcon /> : <EyeIcon />}
-                    </button>
-                    <button
-                      className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 mb-4 hover:bg-gray-50"
-                      onClick={() => {
-                        setOrderDiariesEvent(orderDiariesEvent + 1);
-                      }}
-                    >
-                      {orderDiariesEvent % 2 === 0
-                        ? "📚 Order by diary"
-                        : "✉️ Show all"}
-                    </button>
-                  </>
-                )}
-                <Link href={"/new-letter"}>
-                  <button className="cursor-pointer ml-2 text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 mb-4 hover:bg-gray-50 text-res">
-                    💌 New
-                  </button>
-                </Link>
-                {!noLetters && (
-                  <>
-                    {deleteLettersMode && (
-                      <>
-                        <button
-                          className="cursor-pointer text-white border border-lightblack rounded-sm bg-red-500 shadow-md p-2 ml-2 mb-4 hover:bg-red-700"
-                          onClick={receiveDataAndDelete}
-                        >
-                          <Trash2 />
-                        </button>
-                        <button
-                          className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 shadow-md p-2 ml-2 mb-4 hover:bg-gray-50"
-                          onClick={() => {
-                            setDeleteLettersMode(false);
-                            setResetSelection(!resetSelection);
-                          }}
-                        >
-                          <X></X>
-                        </button>
-                      </>
-                    )}
-                    {!noLetters && !deleteLettersMode && (
-                      <button
-                        className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 shadow-md p-2 ml-2 mb-4 hover:bg-gray-50"
-                        onClick={() => setDeleteLettersMode(true)}
-                      >
-                        <Trash2></Trash2>
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-            <LetterCardList
-              orderByDiaryTrigger={orderDiariesEvent}
-              searchFilter={searchFilter}
-              deleteMode={deleteLettersMode}
-              resetSelection={resetSelection}
-              onDeleteListChange={(ids) => {
-                setToDeleteLetters(ids);
-              }}
-              reFetchLetters={reFetchLetters}
-              allLetterSwipeOpen={allLetterSwipeOpen}
-            ></LetterCardList>
+            <LetterCardBlock />
           </div>
         )}
 
         {/* Letters received */}
-        {sectionVisible !== 1 && (
+        {ui.sectionVisible !== 1 && (
           <div className="flex-1 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8">
             <div className="flex flex-row justify-between items-center">
               <RefreshCw
                 size={25}
-                onClick={() => setRotation(rotation + 360)}
+                onClick={() =>
+                  updateTriggers({ rotation: triggers.rotation + 360 })
+                }
                 style={{
-                  transform: `rotate(${rotation}deg)`,
+                  transform: `rotate(${triggers.rotation}deg)`,
                   transition: "transform 0.6s ease-in-out",
                 }}
                 className="cursor-pointer select-none text-gray-500 active:text-yellow-300"
@@ -309,24 +188,22 @@ const HomepageContent = () => {
                 Letters received
               </h2>
             </div>
-            {!noReceivedLetters && (
+            {!data.noReceivedLetters && (
               <div className="flex flex-col sm:flex-row justify-between mb-2 sm:mb-4">
                 <div className="flex flex-row gap-2 cursor-pointer border border-lightblack text-gray-700 mb-2 sm:mb-0 rounded-sm py-2 px-4 bg-gray-50">
                   <Search className="text-gray-500"></Search>
                   <input
                     placeholder="Search a letter..."
                     className="w-full outline-none"
-                    value={searchFilterReceived}
-                    onChange={(e) => setSearchFilterReceived(e.target.value)}
+                    value={filters.received}
+                    onChange={handleReceivedSearchChange}
                   ></input>
                 </div>
                 <div className="flex justify-center sm:justify-end gap-2">
                   <Switch
                     name="full-width"
                     style={{ width: "40%" }}
-                    onChange={(value) =>
-                      setShowOnlyPending(value === "pending")
-                    }
+                    onChange={handlePendingSwitchChange}
                   >
                     <Switch.Control
                       defaultChecked
@@ -343,7 +220,7 @@ const HomepageContent = () => {
                   {/* Sender select*/}
                   <div className="space-y-2 min-w-[200px]">
                     <Select
-                      value={filterSenders}
+                      value={senderFilter}
                       onValueChange={(sender) => {
                         trySetFilterSenders(sender);
                       }}
@@ -352,7 +229,7 @@ const HomepageContent = () => {
                         <SelectValue placeholder="🙋 (Select a friend)" />
                       </SelectTrigger>
                       <SelectContent>
-                        {filterSenders !== "" && (
+                        {senderFilter !== "" && (
                           <SelectItem
                             key={"None"}
                             value={"None"}
@@ -362,7 +239,7 @@ const HomepageContent = () => {
                             (Clear selection)
                           </SelectItem>
                         )}
-                        {sendersList.map((sender) => (
+                        {data.sendersList.map((sender) => (
                           <SelectItem key={sender} value={sender}>
                             {sender}
                           </SelectItem>
@@ -374,11 +251,11 @@ const HomepageContent = () => {
               </div>
             )}
             <ReceivedLetterList
-              orderBySender={filterSenders}
-              searchFilter={searchFilterReceived}
-              showOnlyPending={showOnlyPending}
-              refresh={rotation}
-            ></ReceivedLetterList>
+              orderBySender={senderFilter}
+              searchFilter={filters.received}
+              showOnlyPending={filters.onlyPending}
+              refresh={triggers.rotation}
+            />
           </div>
         )}
       </div>
