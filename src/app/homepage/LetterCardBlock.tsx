@@ -1,17 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import React from "react";
 import { Trash2, X, Eye, EyeOff, Search } from "lucide-react";
 import Link from "next/link";
 import LetterCardList from "./LetterCardList";
 import { AnimatePresence, motion } from "framer-motion";
 import { fadeInOut } from "@/lib/constants";
+import { Spinner } from "@/components/ui/spinner-1";
 
 interface settingsLetterList {
   orderByDiaries: boolean;
   searchFilter: string;
   deleteMode: boolean;
   allLetterSwipeOpen: boolean;
+  isLoading: boolean;
 }
 
 export function LetterCardBlock() {
@@ -20,24 +22,59 @@ export function LetterCardBlock() {
     searchFilter: "",
     deleteMode: false,
     allLetterSwipeOpen: false,
+    isLoading: true,
   });
   const [deleteTriggerEvent, setDeleteTriggerEvent] = useState<boolean>(false);
   const [noLetters, setNoLetters] = useState<boolean>(false);
+
+  const handleDataLoaded = useCallback((zeroLetters: boolean) => {
+    setSettings((prev) => ({ ...prev, isLoading: false }));
+    setNoLetters(zeroLetters);
+  }, []);
+
+  if (settings.isLoading) {
+    return (
+      <div className="flex-1 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8 h-full">
+        <div className="flex justify-center items-center h-full">
+          <Spinner size={40} color="gray" />
+        </div>
+        {/* LetterCardList monta aquí pero oculto mientras carga */}
+        <div className="hidden">
+          <LetterCardList
+            orderByDiaryTrigger={settings.orderByDiaries}
+            searchFilter={settings.searchFilter}
+            deleteMode={settings.deleteMode}
+            onDeleteClicked={deleteTriggerEvent}
+            allLetterSwipeOpen={settings.allLetterSwipeOpen}
+            onDataLoaded={handleDataLoaded}
+          ></LetterCardList>
+        </div>
+      </div>
+    );
+  }
+
   if (noLetters) {
     return (
-      <>
+      <div className="flex-1 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8 h-full">
+        <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#57A02D] via-[#39c167] to-[#004D40] p-4 transition-transform duration-300 animate-gradient">
+          Letters written
+        </h2>
         <div className="flex gap-2 flex-col lg:flex-row justify-end">
           <NewLetterButton />
         </div>
-        <div className="text-center text-gray-500 h-[40vh] flex items-center justify-center">
+        <div className="text-center text-gray-500 h-[70%] flex items-center justify-center">
           No letters found. Start writing your first letter!
         </div>
-      </>
+      </div>
     );
   }
+
   return (
-    <>
-      <div className="flex gap-2 flex-col lg:flex-row justify-between items-center mb-4">
+    <div className="flex-1 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8">
+      <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#57A02D] via-[#39c167] to-[#004D40] p-4 transition-transform duration-300 animate-gradient">
+        Letters written
+      </h2>
+      <div className="flex gap-2 flex-col lg:flex-row justify-between items-center">
         <div className="flex flex-row gap-2 cursor-pointer border border-lightblack text-gray-700 rounded-sm py-2 px-4 bg-gray-50">
           <Search className="text-gray-500" />
           <input
@@ -124,9 +161,9 @@ export function LetterCardBlock() {
         deleteMode={settings.deleteMode}
         onDeleteClicked={deleteTriggerEvent}
         allLetterSwipeOpen={settings.allLetterSwipeOpen}
-        onNoLetters={() => setNoLetters(true)}
+        onDataLoaded={handleDataLoaded}
       ></LetterCardList>
-    </>
+    </div>
   );
 }
 

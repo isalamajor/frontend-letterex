@@ -1,61 +1,16 @@
-import { useEffect, useState } from "react";
 import React from "react";
 import ReceivedLetterCardProps from "./ReceivedLetterCard";
-import { getReceivedLetters } from "@/services/api";
-
-interface ReceivedLetterListProps {
-  letters: {
-    id: string;
-    originalLetter: {
-      id: string;
-      author: string;
-      title: string;
-      language: string;
-      created_at: string;
-      deleted: boolean;
-    };
-    sender: {
-      id: string;
-      nickname: string;
-      image: string;
-    };
-    sentBack: boolean;
-    corrected_at: string;
-    received_at: string;
-    seen: boolean;
-  }[];
-}
+import type { ReceivedLetter } from "@/lib/types";
 
 interface ChildProps {
-  orderBySender: string;
-  searchFilter: string;
-  showOnlyPending?: boolean;
-  refresh: number;
+  letters: ReceivedLetter[];
+  noLetters: boolean;
 }
 
-const ReceivedLetterList = ({
-  orderBySender,
-  searchFilter,
-  showOnlyPending,
-  refresh,
-}: ChildProps) => {
-  const [letters, setletters] = useState<ReceivedLetterListProps["letters"]>(
-    [],
-  );
-  const [filteredLetters, setFilteredLetters] = useState<
-    ReceivedLetterListProps["letters"]
-  >([]);
+const ReceivedLetterList = ({ letters, noLetters }: ChildProps) => {
+  /*const [filteredLetters, setFilteredLetters] = useState<ReceivedLetter[]>([]);
   const [childAskedForRefresh, setChildAskedForRefresh] =
     useState<boolean>(false);
-
-  // Get user letters from the API
-  useEffect(() => {
-    const fetchletters = async () => {
-      const response = await getReceivedLetters();
-      setletters(response);
-    };
-    fetchletters();
-  }, [refresh, childAskedForRefresh]);
 
   // Filter letters by search text
   useEffect(() => {
@@ -83,12 +38,12 @@ const ReceivedLetterList = ({
       }
     };
     filteredLetters();
-  }, [searchFilter, letters, orderBySender, showOnlyPending, refresh]);
+  }, [searchFilter, letters, orderBySender, showOnlyPending]);*/
 
-  if (filteredLetters && filteredLetters.length > 0) {
+  if (letters && letters.length > 0) {
     return (
-      <div className="flex flex-col gap-4 pb-10 custom-scroll sm:max-h-[80%] sm:overflow-y-auto">
-        {filteredLetters.map((letter, index) => (
+      <div className="flex flex-col h-full sm:h-[64vh] custom-scroll overflow-y-auto pb-10">
+        {letters.map((letter, index) => (
           <ReceivedLetterCardProps
             id={letter.id}
             diary="-"
@@ -100,7 +55,7 @@ const ReceivedLetterList = ({
             seen={letter.seen}
             deleted={letter.originalLetter.deleted}
             letterDeleted={() => {
-              setChildAskedForRefresh(!childAskedForRefresh);
+              /*setChildAskedForRefresh(!childAskedForRefresh);*/
             }}
             key={index}
           />
@@ -109,8 +64,8 @@ const ReceivedLetterList = ({
     );
   }
   return (
-    <div className="text-center text-gray-500 h-[70%] flex items-center justify-center">
-      {!letters || letters.length === 0
+    <div className="text-center text-gray-500 h-[80%] flex items-center justify-center">
+      {noLetters
         ? "When you receive letters to check and correct, they will appear here."
         : "No letters matching the filter."}
     </div>

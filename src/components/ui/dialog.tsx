@@ -32,7 +32,7 @@ interface DialogProps {
 }
 
 interface Friend {
-  _id: string;
+  id: string;
   nickname: string;
   image?: string;
   alreadySent?: boolean;
@@ -131,9 +131,10 @@ export type DialogType =
   | "shareLetter"
   | "settings"
   | "newDiary"
-  | "askConfirmation";
+  | "askConfirmation"
+  | "bye";
 
-interface SuccessDialogProps {
+export interface DialogConfig {
   isOpen?: boolean;
   onClose?: () => void;
   title?: string;
@@ -153,19 +154,19 @@ interface SuccessDialogProps {
   onConfirmationPositive?: () => void | Promise<void>;
 }
 
-export const SuccessDialog: React.FC<SuccessDialogProps> = ({
-  isOpen = true,
+export const SuccessDialog: React.FC<DialogConfig> = ({
+  isOpen = false,
   onClose = () => {},
-  title = "Success!",
-  description = "Your action has been completed successfully.",
-  primaryActionText = "Continue",
+  title,
+  description,
+  primaryActionText,
   onPrimaryAction = () => {},
   autoDismiss = false,
   autoDismissDelay = 3000,
   showCloseButton = false,
   size = "md",
   type = "success", // Default to success
-  letterId = "",
+  letterId = null,
   sharedWith = [],
   onShareSuccess = (_shareLetterResult: number) => {},
   onNewDiaryCreated = (_diaryName: string) => {},
@@ -254,6 +255,14 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
       descriptionDefault: "Please confirm your action.",
       buttonClass: "bg-yellow-600 text-white hover:bg-yellow-700",
     },
+    bye: {
+      icon: Check,
+      iconBgClass: "",
+      iconColorClass: "",
+      titleDefault: "Bye!",
+      descriptionDefault: "See you soon :)",
+      buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90",
+    },
   };
 
   const currentConfig = typeConfig[type];
@@ -277,7 +286,8 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   }, [onPrimaryAction, handleClose]);
 
   const handleShareLetter = async () => {
-    if (friendsSelected.length === 0) {
+    console.log("share dialog", letterId);
+    if (friendsSelected.length === 0 || !letterId) {
       return;
     }
     const shareLetterResult = await shareLetter(letterId, friendsSelected);
@@ -358,13 +368,13 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
         // Mark with alreadySent property
         const friendsWithStatus = friends.map((friend: Friend) => ({
           ...friend,
-          alreadySent: sharedWith.includes(friend._id),
+          alreadySent: sharedWith.includes(friend.id),
         }));
         setFriendsList(friendsWithStatus);
         // Add alreadySent friends to selected
         const alreadySentFriends = friendsWithStatus
           .filter((friend: Friend) => friend.alreadySent)
-          .map((friend: Friend) => friend._id);
+          .map((friend: Friend) => friend.id);
         setFriendsSelected((prev) => [...prev, ...alreadySentFriends]);
         console.log("Fetched friends list:", friends);
       } catch (error) {
@@ -819,11 +829,19 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                         type: "spring",
                         stiffness: 200,
                       }}
-                      className={`flex items-center justify-center w-16 h-16 rounded-full ${currentConfig.iconBgClass}`}
+                      className={`flex items-center justify-center rounded-full ${currentConfig.iconBgClass} ${type === "bye" ? "w-24 h-24" : "w-16 h-16"}`}
                     >
-                      <IconComponent
-                        className={`w-8 h-8 ${currentConfig.iconColorClass}`}
-                      />
+                      {type === "bye" ? (
+                        <img
+                          src="/logo-frog.png"
+                          alt="Letterex logo"
+                          className="w-40 h-40 object-contain"
+                        />
+                      ) : (
+                        <IconComponent
+                          className={`w-8 h-8 ${currentConfig.iconColorClass}`}
+                        />
+                      )}
                     </motion.div>
 
                     {/* Title */}
@@ -868,21 +886,23 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
                     )}
 
                     {/* Primary Action Button */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      transition={{ delay: 0.4, duration: 0.3 }}
-                      className="pt-2"
-                    >
-                      <Button
-                        onClick={handlePrimaryAction}
-                        className={`min-w-[120px] focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all duration-200 ${currentConfig.buttonClass}`}
-                        size="default"
+                    {type !== "bye" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ delay: 0.4, duration: 0.3 }}
+                        className="pt-2"
                       >
-                        {displayPrimaryActionText}
-                      </Button>
-                    </motion.div>
+                        <Button
+                          onClick={handlePrimaryAction}
+                          className={`min-w-[120px] focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all duration-200 ${currentConfig.buttonClass}`}
+                          size="default"
+                        >
+                          {displayPrimaryActionText}
+                        </Button>
+                      </motion.div>
+                    )}
                   </div>
                 )}
             </motion.div>

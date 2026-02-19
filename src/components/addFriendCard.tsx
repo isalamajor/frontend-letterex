@@ -5,7 +5,7 @@ import { sendFollowRequest } from "@/services/api";
 import { useState } from "react";
 
 interface User {
-  _id: string;
+  id: string;
   nickname: string;
   image: string;
   masterLanguage: string;
@@ -22,7 +22,7 @@ interface AddFriendCardProps extends User {
 }
 
 const AddFriendCard: React.FC<AddFriendCardProps> = ({
-  _id,
+  id,
   nickname,
   image,
   masterLanguage,
@@ -41,7 +41,7 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
   ) => {
     event.stopPropagation();
     event.preventDefault();
-    const result = await sendFollowRequest(_id);
+    const result = await sendFollowRequest(id);
     if (result === 0) {
       onAddFriend(true);
       setFriendRequestJustSent(true);
@@ -51,7 +51,7 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
   };
 
   const goToProfile = () => {
-    window.location.href = `/profile/${_id}`;
+    window.location.href = `/profile/${id}`;
   };
   return (
     <div className="px-6 pt-4 rounded-lg bg-white hover:bg-gray-50 border border-gray-200 shadow-md w-full flex flex-row justify-between gap-4">

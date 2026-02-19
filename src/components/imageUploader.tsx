@@ -1,8 +1,8 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { FolderUp } from "lucide-react";
-import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import ImageZoom from "./zoomImage";
+import { useDialog } from "@/context/dialogContext";
 
 interface ImageUploaderProps {
   onImageSelect: (file: File | null) => void;
@@ -19,6 +19,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   active = true,
   type = "profile",
 }) => {
+  const { openDialog } = useDialog();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [imageRemoved, setImageRemoved] = useState<string | null>(null);
   const defaultImage =
@@ -27,34 +28,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   useEffect(() => {
     setImageRemoved(null);
   }, [active]);
-
-  // Dialog
-  const [dialogConfig, setDialogConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    primaryActionText: string;
-    autoDismiss: boolean;
-    size: "sm" | "md" | "lg";
-    type: DialogType;
-  }>({
-    isOpen: false,
-    title: "Payment Successful!",
-    description:
-      "Your payment has been processed successfully. You will receive a confirmation email shortly.",
-    primaryActionText: "View Receipt",
-    autoDismiss: false,
-    size: "md",
-    type: "success",
-  });
-
-  const openDialog = (config: Partial<typeof dialogConfig>) => {
-    setDialogConfig((prev) => ({ ...prev, ...config, isOpen: true }));
-  };
-
-  const closeDialog = () => {
-    setDialogConfig((prev) => ({ ...prev, isOpen: false }));
-  };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!active) return;
@@ -105,15 +78,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             onChange={handleImageChange}
             className="hidden"
             disabled={!active}
-          />
-
-          <SuccessDialog
-            isOpen={dialogConfig.isOpen}
-            title={dialogConfig.title ?? undefined}
-            description={dialogConfig.description ?? undefined}
-            primaryActionText={dialogConfig.primaryActionText ?? undefined}
-            onClose={closeDialog}
-            type={dialogConfig.type}
           />
         </div>
         {active && (

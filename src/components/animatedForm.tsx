@@ -122,7 +122,9 @@ const HomeForm = ({
     <>
       <div className="text text-white text-lg">
         <h2 className="font-semibold text-2xl">Welcome to Letterex</h2>
-        <Typewriter text={phrases} speed={100} loop={true} />
+        <span className="typewriter-frame">
+          <Typewriter text={phrases} speed={100} loop={true} />
+        </span>
       </div>
       <div className="ctas">
         <motion.button

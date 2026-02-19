@@ -29,6 +29,7 @@ interface SharedWithUser {
 }
 
 interface Letter {
+  id: string;
   date: CalendarDate;
   diary: string;
   language: string;
@@ -49,7 +50,7 @@ export default function Home({ params }: { params: Promise<{ id: string }> }) {
 }
 
 const NewLetterPageContent = ({ id }: { id: string }) => {
-  const { openDialog, closeDialog } = useDialog();
+  const { openDialog } = useDialog();
   useEffect(() => {
     // @ts-ignore
     import("react-quill-new/dist/quill.bubble.css").catch(() => {});
@@ -58,6 +59,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [valuesChanged, setValuesChanged] = useState(false);
   const [letter, setLetter] = useState<Letter>({
+    id: id,
     date: parseDate(new Date().toISOString().split("T")[0]),
     diary: "",
     language: "",
@@ -414,16 +416,18 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
           <div className="flex flex-row justify-end h-[5%] col items-center gap-4">
             <button
-              onClick={() =>
+              onClick={() => {
+                console.log("share:", id);
                 openDialog({
                   title: "Send Letter",
                   description: "",
                   primaryActionText: "",
                   size: "md",
                   type: "shareLetter",
+                  letterId: id,
                   autoDismiss: false,
-                })
-              }
+                });
+              }}
             >
               <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
                 📬 Send Letter

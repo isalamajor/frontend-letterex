@@ -1,14 +1,43 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { LayoutDashboard, UserCog, Handshake, LogOut, LeafyGreen } from "lucide-react";
+import {
+  LayoutDashboard,
+  UserCog,
+  Handshake,
+  LogOut,
+  LeafyGreen,
+} from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import "../stylesheets/sidebardemo.css";
+import { useDialog } from "@/context/dialogContext";
 
 export function SidebarDemo({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { openDialog } = useDialog();
+
+  const handleLogoutClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    openDialog({
+      type: "bye",
+      title: "Bye!",
+      description: "See you soon :)",
+      autoDismiss: true,
+      autoDismissDelay: 2000,
+      showCloseButton: false,
+      size: "sm",
+    });
+    setTimeout(() => {
+      sessionStorage.clear();
+      router.push("/");
+    }, 2000);
+  };
+
   const links = [
     {
       label: "Dashboard",
@@ -44,16 +73,15 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
       icon: (
         <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
-    }
+      onClick: handleLogoutClick,
+    },
   ];
-  const [open, setOpen] = useState(false);
   return (
     <div
-    className={cn(
+      className={cn(
         "rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-screen flex-1 mx-auto border border-neutral-200 dark:border-neutral-700 overflow-auto lg:overflow-hidden ",
-        "h-min-screen lg:h-screen"
+        "h-min-screen lg:h-screen",
       )}
-      
     >
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">

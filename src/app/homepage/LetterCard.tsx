@@ -44,7 +44,7 @@ const LetterCard: React.FC<LetterCardProps> = ({
     };
 
   return (
-    <div className="block w-full relative  group">
+    <div className="block w-full relative group my-1">
       <div
         className={`px-8 py-4 rounded-lg bg-gray-50 shadow-md relative h-[12vh]
       group transition-all duration-300 group-hover:w-[80%] ${deleteMode || swipeOpen ? "w-[80%]" : "w-full"}`}

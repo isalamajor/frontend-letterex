@@ -19,7 +19,8 @@ export default function ImageZoom({
         src={src}
         alt="preview"
         onClick={() => setIsOpen(true)}
-        style={{ cursor: "pointer", width: 300 }}
+        style={{ cursor: "pointer" }}
+        className={className}
       />
 
       <AnimatePresence>

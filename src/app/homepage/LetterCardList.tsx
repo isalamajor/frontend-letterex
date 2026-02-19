@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import React from "react";
 import LetterCard from "./LetterCard";
 import {
-  getUserLetters,
+  searchLetters,
   changeLetterDiary,
   deleteLetters,
 } from "@/services/api";
@@ -14,6 +14,7 @@ import DropZone from "@/components/DropZone";
 import { AnimatePresence, motion } from "framer-motion";
 import { fadeInOut } from "@/lib/constants";
 import type { Letter } from "@/lib/types";
+import TablePagination from "@mui/material/TablePagination";
 
 interface ChildProps {
   orderByDiaryTrigger: boolean;
@@ -21,7 +22,7 @@ interface ChildProps {
   deleteMode: boolean;
   onDeleteClicked: boolean;
   allLetterSwipeOpen: boolean;
-  onNoLetters: () => void;
+  onDataLoaded: (noLetters: boolean) => void;
 }
 
 const LetterCardList = ({
@@ -30,7 +31,7 @@ const LetterCardList = ({
   deleteMode,
   allLetterSwipeOpen,
   onDeleteClicked,
-  onNoLetters,
+  onDataLoaded,
 }: ChildProps) => {
   const [letters, setletters] = useState<Letter[]>([]);
   const [diaryOrganised, setDiaryOrganised] = useState<boolean>(false);
@@ -42,26 +43,63 @@ const LetterCardList = ({
   const [selectedToDeleteIds, setSelectedToDeleteIds] = useState<string[]>([]);
   const [resetSelectionToDelete, setResetSelectionToDelete] =
     useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const itemsPerPage = 10;
+  const [totalLettersCount, setTotalLettersCount] = useState<number>(0);
   const { openDialog, closeDialog } = useDialog();
-
-  // Get user letters from the API
-  const reFetchLetters = () => {
-    const fetchletters = async () => {
-      const response = await getUserLetters();
-      // Set all fields selectedToDelete to false
-      response.forEach((letter: Letter) => (letter.selectedToDelete = false));
-      setletters(response);
-      if (response.length === 0) {
-        onNoLetters();
-      }
-    };
-    fetchletters();
-  };
+  const pagesCacheRef = useRef<Record<number, Letter[]>>({});
+  const totalPagesRef = useRef<number>(1);
+  const totalLettersCountRef = useRef<number>(0);
 
   // Initialize letters
   useEffect(() => {
-    reFetchLetters();
+    const callFetchLetters = async () => {
+      const zeroLetters = await fetchLetters();
+      onDataLoaded(zeroLetters);
+    };
+    callFetchLetters();
   }, []);
+
+  // Get user letters from the API using search
+  const fetchLetters = async (page: number = currentPage) => {
+    const query = searchFilter || "";
+
+    // Check if page is already cached
+    if (pagesCacheRef.current[page]) {
+      setletters(pagesCacheRef.current[page]);
+      setTotalPages(totalPagesRef.current);
+      setTotalLettersCount(totalLettersCountRef.current);
+      return false;
+    }
+
+    const result = await searchLetters(query, page, itemsPerPage);
+
+    if (!result || !result.letters) {
+      setletters([]);
+      setTotalPages(1);
+      return true;
+    }
+
+    const letters = result.letters;
+    letters.forEach((letter: Letter) => (letter.selectedToDelete = false));
+
+    // Cache the page
+    pagesCacheRef.current[page] = letters;
+
+    setletters(letters);
+
+    // Store total letters count and calculate total pages
+    const totalCount = result.totalLetters || 0;
+    setTotalLettersCount(totalCount);
+    totalLettersCountRef.current = totalCount;
+    const total = Math.ceil(totalCount / itemsPerPage);
+    const totalPagesCount = total > 0 ? total : 1;
+    totalPagesRef.current = totalPagesCount;
+    setTotalPages(totalPagesCount);
+
+    return letters.length === 0;
+  };
 
   // Organise letters by diaries on trigger
   useEffect(() => {
@@ -88,21 +126,33 @@ const LetterCardList = ({
     setDiaryOrganised(!diaryOrganised);
   }, [orderByDiaryTrigger]);
 
-  // Filter letters by search text
+  // Refetch letters when search filter changes
   useEffect(() => {
-    const filterLetters = async () => {
-      const q = searchFilter.toLowerCase();
-      const results = letters.filter(
-        (letter) =>
-          letter.title.toLowerCase().includes(q) ||
-          letter.language.toLowerCase().includes(q) ||
-          (letter.diary && letter.diary.toLowerCase().includes(q)) ||
-          letter.created_at.toLocaleLowerCase().includes(q),
-      );
-      setFilteredLetters(results);
+    // Clear cache when search filter changes
+    pagesCacheRef.current = {};
+    totalPagesRef.current = 1;
+    totalLettersCountRef.current = 0;
+    setCurrentPage(1);
+    const refetchLetters = async () => {
+      await fetchLetters(1);
     };
-    filterLetters();
-  }, [searchFilter, letters]);
+    refetchLetters();
+  }, [searchFilter]);
+
+  // Refetch letters when page changes
+  useEffect(() => {
+    const refetchLetters = async () => {
+      await fetchLetters(currentPage);
+    };
+    if (currentPage >= 1) {
+      refetchLetters();
+    }
+  }, [currentPage]);
+
+  // Set filtered letters from fetched letters
+  useEffect(() => {
+    setFilteredLetters(letters);
+  }, [letters]);
 
   // Delete selected letters
   useEffect(() => {
@@ -127,8 +177,11 @@ const LetterCardList = ({
                 autoDismiss: true,
               });
             } else {
+              // Clear cache after deletion
+              pagesCacheRef.current = {};
+              totalLettersCountRef.current = 0;
               resetSelection();
-              reFetchLetters();
+              fetchLetters();
               closeDialog();
             }
           },
@@ -180,7 +233,14 @@ const LetterCardList = ({
   const showDiaries =
     diaryOrganised && filteredLetters && filteredLetters.length > 0;
 
-  console.log("showDiaries:", showDiaries, "diaryOrganised:", diaryOrganised);
+  const handlePageChange = (
+    _event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number,
+  ) => {
+    // TablePagination uses 0-based indexing, convert to 1-based
+    setCurrentPage(newPage + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -188,7 +248,7 @@ const LetterCardList = ({
         <motion.div
           key="diary-view"
           {...fadeInOut}
-          className="flex flex-row gap-5 h-full sm:custom-scroll"
+          className="flex flex-col gap-4 pb-10 custom-scroll sm:max-h-[80%] sm:overflow-y-auto"
         >
           {/* Diaries */}
           <div className="flex flex-col gap-y-3 w-[50%]">
@@ -313,35 +373,51 @@ const LetterCardList = ({
           )}
         </motion.div>
       ) : (
-        <motion.div
-          key="list-view"
-          {...fadeInOut}
-          className="flex flex-col gap-4 h-full sm:h-[70vh] custom-scroll overflow-y-auto pb-10"
-        >
-          {filteredLetters && filteredLetters.length > 0 ? (
-            filteredLetters.map((letter, index) => (
-              <LetterCard
-                id={letter.id}
-                created_at={letter.created_at}
-                diary={letter.diary}
-                title={letter.title}
-                language={letter.language}
-                sharedWith={letter.sharedWith}
-                key={index}
-                deleteMode={deleteMode || false}
-                swipeOpen={allLetterSwipeOpen || false}
-                resetSelection={resetSelectionToDelete}
-                onSelectionChange={toggleDeleteItem}
+        <>
+          {/* Pagination */}
+          {totalLettersCount > 0 && (
+            <div className="flex justify-end mt-5">
+              <TablePagination
+                component="div"
+                count={totalLettersCount}
+                page={currentPage - 1}
+                onPageChange={handlePageChange}
+                rowsPerPage={itemsPerPage}
+                rowsPerPageOptions={[]}
+                className="text-gray-700"
               />
-            ))
-          ) : (
-            <div className="text-center text-gray-500 h-[40vh] flex items-center justify-center">
-              {!letters || letters.length === 0
-                ? "No letters found. Start writing your first letter!"
-                : "No letters matching the filter."}
             </div>
           )}
-        </motion.div>
+          <motion.div
+            key="list-view"
+            {...fadeInOut}
+            className="flex flex-col h-full sm:h-[64vh] custom-scroll overflow-y-auto pb-10"
+          >
+            {filteredLetters && filteredLetters.length > 0 ? (
+              filteredLetters.map((letter, index) => (
+                <LetterCard
+                  id={letter.id}
+                  created_at={letter.created_at}
+                  diary={letter.diary}
+                  title={letter.title}
+                  language={letter.language}
+                  sharedWith={letter.sharedWith}
+                  key={index}
+                  deleteMode={deleteMode || false}
+                  swipeOpen={allLetterSwipeOpen || false}
+                  resetSelection={resetSelectionToDelete}
+                  onSelectionChange={toggleDeleteItem}
+                />
+              ))
+            ) : (
+              <div className="text-center text-gray-500 h-full flex items-center justify-center">
+                {!letters || letters.length === 0
+                  ? "No letters found. Start writing your first letter!"
+                  : "No letters matching the filter."}
+              </div>
+            )}
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

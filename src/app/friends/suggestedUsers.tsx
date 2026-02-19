@@ -6,7 +6,7 @@ import { useDialog } from "@/context/dialogContext";
 
 interface NonAddedList {
   users: {
-    _id: string;
+    id: string;
     nickname: string;
     image: string;
     masterLanguage: string;
@@ -23,7 +23,7 @@ const SuggestedUsers = () => {
   const [suggested, setSuggested] = useState<NonAddedList["users"]>([]);
   const [queryResults, setQueryResults] = useState<NonAddedList["users"]>([]);
   const [query, setQuery] = useState("");
-  const { openDialog, closeDialog } = useDialog();
+  const { openDialog } = useDialog();
 
   useEffect(() => {
     const fetchNonFriends = async () => {
@@ -35,7 +35,6 @@ const SuggestedUsers = () => {
 
   useEffect(() => {
     if (!query) return;
-
     const timeout = setTimeout(async () => {
       const res = await getNonFriendsByFilter(query);
       setQueryResults(res);
@@ -70,7 +69,7 @@ const SuggestedUsers = () => {
           ) : (
             <div className="grid grid-cols-2 gap-4">
               {(query ? queryResults : suggested).map((user) => (
-                <div key={user._id} className="col-span-1">
+                <div key={user.id} className="col-span-1">
                   <AddFriendCard
                     {...user}
                     onAddFriend={(success) => {

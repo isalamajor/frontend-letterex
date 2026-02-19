@@ -35,7 +35,7 @@ import {
 import "react-quill-new/dist/quill.snow.css";
 import "react-quill-new/dist/quill.bubble.css";
 import LetterFlip from "@/components/flipLetter";
-import rawLanguages from "@/components/languages.json";
+import rawLanguages from "@/lib/languages.json";
 import { ImageUploader } from "@/components/imageUploader";
 import { Switch } from "@/components/ui/switch";
 import {

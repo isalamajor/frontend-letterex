@@ -258,6 +258,36 @@ const getUserLetters = async () => {
   return [];
 };
 
+const searchLetters = async (query, page = 1, itemsPerPage = 10) => {
+  const token = sessionStorage.getItem("authToken");
+
+  try {
+    const response = await axios.get(`${API_URL}/list/search`, {
+      headers: {
+        Authorization: `${token}`,
+      },
+      params: {
+        q: query,
+        page: page,
+        itemsPerPage: itemsPerPage,
+      },
+    });
+
+    if (response.status === 200) {
+      return response.data;
+    }
+    console.error("Error searching letters:", response.data);
+    return null;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.data);
+    } else {
+      console.error("Unknown error:", error);
+    }
+    return null;
+  }
+};
+
 export {
   deleteLetters,
   getDiaries,
@@ -268,4 +298,5 @@ export {
   changeLetterDiary,
   saveLetter,
   getUserLetters,
+  searchLetters,
 };

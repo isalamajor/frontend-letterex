@@ -21,11 +21,10 @@ import {
 } from "@/services/api";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { ImageUploader } from "@/components/imageUploader";
 import { Spinner } from "@/components/ui/spinner-1";
 const MapNoSSR = dynamic(() => import("@/components/ui/map"), { ssr: false });
-import rawLanguages from "@/components/languages.json";
+import rawLanguages from "@/lib/languages.json";
 import { useDialog } from "@/context/dialogContext";
 const languagesData = rawLanguages.languages as {
   name: string;
@@ -85,7 +84,7 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
     string | null
   >(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { openDialog, closeDialog } = useDialog();
+  const { openDialog } = useDialog();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -221,8 +220,6 @@ export const ProfilePageContent = ({ id }: { id: string }) => {
         });
         return;
       }
-
-      sessionStorage.setItem("userData", JSON.stringify(response.userData));
       setUser(response.userData);
       setEditing(false);
 

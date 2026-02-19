@@ -1,5 +1,5 @@
 import axios from "axios";
-import { UserInvolved, Correction, CorrectedLetter } from "../../lib/types";
+import { Correction, CorrectedLetter } from "../../lib/types";
 import { parseDate } from "@internationalized/date";
 import { CalendarDate } from "@internationalized/date";
 
@@ -186,6 +186,44 @@ const getReceivedLetters = async () => {
   }
 };
 
+const searchReceivedLetters = async (
+  query: string,
+  page = 1,
+  itemsPerPage = 10,
+  sentBack: boolean | undefined,
+  sender: string | undefined,
+) => {
+  const token = sessionStorage.getItem("authToken");
+
+  try {
+    const response = await axios.get(`${API_URL}/received/search`, {
+      headers: {
+        Authorization: `${token}`,
+      },
+      params: {
+        q: query,
+        page: page,
+        itemsPerPage: itemsPerPage,
+        sentBack: sentBack,
+        sender: sender || null,
+      },
+    });
+
+    if (response.status === 200) {
+      return response.data;
+    }
+    console.error("Error searching letters:", response.data);
+    return null;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.data);
+    } else {
+      console.error("Unknown error:", error);
+    }
+    return null;
+  }
+};
+
 export {
   deleteCorrectedLetter,
   getCountCorrectedLetters,
@@ -193,4 +231,5 @@ export {
   updateLetterCorrections,
   getLetterToCorrect,
   getReceivedLetters,
+  searchReceivedLetters,
 };

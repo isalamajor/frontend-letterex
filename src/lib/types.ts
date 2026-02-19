@@ -1,6 +1,6 @@
 import { CalendarDate } from "@internationalized/date";
 
-export interface UserInvolved {
+export interface User {
   id: string;
   nickname: string;
   image: string;
@@ -9,15 +9,15 @@ export interface UserInvolved {
 export interface CorrectedLetter {
   id: string;
   title: string;
-  author: UserInvolved;
+  author: User;
   content: string;
   date: CalendarDate;
   corrections: Correction[];
   comments: string;
   sentBack: boolean;
   deleted: boolean;
-  sender: UserInvolved;
-  reviewer: UserInvolved;
+  sender: User;
+  reviewer: User;
 }
 
 export interface Correction {
@@ -68,4 +68,21 @@ export interface Letter {
     correctedLetterId: string;
   }[];
   selectedToDelete?: boolean;
+}
+
+export interface ReceivedLetter {
+  id: string;
+  originalLetter: {
+    id: string;
+    author: string;
+    title: string;
+    language: string;
+    created_at: string;
+    deleted: boolean;
+  };
+  sender: User;
+  sentBack: boolean;
+  corrected_at: string;
+  received_at: string;
+  seen: boolean;
 }

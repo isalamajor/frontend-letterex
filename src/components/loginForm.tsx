@@ -4,6 +4,7 @@ import { login } from "../services/api/user";
 import { InputPass } from "./ui/inputPass";
 import { motion } from "framer-motion";
 import { Spinner } from "./ui/spinner-1";
+import { KeyRound } from "lucide-react";
 
 const LoginForm = ({ goBack }: { goBack: () => void }) => {
   const router = useRouter();
@@ -23,6 +24,7 @@ const LoginForm = ({ goBack }: { goBack: () => void }) => {
       return;
     }
 
+    setIsLoading(true);
     const result = await login({
       email: email,
       password: password,
@@ -36,64 +38,65 @@ const LoginForm = ({ goBack }: { goBack: () => void }) => {
     } else {
       setShowAlert("Server is having trouble...");
     }
+    setIsLoading(false);
   };
 
   return (
-    <>
-      {isLoading ? (
-        <div className="flex justify-center items-center py-8">
-          <Spinner size={40} color="white" />
-        </div>
-      ) : (
-        <motion.div
-          className="mt-10 bg-white p-6 rounded-lg shadow-lg w-80 w-[22rem]"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+    <motion.div
+      className="mt-10 bg-white p-6 rounded-lg shadow-lg w-80 w-[22rem]"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+    >
+      <h2 className="text-lg font-semibold mb-4">Log in</h2>
+      <div
+        className="flex flex-col gap-2 mt-5 mb-3 mx-0 justify-start"
+        style={{ opacity: isLoading ? 0.5 : 1 }}
+      >
+        <input
+          className="w-full p-2 mb-2 border rounded form-blank"
+          type="text"
+          value={email}
+          placeholder="Email/Username"
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setShowAlert("");
+          }}
+        />
+        <InputPass
+          styles="w-full p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
+          onChange={(pass) => {
+            setPassword(pass);
+            setShowAlert("");
+          }}
+          onEnter={() => {
+            if (!isLoading) loginAttempt();
+          }}
+          label={false}
+          wrongPassword={false}
+        />
+
+        <p style={{ whiteSpace: "pre-line" }} className="text-red-500">
+          {showAlert}
+        </p>
+        <p className="text-[color:var(--background)] hover:underline cursor-pointer text-sm flex flex-row gap-1 justify-end items-center">
+          <KeyRound size={16} />
+          Forgot password
+        </p>
+      </div>
+      <div className="back-go mt-0 pt-0">
+        <button onClick={goBack} className={btnClass} disabled={isLoading}>
+          ← Back
+        </button>
+        <button
+          onClick={loginAttempt}
+          className={`${btnClass} flex flex-row gap-1 justify-center items-center`}
+          disabled={isLoading}
         >
-          <h2 className="text-lg font-semibold mb-4">Log in</h2>
-          <div
-            className="flex flex-col gap-2 my-5 mx-0 justify-start"
-            style={{ opacity: isLoading ? 0.5 : 1 }}
-          >
-            <input
-              className="w-full p-2 mb-2 border rounded form-blank"
-              type="text"
-              value={email}
-              placeholder="Email/Username"
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setShowAlert("");
-              }}
-            />
-            <InputPass
-              styles="w-full p-0 mb-2 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
-              onChange={(pass) => {
-                setPassword(pass);
-                setShowAlert("");
-              }}
-              label={false}
-              wrongPassword={false}
-            />
-            <p style={{ whiteSpace: "pre-line" }} className="text-red-500">
-              {showAlert}
-            </p>
-          </div>
-          <div className="back-go">
-            <button onClick={goBack} className={btnClass} disabled={isLoading}>
-              ← Back
-            </button>
-            <button
-              onClick={loginAttempt}
-              className={btnClass}
-              disabled={isLoading}
-            >
-              {isLoading ? "Loading..." : "Go →"}
-            </button>
-          </div>
-        </motion.div>
-      )}
-    </>
+          {isLoading ? <Spinner color="white" /> : "Go →"}
+        </button>
+      </div>
+    </motion.div>
   );
 };
 

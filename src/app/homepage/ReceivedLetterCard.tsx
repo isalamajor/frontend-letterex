@@ -86,7 +86,7 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
       href={`/correct-letter/${id}`}
     >
       <div
-        className={`w-full h-full sm:h-[12vh] px-8 py-4 rounded-lg bg-gray-50 shadow-md relative group
+        className={`mb-2 w-full h-full sm:h-[12vh] px-8 py-4 rounded-lg bg-gray-50 shadow-md relative group
       ${deleted ? "hover:bg-red-100" : sentBack ? "hover:bg-green-100" : "hover:bg-blue-100"}`}
       >
         {/* Fecha */}
