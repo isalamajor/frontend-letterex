@@ -248,7 +248,7 @@ const LetterCardList = ({
         <motion.div
           key="diary-view"
           {...fadeInOut}
-          className="flex flex-col gap-4 pb-10 custom-scroll sm:max-h-[80%] sm:overflow-y-auto"
+          className="flex flex-row gap-4 pb-10 pt-3 custom-scroll sm:max-h-[80%] sm:overflow-y-auto"
         >
           {/* Diaries */}
           <div className="flex flex-col gap-y-3 w-[50%]">

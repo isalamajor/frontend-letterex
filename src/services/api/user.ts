@@ -1,8 +1,50 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/user";
 
-const getUserData = async (id) => {
+// Interfaces
+interface User {
+  _id: string;
+  nickname: string;
+  email: string;
+  [key: string]: any;
+}
+
+interface UserData {
+  email?: string;
+  nickname?: string;
+  [key: string]: any;
+}
+
+interface Credentials {
+  email?: string;
+  password?: string;
+  [key: string]: any;
+}
+
+interface LoginResponse {
+  status: number;
+  token?: string;
+  userData?: User;
+  [key: string]: any;
+}
+
+interface RegisterResponse {
+  status: number;
+  [key: string]: any;
+}
+
+// Helper function (referenced in some functions)
+const handleRequestError = (error: unknown): null => {
+  if (axios.isAxiosError(error)) {
+    console.error("Axios error:", error.response?.data);
+  } else {
+    console.error("Unknown error:", error);
+  }
+  return null;
+};
+
+const getUserData = async (id?: string): Promise<User | null> => {
   const token = sessionStorage.getItem("authToken");
   let response;
   try {
@@ -35,7 +77,10 @@ const getUserData = async (id) => {
   }
 };
 
-const sendVerificationCode = async (email, purpose) => {
+const sendVerificationCode = async (
+  email: string,
+  purpose: string,
+): Promise<number> => {
   try {
     const response = await axios.post(`${API_URL}/verification-code`, {
       email,
@@ -50,7 +95,11 @@ const sendVerificationCode = async (email, purpose) => {
   }
 };
 
-const checkVerificationCode = async (email, code, purpose) => {
+const checkVerificationCode = async (
+  email: string,
+  code: string,
+  purpose: string,
+): Promise<number | string> => {
   try {
     const response = await axios.post(
       `${API_URL}/check-code`,
@@ -68,7 +117,9 @@ const checkVerificationCode = async (email, code, purpose) => {
   }
 };
 
-const register = async (userData) => {
+const register = async (
+  userData: UserData,
+): Promise<RegisterResponse | string | undefined> => {
   try {
     const response = await axios.post(`${API_URL}/register`, userData);
     if (response.data.status >= 0) {
@@ -79,7 +130,9 @@ const register = async (userData) => {
   }
 };
 
-const login = async (credentials) => {
+const login = async (
+  credentials: Credentials,
+): Promise<LoginResponse | number | undefined> => {
   try {
     const response = await axios.post(`${API_URL}/login`, credentials);
     if (response.data.status === 0) {
@@ -103,7 +156,10 @@ const login = async (credentials) => {
   }
 };
 
-const SavePPicInSessionStorage = async (token, userId) => {
+const SavePPicInSessionStorage = async (
+  token: string,
+  userId: string,
+): Promise<void> => {
   try {
     if (!token || !userId) return;
     const response = await axios.get(`${API_URL}/profile-picture/${userId}`, {
@@ -115,7 +171,7 @@ const SavePPicInSessionStorage = async (token, userId) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = () => {
-        sessionStorage.setItem("profilePictureBase64", reader.result);
+        sessionStorage.setItem("profilePictureBase64", reader.result as string);
       };
     }
   } catch (error) {
@@ -123,7 +179,7 @@ const SavePPicInSessionStorage = async (token, userId) => {
   }
 };
 
-const isUsernameInUse = async (username) => {
+const isUsernameInUse = async (username: string): Promise<boolean | number> => {
   const response = await axios.get(`${API_URL}/check-nickname/${username}`);
   if (response.data.status === 0) {
     return response.data.inUse;
@@ -131,7 +187,7 @@ const isUsernameInUse = async (username) => {
   return -1;
 };
 
-const isEmailInUse = async (email) => {
+const isEmailInUse = async (email: string): Promise<boolean | number> => {
   const response = await axios.get(`${API_URL}/check-email/${email}`);
   if (response.data.result === 0) {
     return response.data.inUse;
@@ -139,7 +195,7 @@ const isEmailInUse = async (email) => {
   return -1;
 };
 
-const getProfile = async (id, token) => {
+const getProfile = async (id: string, token: string): Promise<any> => {
   try {
     const response = await axios.get(`${API_URL}/profile/${id}`, {
       headers: { Authorization: token },
@@ -150,7 +206,7 @@ const getProfile = async (id, token) => {
   }
 };
 
-const listUsers = async (token, page = 1) => {
+const listUsers = async (token: string, page: number = 1): Promise<any> => {
   try {
     const response = await axios.get(`${API_URL}/list-users/${page}`, {
       headers: { Authorization: token },
@@ -161,7 +217,7 @@ const listUsers = async (token, page = 1) => {
   }
 };
 
-const updateUser = async (userData) => {
+const updateUser = async (userData: UserData): Promise<any> => {
   // Quitar email y nickname de userData
   const { email: _, nickname: __, ...rest } = userData;
   const token = sessionStorage.getItem("authToken");
@@ -179,7 +235,10 @@ const updateUser = async (userData) => {
   }
 };
 
-const changePassword = async (currentPass, newPass) => {
+const changePassword = async (
+  currentPass: string,
+  newPass: string,
+): Promise<number> => {
   const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.put(
@@ -207,7 +266,7 @@ const changePassword = async (currentPass, newPass) => {
   }
 };
 
-const uploadProfilePicture = async (file) => {
+const uploadProfilePicture = async (file: File): Promise<number | null> => {
   try {
     const formData = new FormData();
     formData.append("file0", file);
@@ -221,7 +280,7 @@ const uploadProfilePicture = async (file) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = () => {
-        sessionStorage.setItem("profilePictureBase64", reader.result);
+        sessionStorage.setItem("profilePictureBase64", reader.result as string);
       };
       return 0;
     }
@@ -232,7 +291,7 @@ const uploadProfilePicture = async (file) => {
   }
 };
 
-const deleteProfilePicture = async () => {
+const deleteProfilePicture = async (): Promise<number> => {
   try {
     console.log("delete api");
     const token = sessionStorage.getItem("authToken");
@@ -251,7 +310,7 @@ const deleteProfilePicture = async () => {
   }
 };
 
-const getProfilePictureUrl = async (id) => {
+const getProfilePictureUrl = async (id: string): Promise<string | null> => {
   try {
     const response = await axios.get(`${API_URL}/profile-picture/${id}`, {
       responseType: "blob",
@@ -265,7 +324,7 @@ const getProfilePictureUrl = async (id) => {
   }
 };
 
-const deleteAccount = async (password) => {
+const deleteAccount = async (password: string): Promise<number> => {
   const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.delete(`${API_URL}/delete-account`, {

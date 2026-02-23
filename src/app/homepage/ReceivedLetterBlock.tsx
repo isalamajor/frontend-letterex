@@ -30,6 +30,7 @@ export default function ReceivedLetterBlock() {
     sendersList: [] as string[],
     isLoading: true,
     totalLettersCount: 0,
+    serverError: false,
   });
 
   // Pagination
@@ -57,6 +58,7 @@ export default function ReceivedLetterBlock() {
           sendersList: sendersListRef.current,
           isLoading: false,
           totalLettersCount: totalLettersCountRef.current,
+          serverError: false,
         });
         return;
       }
@@ -68,13 +70,14 @@ export default function ReceivedLetterBlock() {
         sentBack,
         sender,
       );
-
+      console.log("letters rec:", result);
       if (!result || !result.letters) {
         setData({
           receivedLetters: [],
           sendersList: [],
           isLoading: false,
           totalLettersCount: 0,
+          serverError: true,
         });
         return;
       }
@@ -97,6 +100,7 @@ export default function ReceivedLetterBlock() {
         sendersList: isBaseQuery ? sendersList : sendersListRef.current,
         isLoading: false,
         totalLettersCount: totalCount,
+        serverError: false,
       });
     },
     [currentPage, filters.received, filters.senders, filters.onlyPending],
@@ -237,8 +241,12 @@ export default function ReceivedLetterBlock() {
           </div>
         )}
         {data.isLoading ? (
-          <div className="flex justify-center items-center h-[60vh]">
+          <div className="flex justify-center items-center h-[70vh]">
             <Spinner size={40} color="gray" />
+          </div>
+        ) : data.serverError ? (
+          <div className="flex justify-center items-center h-[70vh] text-gray-500">
+            A Server Error occurred. Please try again later
           </div>
         ) : (
           <>

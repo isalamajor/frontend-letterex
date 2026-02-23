@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import dynamic from "next/dynamic";
 import { useDialog } from "@/context/dialogContext";
+import { BookOpen } from "lucide-react";
+import { DiarySelect } from "@/components/diarySelect";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
@@ -58,6 +60,9 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [valuesChanged, setValuesChanged] = useState(false);
+
+  const [diaryAddedPreviously, setDiaryAddedPreviously] =
+    useState<boolean>(false);
   const [letter, setLetter] = useState<Letter>({
     id: id,
     date: parseDate(new Date().toISOString().split("T")[0]),
@@ -175,6 +180,21 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     }
   };
 
+  const addNewDiary = (diaryName: string) => {
+    if (diaryAddedPreviously) {
+      // Cambiar el último añadido por el nuevo
+      setDiaryList((prev) => {
+        const newList = [...prev];
+        newList[diaryList.length - 1] = diaryName;
+        return newList;
+      });
+    } else {
+      setDiaryList((prev) => [...prev, diaryName]);
+      setDiaryAddedPreviously(true);
+    }
+    updateLetter({ diary: diaryName });
+  };
+
   const handleShareSuccess = async (result: number) => {
     // Fetch letter data again to get its uploaded version
     if (result === 0) {
@@ -195,7 +215,6 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     }
 
     const letterData = await getLetter(id);
-    console.log("letterdata", letterData);
     if (!letterData) {
       setLetterNotFound(true);
       setIsLoading(false);
@@ -310,21 +329,15 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           </div>
 
           {/* Diary select */}
-          <div className="">
-            <Label className="text-black" htmlFor={id}>
-              Select diary
-            </Label>
+          <div>
+            <Label className="text-black">Select diary</Label>
             <Select
               value={letter.diary}
-              disabled={letter.sharedWith.length > 0}
               onValueChange={(diary) => {
                 handleDiaryChange(diary);
               }}
             >
-              <SelectTrigger
-                id={id}
-                className="text-black bg-white h-10 rounded-md ring-transparent"
-              >
+              <SelectTrigger className="text-black bg-white h-10 rounded-md ring-transparent">
                 <SelectValue placeholder="(None)" />
               </SelectTrigger>
               <SelectContent>
@@ -333,6 +346,25 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                     {diary}
                   </SelectItem>
                 ))}
+                <div
+                  key="new"
+                  className="cursor-pointer flex justify-center items-center hover:bg-gray-100 w-full text-sm bg-white h-8 rounded-md ring-transparent text-[#8EBA03]"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openDialog({
+                      title: "Create New Diary",
+                      description: "Enter a name for your new diary.",
+                      primaryActionText: "OK",
+                      type: "newDiary",
+                      autoDismiss: false,
+                      onNewDiaryCreated: (diaryName: string) => {
+                        addNewDiary(diaryName);
+                      },
+                    });
+                  }}
+                >
+                  <BookOpen className="mr-2" size={15} /> Create new diary
+                </div>
               </SelectContent>
             </Select>
           </div>
@@ -417,7 +449,6 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           <div className="flex flex-row justify-end h-[5%] col items-center gap-4">
             <button
               onClick={() => {
-                console.log("share:", id);
                 openDialog({
                   title: "Send Letter",
                   description: "",

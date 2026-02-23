@@ -157,7 +157,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
     // Si el email no está en uso, enviar el código de verificación
     else {
       setEmail(email);
-      const res = await sendVerificationCode(email);
+      const res = await sendVerificationCode(email, "register");
       if (res === 0) {
         setCurrentStep(currentStep + 1);
       } else {
