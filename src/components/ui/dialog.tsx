@@ -154,7 +154,7 @@ export interface DialogConfig {
   onConfirmationPositive?: () => void | Promise<void>;
 }
 
-export const SuccessDialog: React.FC<DialogConfig> = ({
+const SuccessDialog: React.FC<DialogConfig> = ({
   isOpen = false,
   onClose = () => {},
   title,
@@ -299,13 +299,14 @@ export const SuccessDialog: React.FC<DialogConfig> = ({
   const handleChangePassword = async () => {
     if (password && newPassword && confirmPassword) {
       const result = await changePassword(password, newPassword);
-      if (result === 0) {
+      if (result.ok) {
         setPasswordChangeMessage("Password changed successfully!");
-      } else if (result === -2) {
+      } else if (result.errorMessage === "Current password is incorrect") {
         setPasswordChangeMessage("Wrong password.");
       } else {
         setPasswordChangeMessage(
-          "Failed to change password. Please try again later.",
+          result.errorMessage ||
+            "Failed to change password. Please try again later.",
         );
       }
     }
@@ -316,8 +317,10 @@ export const SuccessDialog: React.FC<DialogConfig> = ({
       return;
     }
     const result = await deleteAccount(password);
-    setDeleteAccountResult(result);
-    if (result === 0) {
+    setDeleteAccountResult(
+      result.ok ? 0 : result.errorMessage === "Password is incorrect" ? -2 : -1,
+    );
+    if (result.ok) {
       setTimeout(() => {
         window.location.href = "/";
         sessionStorage.clear();
@@ -913,11 +916,5 @@ export const SuccessDialog: React.FC<DialogConfig> = ({
   );
 };
 
-export default {
-  SuccessDialog,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-};
+export default SuccessDialog;
+export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription };

@@ -16,7 +16,7 @@ interface settingsLetterList {
   isLoading: boolean;
 }
 
-export function LetterCardBlock() {
+export default function LetterCardBlock() {
   const [settings, setSettings] = useState<settingsLetterList>({
     orderByDiaries: false,
     searchFilter: "",
@@ -31,27 +31,6 @@ export function LetterCardBlock() {
     setSettings((prev) => ({ ...prev, isLoading: false }));
     setNoLetters(zeroLetters);
   }, []);
-
-  if (settings.isLoading) {
-    return (
-      <div className="flex-1 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8 h-full">
-        <div className="flex justify-center items-center h-full">
-          <Spinner size={40} color="gray" />
-        </div>
-        {/* LetterCardList monta aquí pero oculto mientras carga */}
-        <div className="hidden">
-          <LetterCardList
-            orderByDiaryTrigger={settings.orderByDiaries}
-            searchFilter={settings.searchFilter}
-            deleteMode={settings.deleteMode}
-            onDeleteClicked={deleteTriggerEvent}
-            allLetterSwipeOpen={settings.allLetterSwipeOpen}
-            onDataLoaded={handleDataLoaded}
-          ></LetterCardList>
-        </div>
-      </div>
-    );
-  }
 
   if (noLetters) {
     return (
@@ -155,14 +134,22 @@ export function LetterCardBlock() {
         </div>
       </div>
 
-      <LetterCardList
-        orderByDiaryTrigger={settings.orderByDiaries}
-        searchFilter={settings.searchFilter}
-        deleteMode={settings.deleteMode}
-        onDeleteClicked={deleteTriggerEvent}
-        allLetterSwipeOpen={settings.allLetterSwipeOpen}
-        onDataLoaded={handleDataLoaded}
-      ></LetterCardList>
+      {settings.isLoading && (
+        <div className="flex justify-center items-center h-[70vh]">
+          <Spinner size={40} color="gray" />
+        </div>
+      )}
+
+      <div className={settings.isLoading ? "hidden" : ""}>
+        <LetterCardList
+          orderByDiaryTrigger={settings.orderByDiaries}
+          searchFilter={settings.searchFilter}
+          deleteMode={settings.deleteMode}
+          onDeleteClicked={deleteTriggerEvent}
+          allLetterSwipeOpen={settings.allLetterSwipeOpen}
+          onDataLoaded={handleDataLoaded}
+        />
+      </div>
     </div>
   );
 }

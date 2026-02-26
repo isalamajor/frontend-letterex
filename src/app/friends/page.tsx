@@ -1,12 +1,21 @@
 "use client";
 import { SidebarDemo } from "@/components/sidebardemo";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { getFriends, getFriendRequests } from "@/services/api";
 import FriendCard from "@/components/friendCard";
 import { MessageCircleDashed, Frown } from "lucide-react";
 import FriendRequestCard from "@/components/friendRequestCard";
 import Pagination from "@mui/material/Pagination";
-import SuggestedUsers from "./suggestedUsers";
+import dynamic from "next/dynamic";
+import { Spinner } from "@/components/ui/spinner-1";
+
+const SuggestedUsers = dynamic(() => import("./suggestedUsers"), {
+  loading: () => (
+    <div className="bg-white rounded-lg p-4 h-full flex items-center justify-center text-gray-500">
+      <Spinner />
+    </div>
+  ),
+});
 
 const ITEMS_PER_PAGE = 6;
 
@@ -48,20 +57,21 @@ const SocialPageContent = () => {
     FriendRequestList["senders"]
   >([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchFriends = async () => {
-    const res = await getFriends();
-    setFriends(res || []);
-  };
-  const fetchFriendRequests = async () => {
-    const res = await getFriendRequests();
-    setFriendRequests(res || []);
-  };
-
-  // Función para refrescar todos los datos
-  const refreshData = () => {
-    fetchFriends();
-    fetchFriendRequests();
+  // Función para refrescar todos los datos en paralelo
+  const refreshData = async () => {
+    setIsLoading(true);
+    try {
+      const [friendsRes, requestsRes] = await Promise.all([
+        getFriends(),
+        getFriendRequests(),
+      ]);
+      setFriends(friendsRes || []);
+      setFriendRequests(requestsRes || []);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -74,82 +84,89 @@ const SocialPageContent = () => {
         Friends
       </h1>
 
-      <div className="flex gap-2 flex-1 h-[95%] text-xl">
-        {/* Bloque pantalla */}
-        <div className="h-full w-full rounded-lg mt-2 text-black flex flex-col">
-          <div className="grid grid-cols-2 gap-4 w-full h-full">
-            {/* Columna izquierda: dos filas iguales */}
-            <div className="col-span-1 bg-gray-100 rounded-lg p-4 flex flex-col gap-4 h-full">
-              <div className="items-center px-8 py-5 justify-center bg-white rounded-lg p-2 h-[35%]">
-                {/* Fila superior */}
-                <h2 className="text-3xl text-end text-indigo-500 h-[20%]">
-                  Friend requests
-                </h2>
-                {friendRequests.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-4 h-[80%] overflow-auto w-full pb-15">
-                    {friendRequests.map((request) => (
-                      <div key={request.sender.id} className="col-span-1">
-                        <FriendRequestCard
-                          {...request.sender}
-                          onAcceptSuccess={refreshData}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-[80%] overflow-auto items-center justify-center w-full pb-15">
-                    <MessageCircleDashed className="mr-2" color="gray" />
-                    <p className="text-gray-500">
-                      No friend requests received...
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1 bg-white rounded-lg px-8 py-5 h-[70%]">
-                {/* Fila inferior */}
-                <h2 className="text-3xl text-start mb-2 text-indigo-500">
-                  My friends
-                </h2>
-                {friends.length > 0 ? (
-                  <div className="flex flex-col justify-between h-[90%]">
-                    <div className="grid grid-cols-2 gap-2 content-start">
-                      {friends
-                        .slice(
-                          (currentPage - 1) * ITEMS_PER_PAGE,
-                          currentPage * ITEMS_PER_PAGE,
-                        )
-                        .map((friend) => (
-                          <div key={friend.id} className="col-span-1">
-                            <FriendCard {...friend} />
-                          </div>
-                        ))}
+      {isLoading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="flex gap-2 flex-1 h-[95%] text-xl">
+          {/* Bloque pantalla */}
+          <div className="h-full w-full rounded-lg mt-2 text-black flex flex-col">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full h-full">
+              {/* Columna izquierda: dos filas iguales */}
+              <div className="col-span-1 bg-gray-100 rounded-lg p-4 flex flex-col gap-4 h-full">
+                <div className="items-center px-8 py-5 justify-center bg-white rounded-lg p-2 h-[35%]">
+                  {/* Fila superior */}
+                  <h2 className="text-3xl text-end text-indigo-500 h-[20%]">
+                    Friend requests
+                  </h2>
+                  {friendRequests.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-4 h-[80%] overflow-auto w-full pb-15">
+                      {friendRequests.map((request) => (
+                        <div key={request.sender.id} className="col-span-1">
+                          <FriendRequestCard
+                            {...request.sender}
+                            onAcceptSuccess={refreshData}
+                          />
+                        </div>
+                      ))}
                     </div>
-                    {friends.length > ITEMS_PER_PAGE && (
-                      <Pagination
-                        count={Math.ceil(friends.length / ITEMS_PER_PAGE)}
-                        variant="outlined"
-                        shape="rounded"
-                        onChange={(event, page) => setCurrentPage(page)}
-                        size="large"
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex h-[80%] overflow-auto items-center gap-2 justify-center w-full pb-15">
-                    <p className="text-gray-500">No friends yet</p>
-                    <Frown color="gray" />
-                  </div>
-                )}
+                  ) : (
+                    <div className="flex sm:h-[80%] overflow-auto items-center justify-center w-full sm:pb-15">
+                      <MessageCircleDashed className="mr-2" color="gray" />
+                      <p className="text-gray-500 my-10">
+                        No friend requests received...
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 bg-white rounded-lg px-8 py-5 sm:h-[70%]">
+                  {/* Fila inferior */}
+                  <h2 className="text-3xl text-start mb-2 text-indigo-500">
+                    My friends
+                  </h2>
+                  {friends.length > 0 ? (
+                    <div className="flex flex-col justify-between sm:h-[90%]">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 content-start">
+                        {friends
+                          .slice(
+                            (currentPage - 1) * ITEMS_PER_PAGE,
+                            currentPage * ITEMS_PER_PAGE,
+                          )
+                          .map((friend) => (
+                            <div key={friend.id} className="col-span-1">
+                              <FriendCard {...friend} />
+                            </div>
+                          ))}
+                      </div>
+                      {friends.length > ITEMS_PER_PAGE && (
+                        <Pagination
+                          count={Math.ceil(friends.length / ITEMS_PER_PAGE)}
+                          variant="outlined"
+                          shape="rounded"
+                          onChange={(event, page) => setCurrentPage(page)}
+                          size="large"
+                          className="mt-2"
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex h-[80%] overflow-auto items-center gap-2 justify-center w-full pb-15">
+                      <p className="text-gray-500">No friends yet</p>
+                      <Frown color="gray" />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            {/* Columna central (más grande) */}
-            <div className="col-span-1 bg-gray-100 rounded-lg p-4">
-              <SuggestedUsers />
+              {/* Columna central (más grande) */}
+              <div className="col-span-1 bg-gray-100 rounded-lg p-4">
+                <SuggestedUsers />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -46,11 +46,11 @@ const SuggestedUsers = () => {
   return (
     <>
       <div className=" bg-white rounded-lg p-4 h-full px-4">
-        <div className="flex flex-row justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
           <h2 className="text-3xl text-center text-indigo-500">
             Suggested users
           </h2>
-          <div className="flex flex-row ml-auto gap-2 cursor-pointer border border-lightblack text-gray-700 rounded-sm py-2 px-4 bg-gray-50 w-[45%]">
+          <div className="flex flex-row mt-2 sm:mt-0 ml-auto gap-2 cursor-pointer border border-lightblack text-gray-700 rounded-sm py-2 px-4 bg-gray-50 w-full sm:w-[45%]">
             <Search className="text-gray-500"></Search>
             <input
               placeholder="Search for a user..."
@@ -67,7 +67,7 @@ const SuggestedUsers = () => {
               <Ghost color="gray" />
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {(query ? queryResults : suggested).map((user) => (
                 <div key={user.id} className="col-span-1">
                   <AddFriendCard

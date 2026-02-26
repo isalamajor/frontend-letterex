@@ -1,9 +1,8 @@
 import Link from "next/link";
 import React from "react";
-import { useState } from "react";
 import { Check, Trash2 } from "lucide-react";
-import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { deleteCorrectedLetter } from "@/services/api";
+import { useDialog } from "@/context/dialogContext";
 
 interface ReceivedLetterCardProps {
   id: string;
@@ -29,38 +28,7 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
   deleted,
   letterDeleted,
 }) => {
-  // Dialog
-  const [dialogConfig, setDialogConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    primaryActionText: string;
-    onPrimaryAction?: () => void;
-    autoDismiss: boolean;
-    size: "sm" | "md" | "lg";
-    type: DialogType;
-    onConfirmationPositive?: () => void;
-    autoDismissDelay: number;
-  }>({
-    isOpen: false,
-    title: "Payment Successful!",
-    description:
-      "Your payment has been processed successfully. You will receive a confirmation email shortly.",
-    primaryActionText: "View Receipt",
-    autoDismiss: true,
-    size: "md",
-    type: "success",
-    onConfirmationPositive: undefined,
-    autoDismissDelay: 10000,
-  });
-
-  const openDialog = (config: Partial<typeof dialogConfig>) => {
-    setDialogConfig((prev) => ({ ...prev, ...config, isOpen: true }));
-  };
-
-  const closeDialog = () => {
-    setDialogConfig((prev) => ({ ...prev, isOpen: false }));
-  };
+  const { openDialog, closeDialog } = useDialog();
 
   const deleteOnClick = async () => {
     const result = await deleteCorrectedLetter(id);
@@ -150,19 +118,6 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
           </div>
         </div>
       </div>
-      <SuccessDialog
-        isOpen={dialogConfig.isOpen}
-        onClose={closeDialog}
-        title={dialogConfig.title}
-        description={dialogConfig.description}
-        primaryActionText={dialogConfig.primaryActionText}
-        onPrimaryAction={dialogConfig.onPrimaryAction}
-        autoDismiss={dialogConfig.autoDismiss}
-        size={dialogConfig.size}
-        type={dialogConfig.type}
-        onConfirmationPositive={dialogConfig.onConfirmationPositive}
-        autoDismissDelay={dialogConfig.autoDismissDelay}
-      />
     </Link>
   );
 };

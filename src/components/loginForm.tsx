@@ -1,12 +1,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "../services/api/user";
+import { login } from "@/services/api";
 import { InputPass } from "./ui/inputPass";
 import { motion } from "framer-motion";
 import { Spinner } from "./ui/spinner-1";
 import { KeyRound } from "lucide-react";
+import axios from "axios";
 
-const LoginForm = ({ goBack }: { goBack: () => void }) => {
+// Configurar Axios para enviar cookies automáticamente
+axios.defaults.withCredentials = true;
+
+const LoginForm = ({
+  goBack,
+  goResetPassword,
+}: {
+  goBack: () => void;
+  goResetPassword: () => void;
+}) => {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -14,6 +24,10 @@ const LoginForm = ({ goBack }: { goBack: () => void }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const btnClass =
     "w-full p-2 bg-green-500 text-white rounded btn-animated-form btn-back";
+  const alertStyles = {
+    style: { whiteSpace: "pre-line" as const },
+    className: "text-red-500 text-base",
+  };
 
   const loginAttempt = async () => {
     if (!email) {
@@ -29,16 +43,15 @@ const LoginForm = ({ goBack }: { goBack: () => void }) => {
       email: email,
       password: password,
     });
-    if (result.status === 0) {
-      sessionStorage.setItem("authToken", result.token);
-      sessionStorage.setItem("userData", JSON.stringify(result.userData));
-      router.push("../homepage");
-    } else if (result.status > 0) {
-      setShowAlert(result.message);
+    if (result.ok && result.data) {
+      // El backend devuelve la cookie con Set-Cookie (HttpOnly, Secure, SameSite)
+      // No necesitamos setearla desde el cliente
+      sessionStorage.setItem("userData", JSON.stringify(result.data.userData));
+      router.push("/homepage");
     } else {
-      setShowAlert("Server is having trouble...");
+      setShowAlert(result.errorMessage || "Server is having trouble...");
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
@@ -72,14 +85,14 @@ const LoginForm = ({ goBack }: { goBack: () => void }) => {
           onEnter={() => {
             if (!isLoading) loginAttempt();
           }}
-          label={false}
           wrongPassword={false}
         />
 
-        <p style={{ whiteSpace: "pre-line" }} className="text-red-500">
-          {showAlert}
-        </p>
-        <p className="text-[color:var(--background)] hover:underline cursor-pointer text-sm flex flex-row gap-1 justify-end items-center">
+        <p {...alertStyles}>{showAlert}</p>
+        <p
+          className="text-[color:var(--background)] hover:underline cursor-pointer text-sm flex flex-row gap-1 justify-end items-center"
+          onClick={goResetPassword}
+        >
           <KeyRound size={16} />
           Forgot password
         </p>
@@ -101,6 +114,3 @@ const LoginForm = ({ goBack }: { goBack: () => void }) => {
 };
 
 export default LoginForm;
-function sleep(arg0: number) {
-  throw new Error("Function not implemented.");
-}

@@ -227,8 +227,6 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     (async () => {
       setIsLoading(true);
       const letterData = await getLetter(id);
-
-      console.log("letterdata", letterData);
       if (!letterData) {
         setLetterNotFound(true);
         setIsLoading(false);
@@ -388,8 +386,8 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                 <SelectValue placeholder="(None)" />
               </SelectTrigger>
               <SelectContent>
-                {languageList.map((lang) => (
-                  <SelectItem key={lang} value={lang}>
+                {languageList.map((lang, index) => (
+                  <SelectItem key={`${lang}-${index}`} value={lang}>
                     {lang}
                   </SelectItem>
                 ))}

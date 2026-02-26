@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
 import { Check, X } from "lucide-react";
-import { SuccessDialog, DialogType } from "@/components/ui/dialog";
 import { useState } from "react";
 import { acceptFriendRequest, declineFriendRequest } from "@/services/api";
+import { useDialog } from "@/context/dialogContext";
 
 interface User {
   id: string;
@@ -18,33 +18,7 @@ const FriendRequestCard: React.FC<User> = ({
   image,
   onAcceptSuccess,
 }) => {
-  // Dialog
-  const [dialogConfig, setDialogConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    primaryActionText: string;
-    autoDismiss: boolean;
-    size: "sm" | "md" | "lg";
-    type: DialogType;
-  }>({
-    isOpen: false,
-    title: "Payment Successful!",
-    description:
-      "Your payment has been processed successfully. You will receive a confirmation email shortly.",
-    primaryActionText: "View Receipt",
-    autoDismiss: false,
-    size: "md",
-    type: "success",
-  });
-
-  const openDialog = (config: Partial<typeof dialogConfig>) => {
-    setDialogConfig((prev) => ({ ...prev, ...config, isOpen: true }));
-  };
-
-  const closeDialog = () => {
-    setDialogConfig((prev) => ({ ...prev, isOpen: false }));
-  };
+  const { openDialog, closeDialog } = useDialog();
 
   const acceptOnClick = async () => {
     const result = await acceptFriendRequest(id);
@@ -108,16 +82,6 @@ const FriendRequestCard: React.FC<User> = ({
           </button>
         </div>
       </div>
-      <SuccessDialog
-        isOpen={dialogConfig.isOpen}
-        onClose={closeDialog}
-        title={dialogConfig.title}
-        description={dialogConfig.description}
-        primaryActionText={dialogConfig.primaryActionText}
-        autoDismiss={dialogConfig.autoDismiss}
-        size={dialogConfig.size}
-        type={dialogConfig.type}
-      />
     </div>
   );
 };

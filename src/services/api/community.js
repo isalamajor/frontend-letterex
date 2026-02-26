@@ -4,12 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/community";
 
 const getCommunities = async (language) => {
   try {
-    const token = sessionStorage.getItem("authToken");
-    const response = await axios.get(`${API_URL}/${language}`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/${language}`);
     if (response.status === 200) {
       console.log("communities fetched", response.data.communities);
       return { ok: true, communities: response.data.communities };
@@ -27,12 +22,7 @@ const getCommunities = async (language) => {
 
 const getMyCommunities = async (language) => {
   try {
-    const token = sessionStorage.getItem("authToken");
-    const response = await axios.get(`${API_URL}/`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/`);
     if (response.status === 200) {
       console.log("communities fetched", response.data.communities);
       return { ok: true, communities: response.data.communities || [] };
@@ -55,7 +45,6 @@ const createCommunity = async (
   isPrivate,
 ) => {
   try {
-    const token = sessionStorage.getItem("authToken");
     const response = await axios.post(
       `${API_URL}/new`,
       {
@@ -63,11 +52,6 @@ const createCommunity = async (
         language: language,
         description: description,
         isPrivate: isPrivate,
-      },
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
       },
     );
     if (response.status === 200) {
@@ -83,16 +67,9 @@ const createCommunity = async (
 
 const requestMembership = async (communityId) => {
   try {
-    const token = sessionStorage.getItem("authToken");
-    console.log("token", token);
     const response = await axios.post(
       `${API_URL}/request/${communityId}`,
       {},
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
     );
     if (response.status === 200) {
       return { ok: true };
@@ -116,11 +93,7 @@ const getMembers = async (communityId, page, itemsPerPage) => {
         error: "An error occurred when fetching user communities",
       };
     }
-    const token = sessionStorage.getItem("authToken");
     const response = await axios.get(`${API_URL}/members/${communityId}`, {
-      headers: {
-        Authorization: `${token}`,
-      },
       params: {
         itemsPerPage: itemsPerPage,
         pagination: page,

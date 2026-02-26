@@ -9,7 +9,8 @@ interface InputPassProps {
   onChange: (password: string) => void;
   wrongPassword: boolean;
   styles?: string;
-  label?: boolean;
+  label?: string;
+  placeholder?: string;
   onEnter?: () => void;
 }
 
@@ -17,7 +18,8 @@ function InputPass({
   onChange,
   wrongPassword,
   styles,
-  label = true,
+  label,
+  placeholder,
   onEnter,
 }: InputPassProps) {
   const id = useId();
@@ -32,13 +34,13 @@ function InputPass({
 
   return (
     <div className="space-y-2 min-w-[200px] text-black">
-      {label && <Label htmlFor={id}>Enter password</Label>}
+      {label && <Label htmlFor={id}>{label}</Label>}
       <div className="relative">
         <Input1
           id={id}
           className={`${styles ? styles : `w-full p-2 border rounded text-black/80 bg-white ${markRed ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-gray-300"}`}
           `}
-          placeholder="Password"
+          placeholder={placeholder ? placeholder : "Password"}
           type={isVisible ? "text" : "password"}
           onChange={(e) => {
             setMarkRed(false);

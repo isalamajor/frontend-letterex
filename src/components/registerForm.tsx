@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../stylesheets/animatedForm.css";
 import { motion } from "framer-motion";
 import LanguageSelector from "./languageSelector";
@@ -10,10 +10,15 @@ import {
   isEmailInUse,
   checkVerificationCode,
 } from "../services/api";
-import { ImageUploader } from "@/components/imageUploader";
 import { InputPass } from "./ui/inputPass";
 import languagesData from "../app/resources/languagesData";
 import CodeInput from "./codeInput";
+import { ValidationCodePurpose } from "../services/api";
+import dynamic from "next/dynamic";
+
+const ImageUploader = dynamic(() => import("@/components/imageUploader"), {
+  loading: () => <div>Loading...</div>,
+});
 
 interface RegisterFormProps {
   goBack: () => void;
@@ -26,9 +31,16 @@ interface language {
   image: string;
 }
 
+const CODE_LENGTH = 6;
+
 const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
   const [showAlert, setShowAlert] = useState<string>("");
   const [currentStep, setCurrentStep] = useState<number>(1);
+
+  const alertStyles = {
+    style: { whiteSpace: "pre-line" as const },
+    className: "text-red-500 text-base",
+  };
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -36,6 +48,13 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
   const [languagesSpoken, setLanguagesSpoken] = useState<language[]>([]);
   const [languagesLearning, setLanguagesLearning] = useState<language[]>([]);
   const [profileImage, setProfileImage] = useState<File | null>(null);
+
+  // Auto-submit verification code when complete
+  useEffect(() => {
+    if (currentStep === 3 && confirmationCode.length === CODE_LENGTH) {
+      checkCodeAttempt();
+    }
+  }, [confirmationCode, currentStep]);
 
   const handleImageUpload = (imageFile: File | null) => {
     setProfileImage(imageFile); // Guardar imagen en el estado del padre
@@ -58,7 +77,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
       return;
     }
     // Código de verificación
-    else if (currentStep === 3 && confirmationCode.length === 6) {
+    else if (currentStep === 3 && confirmationCode.length === CODE_LENGTH) {
       checkCodeAttempt();
       return;
     }
@@ -105,10 +124,10 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
       picture: profileImage || null,
     });
 
-    if (result.status === 0) {
+    if (result.ok) {
       goLogin();
     } else {
-      setShowAlert(result);
+      setShowAlert(result.errorMessage || "Registration failed");
     }
   };
 
@@ -117,19 +136,19 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
       return;
     }
     if (username.length < 5) {
-      showAlertMessage("Username must be at least 5 characters long");
+      showAlertMessage("Username is too short");
       return;
     }
     if (password.length < 8) {
-      showAlertMessage("Password must be at least 8 characters long");
+      showAlertMessage("Password is too short");
       return;
     }
-    const inUse = await isUsernameInUse(username);
-    if (inUse === -1) {
-      showAlertMessage("Server is having trouble...");
+    const result = await isUsernameInUse(username);
+    if (!result.ok) {
+      showAlertMessage(result.errorMessage || "Server is having trouble...");
       return;
     }
-    if (inUse) {
+    if (result.data) {
       showAlertMessage("This nickname is taken!");
       return;
     }
@@ -146,33 +165,45 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
     }
 
     // Verificar si el email ya está en uso
-    const inUse = await isEmailInUse(email);
-    console.log("in use: ", inUse);
-    if (inUse) {
+    const emailCheckResult = await isEmailInUse(email);
+    console.log("in use: ", emailCheckResult);
+    if (!emailCheckResult.ok) {
+      showAlertMessage(
+        emailCheckResult.errorMessage || "Server is having trouble...",
+      );
+      return;
+    }
+    if (emailCheckResult.data) {
       showAlertMessage("This email is taken!");
-    } else if (inUse === -1) {
-      showAlertMessage("Server is having trouble...");
+      return;
     }
 
     // Si el email no está en uso, enviar el código de verificación
-    else {
-      setEmail(email);
-      const res = await sendVerificationCode(email, "register");
-      if (res === 0) {
-        setCurrentStep(currentStep + 1);
-      } else {
-        showAlertMessage("There was a problem validating your email");
-        console.log("Problem validating email: " + res);
-      }
+    setEmail(email);
+    const codeResult = await sendVerificationCode(
+      email,
+      "register" as ValidationCodePurpose,
+    );
+    if (codeResult.ok) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      showAlertMessage(
+        codeResult.errorMessage || "There was a problem validating your email",
+      );
+      console.log("Problem validating email: " + codeResult.errorMessage);
     }
   };
 
   const checkCodeAttempt = async () => {
-    const res = await checkVerificationCode(email, confirmationCode);
-    if (res === 0) {
+    const result = await checkVerificationCode(
+      email,
+      confirmationCode,
+      "register" as ValidationCodePurpose,
+    );
+    if (result.ok) {
       setCurrentStep(currentStep + 1);
     } else {
-      showAlertMessage(res);
+      showAlertMessage(result.errorMessage || "Invalid code");
     }
   };
 
@@ -205,14 +236,11 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
                 setPassword(pass);
                 setShowAlert("");
               }}
-              label={false}
               onEnter={handleNextStep}
               wrongPassword={false}
             />
           </div>
-          <p style={{ whiteSpace: "pre-line" }} className="text-red-500">
-            {showAlert}
-          </p>
+          <p {...alertStyles}>{showAlert}</p>
         </div>
       )}
 
@@ -229,9 +257,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
               if (event.key === "Enter") handleNextStep();
             }}
           />
-          <p style={{ whiteSpace: "pre-line" }} className="text-red-500">
-            {showAlert}
-          </p>
+          <p {...alertStyles}>{showAlert}</p>
         </div>
       )}
 
@@ -247,7 +273,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
               showAlertMessage("");
             }}
           />
-          <p className="text-red-500">{showAlert}</p>
+          <p {...alertStyles}>{showAlert}</p>
         </div>
       )}
 
@@ -329,9 +355,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
             </div>
           </div>
 
-          <p style={{ whiteSpace: "pre-line" }} className="text-red-500">
-            {showAlert}
-          </p>
+          <p {...alertStyles}>{showAlert}</p>
         </div>
       )}
 

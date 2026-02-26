@@ -1,6 +1,12 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { SuccessDialog, DialogConfig } from "@/components/ui/dialog";
+import { DialogConfig } from "@/components/ui/dialog";
+import dynamic from "next/dynamic";
+
+const SuccessDialog = dynamic(() => import("@/components/ui/dialog"), {
+  ssr: false,
+  loading: () => null,
+});
 
 const defaultConfig: DialogConfig = {
   isOpen: false,
@@ -19,7 +25,13 @@ const DialogContext = createContext<{
   closeDialog: () => {},
 });
 
-export const useDialog = () => useContext(DialogContext);
+export const useDialog = () => {
+  const context = useContext(DialogContext);
+  if (!context) {
+    throw new Error("useDialog must be used within a DialogProvider");
+  }
+  return context;
+};
 
 export const DialogProvider = ({ children }: { children: ReactNode }) => {
   const [config, setConfig] = useState<DialogConfig>(defaultConfig);
@@ -34,7 +46,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
       {children}
       <SuccessDialog
         isOpen={config.isOpen}
-        onClose={config.onClose ?? closeDialog}
+        onClose={config.onClose}
         title={config.title}
         description={config.description}
         primaryActionText={config.primaryActionText}

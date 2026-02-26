@@ -15,27 +15,43 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import "../stylesheets/sidebardemo.css";
 import { useDialog } from "@/context/dialogContext";
+import { logout } from "@/services/api";
 
 export function SidebarDemo({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const { openDialog } = useDialog();
 
-  const handleLogoutClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleLogoutClick = async (
+    event: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
     event.preventDefault();
-    openDialog({
-      type: "bye",
-      title: "Bye!",
-      description: "See you soon :)",
-      autoDismiss: true,
-      autoDismissDelay: 2000,
-      showCloseButton: false,
-      size: "sm",
-    });
+
+    const res = await logout();
+    if (res.ok) {
+      openDialog({
+        type: "bye",
+        title: "Bye!",
+        description: "See you soon :)",
+        autoDismiss: true,
+        autoDismissDelay: 2000,
+        showCloseButton: false,
+        size: "sm",
+      });
+    } else {
+      openDialog({
+        type: "error",
+        title: "Logout Error",
+        description: "A server error occurred when logging out",
+        autoDismiss: true,
+        autoDismissDelay: 2000,
+        showCloseButton: false,
+      });
+    }
+
     setTimeout(() => {
-      sessionStorage.clear();
       router.push("/");
-    }, 2000);
+    }, 1500);
   };
 
   const links = [
@@ -45,6 +61,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
       icon: (
         <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
+      prefetch: true,
     },
     {
       label: "Profile",
@@ -52,6 +69,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
       icon: (
         <UserCog className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
+      prefetch: true,
     },
     {
       label: "Friends",
@@ -59,6 +77,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
       icon: (
         <Handshake className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
+      prefetch: true,
     },
     {
       label: "Community",
@@ -66,6 +85,7 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
       icon: (
         <LeafyGreen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
+      prefetch: true,
     },
     {
       label: "Logout",
@@ -119,6 +139,20 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 }
 
 export const Logo = () => {
+  const [userName, setUserName] = useState("Letterex");
+
+  useEffect(() => {
+    const userData = sessionStorage.getItem("userData");
+    if (userData) {
+      try {
+        const parsed = JSON.parse(userData);
+        setUserName(parsed.nickname || "Letterex");
+      } catch {
+        setUserName("Letterex");
+      }
+    }
+  }, []);
+
   return (
     <Link
       href="#"
@@ -130,17 +164,7 @@ export const Logo = () => {
         animate={{ opacity: 1 }}
         className="font-medium text-black dark:text-white whitespace-pre"
       >
-        {(() => {
-          const userData = sessionStorage.getItem("userData");
-          if (userData) {
-            try {
-              return JSON.parse(userData).nickname;
-            } catch {
-              return "Letterex";
-            }
-          }
-          return "Letterex";
-        })()}
+        {userName}
       </motion.span>
     </Link>
   );

@@ -1,7 +1,7 @@
 "use client";
 import { SidebarDemo } from "@/components/sidebardemo";
 import { useState, useEffect } from "react";
-import { LetterCardBlock } from "./LetterCardBlock";
+import LetterCardBlock from "./LetterCardBlock";
 import ReceivedLetterBlock from "./ReceivedLetterBlock";
 
 export default function Home() {

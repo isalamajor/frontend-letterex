@@ -4,18 +4,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/suggested-topic";
 
 const addNewTopic = async (communityId, title, description) => {
   try {
-    const token = sessionStorage.getItem("authToken");
     const response = await axios.post(
       `${API_URL}/`,
       {
         communityId,
         title,
         description,
-      },
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
       },
     );
 
@@ -36,11 +30,7 @@ const addNewTopic = async (communityId, title, description) => {
 
 const deleteTopic = async (topicId) => {
   try {
-    const token = sessionStorage.getItem("authToken");
     const response = await axios.delete(`${API_URL}/${topicId}`, {
-      headers: {
-        Authorization: `${token}`,
-      },
       validateStatus: (status) => status < 500,
     });
 
@@ -61,12 +51,7 @@ const deleteTopic = async (topicId) => {
 
 const getCommunityTopics = async (communityId) => {
   try {
-    const token = sessionStorage.getItem("authToken");
-    const response = await axios.get(`${API_URL}/${communityId}`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/${communityId}`);
 
     if (response.status === 200) {
       console.log(response.data.topics);

@@ -46,7 +46,7 @@ const LetterCard: React.FC<LetterCardProps> = ({
   return (
     <div className="block w-full relative group my-1">
       <div
-        className={`px-8 py-4 rounded-lg bg-gray-50 shadow-md relative h-[12vh]
+        className={`cursor-pointer px-8 py-4 rounded-lg bg-gray-50 shadow-md relative h-[12vh]
       group transition-all duration-300 group-hover:w-[80%] ${deleteMode || swipeOpen ? "w-[80%]" : "w-full"}`}
         onClick={goToEditLetter(id)}
       >
@@ -86,7 +86,10 @@ const LetterCard: React.FC<LetterCardProps> = ({
         </div>
       </div>
       <div
-        className={`absolute h-full w-[17%] top-1/2 right-0 transform -translate-y-1/2 bg-gray-50 text-black px-4 py-2 mr-3 ml-0 rounded-lg group-hover:opacity-100 transition-opacity duration-200 group-hover:delay-200 text-center flex items-center justify-center  ${deleteMode || swipeOpen ? "opacity-100 pb-5" : "opacity-0"}`}
+        className={`
+          absolute h-full w-[17%] top-1/2 right-0 transform -translate-y-1/2 bg-gray-50 text-black px-4 py-2 mr-3 ml-0 rounded-lg
+          group-hover:opacity-100 transition-opacity duration-200 group-hover:delay-200 text-center flex items-center justify-center
+          ${deleteMode || swipeOpen ? "opacity-100 pb-5" : "opacity-0"}`}
       >
         <div className="flex flex-col gap-2 px-2">
           {deleteMode ? (

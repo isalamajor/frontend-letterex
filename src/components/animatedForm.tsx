@@ -9,6 +9,7 @@ import { Typewriter } from "./ui/typeWriter";
 import FrogAnimation from "@/components/frogAnimation1";
 import RegisterForm from "./registerForm";
 import LoginForm from "./loginForm";
+import ResetPasswordForm from "./resetPasswordForm";
 
 const phrases = [
   "Write about your passions",
@@ -18,6 +19,7 @@ const phrases = [
 
 export default function AnimatedForm() {
   const [formShowing, setFormShowing] = useState("HOME");
+  const [toggleFrog, setToggleFrog] = useState(false);
   const [frogSettings, setFrogSettings] = useState({
     register: { top: "30%", left: "50%", width: 200 },
     login: { top: "30%", left: "50%", width: 200 },
@@ -65,7 +67,7 @@ export default function AnimatedForm() {
       <motion.div
         className="w-40 z-99"
         animate={
-          formShowing === "LOGIN"
+          formShowing === "LOGIN" || formShowing === "RESET_PASSWORD"
             ? frogSettings.login
             : formShowing === "REGISTER"
               ? frogSettings.register
@@ -74,24 +76,40 @@ export default function AnimatedForm() {
         transition={{ duration: 0.8, ease: "easeInOut" }}
         style={{ position: "absolute", transform: "translate(-50%, -50%)" }}
       >
-        <FrogAnimation toggle={formShowing} velocidad={50} />
+        <FrogAnimation toggle={toggleFrog} velocidad={50} />
       </motion.div>
 
       {formShowing === "HOME" && (
         <HomeForm
-          goLogin={() => setFormShowing("LOGIN")}
-          goRegister={() => setFormShowing("REGISTER")}
+          goLogin={() => {
+            setFormShowing("LOGIN");
+            setToggleFrog(!toggleFrog);
+          }}
+          goRegister={() => {
+            setFormShowing("REGISTER");
+            setToggleFrog(!toggleFrog);
+          }}
         />
       )}
 
       {/* Formulario de inicio de sesión */}
       {formShowing === "LOGIN" && (
-        <LoginForm goBack={() => setFormShowing("HOME")} />
+        <LoginForm
+          goBack={() => {
+            setFormShowing("HOME");
+            setToggleFrog(!toggleFrog);
+          }}
+          goResetPassword={() => setFormShowing("RESET_PASSWORD")}
+        />
       )}
 
+      {/* Formulario de registro */}
       {formShowing === "REGISTER" && (
         <RegisterForm
-          goBack={() => setFormShowing("HOME")}
+          goBack={() => {
+            setFormShowing("HOME");
+            setToggleFrog(!toggleFrog);
+          }}
           goLogin={() => setFormShowing("LOGIN")}
           moveFrog={() => {
             setFrogSettings({
@@ -106,6 +124,11 @@ export default function AnimatedForm() {
             });
           }}
         />
+      )}
+
+      {/* Formulario de reset de contraseña */}
+      {formShowing === "RESET_PASSWORD" && (
+        <ResetPasswordForm goBack={() => setFormShowing("LOGIN")} />
       )}
     </div>
   );

@@ -3,16 +3,10 @@ import axios from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/follow";
 
 const declineFriendRequest = async (senderId) => {
-  const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.post(
       `${API_URL}/decline/${senderId}`,
       {},
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
     );
     if (response.status === 200) {
       return 0;
@@ -25,16 +19,10 @@ const declineFriendRequest = async (senderId) => {
 };
 
 const acceptFriendRequest = async (senderId) => {
-  const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.post(
       `${API_URL}/accept/${senderId}`,
       {},
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
     );
     if (response.status === 200) {
       return 0;
@@ -47,13 +35,8 @@ const acceptFriendRequest = async (senderId) => {
 };
 
 const getFriendRequests = async () => {
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/requests`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/requests`);
     if (response.status === 200) {
       return response.data.requests;
     }
@@ -70,16 +53,10 @@ const getFriendRequests = async () => {
 };
 
 const sendFollowRequest = async (receiverId) => {
-  const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.post(
       `${API_URL}/request/${receiverId}`,
       {},
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
     );
     if (response.status === 200) {
       return 0;
@@ -95,13 +72,8 @@ const getNonFriendsByFilter = async (filter) => {
   if (!filter) {
     return (-1, []);
   }
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/non-friends/${filter}`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/non-friends/${filter}`);
     if (response.status === 200) {
       return (response.data.count, response.data.users);
     }
@@ -117,13 +89,8 @@ const getNonFriendsByFilter = async (filter) => {
 };
 
 const getSuggestedUsers = async () => {
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/suggested`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/suggested`);
     if (response.status === 200) {
       return (response.data.count, response.data.users);
     }
@@ -139,13 +106,8 @@ const getSuggestedUsers = async () => {
 };
 
 const getFriends = async () => {
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/friends`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/friends`);
     if (response.status === 200) {
       return (response.data.count, response.data.friends);
     }
@@ -162,13 +124,8 @@ const getFriends = async () => {
 };
 
 const getFriendsList = async () => {
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/friends`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/friends`);
     if (response.status === 200) {
       return response.data.friends;
     } else {

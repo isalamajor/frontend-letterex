@@ -6,13 +6,8 @@ import { CalendarDate } from "@internationalized/date";
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/corrected";
 
 const deleteCorrectedLetter = async (correctedLetterId: string) => {
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.delete(`${API_URL}/${correctedLetterId}`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.delete(`${API_URL}/${correctedLetterId}`);
     if (response.status === 200) {
       return 0;
     }
@@ -28,21 +23,12 @@ const deleteCorrectedLetter = async (correctedLetterId: string) => {
 };
 
 const getCountCorrectedLetters = async (userId: string | null) => {
-  const token = sessionStorage.getItem("authToken");
   try {
     let response;
     if (userId) {
-      response = await axios.get(`${API_URL}/count/${userId}`, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
+      response = await axios.get(`${API_URL}/count/${userId}`);
     } else {
-      response = await axios.get(`${API_URL}/count`, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
+      response = await axios.get(`${API_URL}/count`);
     }
 
     if (response.status === 200) {
@@ -60,16 +46,10 @@ const getCountCorrectedLetters = async (userId: string | null) => {
 };
 
 const sendLetterBack = async (letterId: string) => {
-  const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.patch(
       `${API_URL}/send-back/${letterId}`,
       {},
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
     );
     if (response.status === 200) {
       return 0;
@@ -90,18 +70,12 @@ const updateLetterCorrections = async (
   corrections: Correction[],
   comments: string,
 ) => {
-  const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.put(
       `${API_URL}/update/${letterId}`,
       {
         corrections: corrections,
         comments: comments,
-      },
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
       },
     );
     if (response.status === 200) {
@@ -121,15 +95,9 @@ const updateLetterCorrections = async (
 const getLetterToCorrect = async (
   correctionId: string,
 ): Promise<CorrectedLetter | null> => {
-  const token = sessionStorage.getItem("authToken");
   try {
     const response = await axios.get(
       `${API_URL}/correctedLetter/${correctionId}`,
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
     );
     if (response.status === 200) {
       const letterData = response.data.correctedLetter;
@@ -164,13 +132,8 @@ const getLetterToCorrect = async (
 };
 
 const getReceivedLetters = async () => {
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/received`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/received`);
     if (response.status === 200) {
       return response.data.letters;
     } else {
@@ -193,13 +156,8 @@ const searchReceivedLetters = async (
   sentBack: boolean | undefined,
   sender: string | undefined,
 ) => {
-  const token = sessionStorage.getItem("authToken");
-
   try {
     const response = await axios.get(`${API_URL}/received/search`, {
-      headers: {
-        Authorization: `${token}`,
-      },
       params: {
         q: query,
         page: page,

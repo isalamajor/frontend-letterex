@@ -12,7 +12,7 @@ interface ImageUploaderProps {
   type?: string;
 }
 
-export const ImageUploader: React.FC<ImageUploaderProps> = ({
+const ImageUploader: React.FC<ImageUploaderProps> = ({
   onImageSelect,
   currentPicLocalUrl = null,
   size = "125px",
@@ -125,3 +125,5 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     );
   }
 };
+
+export default ImageUploader;

@@ -103,7 +103,7 @@ export default function ReceivedLetterBlock() {
         serverError: false,
       });
     },
-    [currentPage, filters.received, filters.senders, filters.onlyPending],
+    [filters.received, filters.senders, filters.onlyPending],
   );
 
   const updateFilters = useCallback(
@@ -140,29 +140,29 @@ export default function ReceivedLetterBlock() {
   ) => {
     // TablePagination uses 0-based indexing, convert to 1-based
     setCurrentPage(newPage + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Initial fetch and refresh
+  // Initial fetch and on filter changes
   useEffect(() => {
-    fetchReceivedLetters(1);
-  }, [rotation]);
-
-  // Refetch when search filter changes
-  useEffect(() => {
-    // Clear cache when search filter changes
-    pagesCacheRef.current = {};
-    totalLettersCountRef.current = 0;
+    // Clear cache when search filter changes (but not on initial mount with rotation)
+    if (filters.received || filters.senders || filters.onlyPending) {
+      pagesCacheRef.current = {};
+      totalLettersCountRef.current = 0;
+    }
     setCurrentPage(1);
     fetchReceivedLetters(1);
-  }, [filters.received, filters.senders, filters.onlyPending]);
+  }, [
+    rotation,
+    filters.received,
+    filters.senders,
+    filters.onlyPending,
+    fetchReceivedLetters,
+  ]);
 
   // Refetch when page changes
   useEffect(() => {
-    if (currentPage >= 1) {
-      fetchReceivedLetters(currentPage);
-    }
-  }, [currentPage]);
+    fetchReceivedLetters(currentPage);
+  }, [currentPage, fetchReceivedLetters]);
 
   return (
     <>

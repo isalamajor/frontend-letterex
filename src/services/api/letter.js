@@ -3,13 +3,9 @@ import axios from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/letter";
 
 const deleteLetters = async (letterIds) => {
-  const token = sessionStorage.getItem("authToken");
   console.log("API - Deleting letters with IDs:", letterIds);
   try {
     const response = await axios.delete(`${API_URL}/delete`, {
-      headers: {
-        Authorization: `${token}`,
-      },
       data: { letters: letterIds },
     });
     if (response.status === 200) {
@@ -25,13 +21,8 @@ const deleteLetters = async (letterIds) => {
 };
 
 const getDiaries = async () => {
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/diaries`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/diaries`);
     if (response.status === 200) {
       console.log("Diaries API:", response.data.diaries);
       return response.data.diaries;
@@ -50,21 +41,12 @@ const getDiaries = async () => {
 };
 
 const getCountLetters = async (userId) => {
-  const token = sessionStorage.getItem("authToken");
   try {
     let response;
     if (userId) {
-      response = await axios.get(`${API_URL}/count/${userId}`, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
+      response = await axios.get(`${API_URL}/count/${userId}`);
     } else {
-      response = await axios.get(`${API_URL}/count`, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
+      response = await axios.get(`${API_URL}/count`);
     }
 
     if (response.status === 200) {
@@ -82,17 +64,10 @@ const getCountLetters = async (userId) => {
 };
 
 const shareLetter = async (letterId, sharedWith) => {
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.post(
-      `${API_URL}/share/${letterId}`,
-      { sharedWith: sharedWith },
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
-    );
+    const response = await axios.post(`${API_URL}/share/${letterId}`, {
+      sharedWith: sharedWith,
+    });
     if (response.status === 200) {
       return 0;
     }
@@ -109,13 +84,8 @@ const shareLetter = async (letterId, sharedWith) => {
 
 const getLetter = async (id) => {
   if (!id) return null;
-  const token = sessionStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/view/${id}`, {
-      headers: {
-        Authorization: `${token}`,
-      },
-    });
+    const response = await axios.get(`${API_URL}/view/${id}`);
     if (response.status === 200) {
       return response.data.letter;
     } else {
@@ -141,25 +111,15 @@ const editLetter = async (
   created_at,
   sharedWith,
 ) => {
-  const token = sessionStorage.getItem("authToken");
-
   try {
-    const response = await axios.put(
-      `${API_URL}/edit/${id}`,
-      {
-        title: title,
-        content: content,
-        diary: diary,
-        language: language,
-        created_at: created_at,
-        sharedWith: sharedWith,
-      },
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
-    );
+    const response = await axios.put(`${API_URL}/edit/${id}`, {
+      title: title,
+      content: content,
+      diary: diary,
+      language: language,
+      created_at: created_at,
+      sharedWith: sharedWith,
+    });
 
     if (response.status === 200) {
       return 0;
@@ -177,21 +137,11 @@ const editLetter = async (
 };
 
 const changeLetterDiary = async (letterId, diary) => {
-  const token = sessionStorage.getItem("authToken");
-
   try {
-    const response = await axios.put(
-      `${API_URL}/edit-diary`,
-      {
-        letterId: letterId,
-        diary: diary,
-      },
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
-    );
+    const response = await axios.put(`${API_URL}/edit-diary`, {
+      letterId: letterId,
+      diary: diary,
+    });
 
     if (response.status === 200) {
       return 0;
@@ -209,24 +159,14 @@ const changeLetterDiary = async (letterId, diary) => {
 };
 
 const saveLetter = async (title, content, diary, language, created_at) => {
-  const token = sessionStorage.getItem("authToken");
-
   try {
-    const response = await axios.post(
-      `${API_URL}/new`,
-      {
-        title: title,
-        content: content,
-        diary: diary,
-        language: language,
-        created_at: created_at,
-      },
-      {
-        headers: {
-          Authorization: `${token}`,
-        },
-      },
-    );
+    const response = await axios.post(`${API_URL}/new`, {
+      title: title,
+      content: content,
+      diary: diary,
+      language: language,
+      created_at: created_at,
+    });
 
     if (response.status === 200) {
       return response.data.letter;
@@ -244,13 +184,7 @@ const saveLetter = async (title, content, diary, language, created_at) => {
 };
 
 const getUserLetters = async () => {
-  const token = sessionStorage.getItem("authToken");
-
-  const response = await axios.get(`${API_URL}/list/`, {
-    headers: {
-      Authorization: `${token}`, // Incluir el token en el encabezado
-    },
-  });
+  const response = await axios.get(`${API_URL}/list/`);
   console.log("getUserLetters", response.data.letters);
   if (response.status === 200) {
     return response.data.letters;
@@ -259,13 +193,8 @@ const getUserLetters = async () => {
 };
 
 const searchLetters = async (query, page = 1, itemsPerPage = 10) => {
-  const token = sessionStorage.getItem("authToken");
-
   try {
     const response = await axios.get(`${API_URL}/list/search`, {
-      headers: {
-        Authorization: `${token}`,
-      },
       params: {
         q: query,
         page: page,
