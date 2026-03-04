@@ -1,22 +1,31 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import '../stylesheets/languageSelector.css';
+import "../stylesheets/languageSelector.css";
 
-
-export default function LanguageSelector({ languagesAvailable, languagesTaken, noneText, tooManyText, titleText, onSelectionChange }) {
+export default function LanguageSelector({
+  languagesAvailable,
+  languagesTaken,
+  noneText,
+  tooManyText,
+  titleText,
+  onSelectionChange,
+}) {
   const [selectedLanguages, setSelectedLanguages] = useState(languagesTaken);
-  const [availableLanguages, setAvailableLanguages] = useState(languagesAvailable);
+  const [availableLanguages, setAvailableLanguages] =
+    useState(languagesAvailable);
   const [maxReached, reachMax] = useState(false);
 
   useEffect(() => {
-    // Llamar a la función del componente padre cuando cambien los idiomas seleccionados
+    // Call the parent component function when selected languages change
     onSelectionChange(selectedLanguages);
   }, [selectedLanguages, onSelectionChange]);
 
   const handleSelectLanguage = (language) => {
     if (selectedLanguages.length < 3) {
       setSelectedLanguages([...selectedLanguages, language]);
-      setAvailableLanguages(availableLanguages.filter((lang) => lang.name !== language.name));
+      setAvailableLanguages(
+        availableLanguages.filter((lang) => lang.name !== language.name),
+      );
     } else {
       reachMax(true);
     }
@@ -27,7 +36,9 @@ export default function LanguageSelector({ languagesAvailable, languagesTaken, n
       reachMax(false);
     }
     setAvailableLanguages([...availableLanguages, language]);
-    setSelectedLanguages(selectedLanguages.filter((lang) => lang.name !== language.name));
+    setSelectedLanguages(
+      selectedLanguages.filter((lang) => lang.name !== language.name),
+    );
   };
 
   return (
@@ -54,7 +65,9 @@ export default function LanguageSelector({ languagesAvailable, languagesTaken, n
       )}
       {selectedLanguages.length > 0 && (
         <div className="flex flex-col justify-end h-[5rem] w-full text-right">
-          <h2 className="text-lg font-semibold mt-2 mb-2 max-w-[22rem]">{ maxReached ? tooManyText : "Here they are :)"}</h2>
+          <h2 className="text-lg font-semibold mt-2 mb-2 max-w-[22rem]">
+            {maxReached ? tooManyText : "Here they are :)"}
+          </h2>
           <div className="flex flex-row gap-2 justify-end">
             {selectedLanguages.map((lang) => (
               <motion.img

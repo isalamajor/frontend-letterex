@@ -7,7 +7,7 @@ import { Spinner } from "./ui/spinner-1";
 import { KeyRound } from "lucide-react";
 import axios from "axios";
 
-// Configurar Axios para enviar cookies automáticamente
+// Configure Axios to automatically send cookies
 axios.defaults.withCredentials = true;
 
 const LoginForm = ({

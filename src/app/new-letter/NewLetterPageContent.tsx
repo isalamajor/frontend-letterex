@@ -35,8 +35,9 @@ const NewLetterPageContent = () => {
   const [title, setTitle] = useState("");
   const [letterContent, setLetterContent] = useState("");
   const [diaryList, setDiaryList] = useState<string[]>([]);
-  const [diaryAddedPreviously, setDiaryAddedPreviously] =
-    useState<boolean>(false);
+  const [diaryAddedPreviously, setDiaryAddedPreviously] = useState<
+    string | undefined
+  >(undefined);
   const { openDialog, closeDialog } = useDialog();
 
   // Estados para manejar errores
@@ -64,7 +65,7 @@ const NewLetterPageContent = () => {
     return;
   };
 
-  // Función para guardar la carta
+  // Function to save the letter
   const SaveLetterOnClick = async () => {
     let hasError = false;
 
@@ -108,7 +109,6 @@ const NewLetterPageContent = () => {
 
     const fetchDiaries = async () => {
       const res = await getDiaries();
-      console.log("Diares: ", res);
       if (Array.isArray(res)) {
         setDiaryList(res);
       }
@@ -120,7 +120,7 @@ const NewLetterPageContent = () => {
 
   const addNewDiary = (diaryName: string) => {
     if (diaryAddedPreviously) {
-      // Cambiar el último añadido por el nuevo
+      // Replace the last added with the new one
       setDiaryList((prev) => {
         const newList = [...prev];
         newList[diaryList.length - 1] = diaryName;
@@ -128,8 +128,8 @@ const NewLetterPageContent = () => {
       });
     } else {
       setDiaryList((prev) => [...prev, diaryName]);
-      setDiaryAddedPreviously(true);
     }
+    setDiaryAddedPreviously(diaryName);
     setDiary(diaryName);
   };
 
@@ -201,6 +201,7 @@ const NewLetterPageContent = () => {
                         onNewDiaryCreated: (diaryName: string) => {
                           addNewDiary(diaryName);
                         },
+                        prevNewDiaryName: diaryAddedPreviously,
                       });
                     }}
                   >

@@ -34,7 +34,7 @@ export default function DraggableItem({
     setPos({ x: e.clientX, y: e.clientY });
     setDragging(true);
 
-    // Añadir listeners para seguir el mouse
+    // Add listeners to track the mouse
     document.addEventListener("dragover", handleDragMove);
   };
 
@@ -70,7 +70,7 @@ export default function DraggableItem({
         {children}
       </div>
 
-      {/* Elemento flotante que sigue al ratón */}
+      {/* Floating element that follows the mouse */}
       {dragging && (
         <div
           className="fixed pointer-events-none rounded shadow-lg opacity-100 z-50"

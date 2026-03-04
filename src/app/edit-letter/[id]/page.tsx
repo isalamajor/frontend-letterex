@@ -52,7 +52,7 @@ export default function Home({ params }: { params: Promise<{ id: string }> }) {
 }
 
 const NewLetterPageContent = ({ id }: { id: string }) => {
-  const { openDialog } = useDialog();
+  const { openDialog, closeDialog } = useDialog();
   useEffect(() => {
     // @ts-ignore
     import("react-quill-new/dist/quill.bubble.css").catch(() => {});
@@ -61,8 +61,9 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [valuesChanged, setValuesChanged] = useState(false);
 
-  const [diaryAddedPreviously, setDiaryAddedPreviously] =
-    useState<boolean>(false);
+  const [diaryAddedPreviously, setDiaryAddedPreviously] = useState<
+    string | undefined
+  >(undefined);
   const [letter, setLetter] = useState<Letter>({
     id: id,
     date: parseDate(new Date().toISOString().split("T")[0]),
@@ -74,6 +75,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   });
   const updateLetter = (updates: Partial<Letter>) => {
     setLetter((prev) => ({ ...prev, ...updates }));
+    setValuesChanged(true);
   };
   const [languageList, setLanguageList] = useState<string[]>([
     "English",
@@ -97,37 +99,32 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       ["bold", "italic"], // negrita y cursiva
       [{ header: 1 }, { header: 2 }], // encabezados
       ["blockquote"], // citas
-      [{ align: [] }], // alineación (izquierda, centro, derecha, justificado)
+      [{ align: [] }], // alignment (left, center, right, justified)
     ],
   };
 
   // Funciones
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitleError(false);
-    setValuesChanged(true);
     updateLetter({ title: event.target.value });
   };
 
   const handleDateChange = (newDate: CalendarDate | null) => {
     if (newDate) {
       setDateError(false);
-      setValuesChanged(true);
       updateLetter({ date: newDate });
     }
   };
 
   const handleLanguageChange = (selectedLanguage: string) => {
-    setValuesChanged(true);
     updateLetter({ language: selectedLanguage });
   };
 
   const handleDiaryChange = (selectedDiary: string) => {
-    setValuesChanged(true);
     updateLetter({ diary: selectedDiary });
-    return;
   };
 
-  // Función para guardar la carta (editar)
+  // Function to save the letter (edit)
   const SaveLetterOnClick = async () => {
     let hasError = false;
 
@@ -160,14 +157,14 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     );
 
     if (res === 0) {
+      setValuesChanged(false);
       openDialog({
         title: "Letter Saved",
         description: "Your letter was updated!",
-        primaryActionText: "",
+        primaryActionText: "OK",
         type: "success",
         autoDismiss: true,
       });
-      setValuesChanged(false);
     } else {
       openDialog({
         title: "Error Saving Letter",
@@ -176,22 +173,26 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
         primaryActionText: "OK",
         type: "error",
       });
-      return;
     }
   };
 
   const addNewDiary = (diaryName: string) => {
-    if (diaryAddedPreviously) {
-      // Cambiar el último añadido por el nuevo
-      setDiaryList((prev) => {
+    setDiaryList((prev) => {
+      // Verificar si el diario ya existe
+      if (prev.includes(diaryName)) {
+        return prev;
+      }
+
+      if (diaryAddedPreviously) {
+        // Replace the last added with the new one
         const newList = [...prev];
-        newList[diaryList.length - 1] = diaryName;
+        newList[prev.length - 1] = diaryName;
         return newList;
-      });
-    } else {
-      setDiaryList((prev) => [...prev, diaryName]);
-      setDiaryAddedPreviously(true);
-    }
+      } else {
+        return [...prev, diaryName];
+      }
+    });
+    setDiaryAddedPreviously(diaryName);
     updateLetter({ diary: diaryName });
   };
 
@@ -334,13 +335,14 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
               onValueChange={(diary) => {
                 handleDiaryChange(diary);
               }}
+              disabled={letter.sharedWith.length > 0}
             >
               <SelectTrigger className="text-black bg-white h-10 rounded-md ring-transparent">
                 <SelectValue placeholder="(None)" />
               </SelectTrigger>
               <SelectContent>
-                {diaryList.map((diary) => (
-                  <SelectItem key={diary} value={diary}>
+                {diaryList.map((diary, index) => (
+                  <SelectItem key={`${diary}-${index}`} value={diary}>
                     {diary}
                   </SelectItem>
                 ))}
@@ -358,6 +360,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                       onNewDiaryCreated: (diaryName: string) => {
                         addNewDiary(diaryName);
                       },
+                      prevNewDiaryName: diaryAddedPreviously,
                     });
                   }}
                 >
@@ -445,24 +448,34 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           <BackButton />
 
           <div className="flex flex-row justify-end h-[5%] col items-center gap-4">
-            <button
-              onClick={() => {
-                openDialog({
-                  title: "Send Letter",
-                  description: "",
-                  primaryActionText: "",
-                  size: "md",
-                  type: "shareLetter",
-                  letterId: id,
-                  autoDismiss: false,
-                });
-              }}
-            >
-              <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
-                📬 Send Letter
-              </div>
-            </button>
-            {valuesChanged && (
+            {/* Send Letter button - show if not sent to 2 people yet */}
+            {letter.sharedWith.length < 2 && (
+              <button
+                onClick={() => {
+                  openDialog({
+                    title: "Send Letter",
+                    description: "",
+                    primaryActionText: "",
+                    size: "md",
+                    type: "shareLetter",
+                    letterId: id,
+                    autoDismiss: false,
+                    sharedWith: letter.sharedWith,
+                    onShareSuccess: (sharedWithUsers) => {
+                      updateLetter({ sharedWith: sharedWithUsers });
+                      closeDialog();
+                    },
+                  });
+                }}
+              >
+                <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
+                  📬 Send Letter
+                </div>
+              </button>
+            )}
+
+            {/* Save Letter button - only if not sent and has changes */}
+            {valuesChanged && letter.sharedWith.length === 0 && (
               <button
                 onClick={() => {
                   SaveLetterOnClick();
@@ -473,12 +486,16 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                 </div>
               </button>
             )}
-            {!valuesChanged && letter.sharedWith.length > 0 && (
+
+            {/* Letter sent indicator - show if sent to at least 1 person */}
+            {letter.sharedWith.length > 0 && (
               <div className="text-[#6495ED] display flex items-center gap-2">
                 Letter sent
                 <Check className="w-5 h-5" />
               </div>
             )}
+
+            {/* Letter saved indicator - show if saved but not sent and no changes */}
             {!valuesChanged && letter.sharedWith.length === 0 && (
               <div className="text-[#8EBA03] display flex items-center gap-2">
                 Letter saved

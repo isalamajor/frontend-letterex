@@ -7,67 +7,83 @@ interface Correction {
   endIndex: number;
 }
 
-const TextCorrections = forwardRef<HTMLDivElement, {
-  text: string;
-  corrections: Correction[];
-  onCorrectionClick: (correction: Correction, rect: DOMRect) => void;
-}>(({ text, corrections, onCorrectionClick }, ref) => {
-  
+const TextCorrections = forwardRef<
+  HTMLDivElement,
+  {
+    text: string;
+    corrections: Correction[];
+    onCorrectionClick: (correction: Correction, rect: DOMRect) => void;
+  }
+>(({ text, corrections, onCorrectionClick }, ref) => {
   const processedContent = useMemo(() => {
-    if (!text) return '';
-    
-    // Función para extraer texto plano manteniendo orden
-    const extractPlainText = (html: string): { text: string; map: Array<{ plainIndex: number; htmlIndex: number; }> } => {
-      const tempDiv = document.createElement('div');
+    if (!text) return "";
+
+    // Function to extract plain text maintaining order
+    const extractPlainText = (
+      html: string,
+    ): {
+      text: string;
+      map: Array<{ plainIndex: number; htmlIndex: number }>;
+    } => {
+      const tempDiv = document.createElement("div");
       tempDiv.innerHTML = html;
-      
+
       const walker = document.createTreeWalker(
         tempDiv,
         NodeFilter.SHOW_TEXT,
-        null
+        null,
       );
-      
-      let plainText = '';
+
+      let plainText = "";
       const indexMap = [];
       let node;
-      
-      while (node = walker.nextNode()) {
-        const nodeText = node.textContent || '';
-        const nodeStart = html.indexOf(nodeText, 
-          indexMap.length > 0 ? indexMap[indexMap.length - 1].htmlIndex : 0
+
+      while ((node = walker.nextNode())) {
+        const nodeText = node.textContent || "";
+        const nodeStart = html.indexOf(
+          nodeText,
+          indexMap.length > 0 ? indexMap[indexMap.length - 1].htmlIndex : 0,
         );
-        
+
         for (let i = 0; i < nodeText.length; i++) {
           indexMap.push({
             plainIndex: plainText.length + i,
-            htmlIndex: nodeStart + i
+            htmlIndex: nodeStart + i,
           });
         }
         plainText += nodeText;
       }
-      
+
       return { text: plainText, map: indexMap };
     };
 
-    // Función para insertar corrección en HTML preservando estructura
-    const insertCorrectionInHtml = (html: string, correction: Correction, plainToHtmlMap: Array<{ plainIndex: number; htmlIndex: number; }>) => {
+    // Function to insert correction in HTML preserving structure
+    const insertCorrectionInHtml = (
+      html: string,
+      correction: Correction,
+      plainToHtmlMap: Array<{ plainIndex: number; htmlIndex: number }>,
+    ) => {
       const { textOriginal, textCorrected, startIndex, endIndex } = correction;
-      
+
       // Encontrar posiciones HTML correspondientes
-      const startHtmlIndex = plainToHtmlMap.find(m => m.plainIndex === startIndex)?.htmlIndex;
-      const endHtmlIndex = plainToHtmlMap.find(m => m.plainIndex === endIndex - 1)?.htmlIndex;
-      
+      const startHtmlIndex = plainToHtmlMap.find(
+        (m) => m.plainIndex === startIndex,
+      )?.htmlIndex;
+      const endHtmlIndex = plainToHtmlMap.find(
+        (m) => m.plainIndex === endIndex - 1,
+      )?.htmlIndex;
+
       if (startHtmlIndex === undefined || endHtmlIndex === undefined) {
         return html; // No se pudo mapear, devolver HTML original
       }
-      
+
       // Buscar el texto original en el HTML
       const searchStart = startHtmlIndex;
       let actualStart = -1;
-      
-      // Buscar hacia atrás y adelante para encontrar el texto exacto
+
+      // Search backwards and forwards to find the exact text
       for (let offset = 0; offset <= 50; offset++) {
-        // Buscar hacia atrás
+        // Search backwards
         if (searchStart - offset >= 0) {
           const index = html.indexOf(textOriginal, searchStart - offset);
           if (index !== -1 && index <= startHtmlIndex + 10) {
@@ -75,7 +91,7 @@ const TextCorrections = forwardRef<HTMLDivElement, {
             break;
           }
         }
-        
+
         // Buscar hacia adelante
         if (searchStart + offset < html.length) {
           const index = html.indexOf(textOriginal, searchStart + offset);
@@ -85,61 +101,66 @@ const TextCorrections = forwardRef<HTMLDivElement, {
           }
         }
       }
-      
+
       if (actualStart === -1) {
-        return html; // No se encontró el texto
+        return html; // Text not found
       }
-      
+
       const beforeHtml = html.substring(0, actualStart);
       const afterHtml = html.substring(actualStart + textOriginal.length);
-      
-      const correctionSpan = `<span 
+
+      const correctionSpan = `<span
         id="correction-${startIndex}-${endIndex}"
         class="underline decoration-red-500 decoration-2 hover:bg-yellow-200 cursor-pointer relative"
-        title="Sugerencia: ${textCorrected.replace(/"/g, '&quot;')}"
+        title="Sugerencia: ${textCorrected.replace(/"/g, "&quot;")}"
         data-correction="${encodeURIComponent(JSON.stringify(correction))}"
       >${textOriginal}</span>`;
-      
+
       return beforeHtml + correctionSpan + afterHtml;
     };
 
     // Procesar el HTML
     const { text: plainText, map } = extractPlainText(text);
     let processedHtml = text;
-    
-    // Ordenar correcciones de atrás hacia adelante para mantener índices
-    const orderedCorrections = [...corrections].sort((a, b) => b.startIndex - a.startIndex);
-    
-    // Aplicar cada corrección
+
+    // Sort corrections backwards to forwards to maintain indices
+    const orderedCorrections = [...corrections].sort(
+      (a, b) => b.startIndex - a.startIndex,
+    );
+
+    // Apply each correction
     for (const correction of orderedCorrections) {
-      if (correction.startIndex < plainText.length && correction.endIndex <= plainText.length) {
+      if (
+        correction.startIndex < plainText.length &&
+        correction.endIndex <= plainText.length
+      ) {
         processedHtml = insertCorrectionInHtml(processedHtml, correction, map);
       }
     }
-    
+
     return processedHtml;
   }, [text, corrections]);
 
   const handleClick = (event: React.MouseEvent) => {
     const target = event.target as HTMLElement;
-    const correctionElement = target.closest('[data-correction]');
-    
+    const correctionElement = target.closest("[data-correction]");
+
     if (correctionElement) {
-      const correctionData = correctionElement.getAttribute('data-correction');
+      const correctionData = correctionElement.getAttribute("data-correction");
       if (correctionData) {
         try {
           const correction = JSON.parse(decodeURIComponent(correctionData));
           const rect = correctionElement.getBoundingClientRect();
           onCorrectionClick(correction, rect);
         } catch (error) {
-          console.error('Error parsing correction data:', error);
+          console.error("Error parsing correction data:", error);
         }
       }
     }
   };
 
   return (
-    <div 
+    <div
       ref={ref}
       onClick={handleClick}
       dangerouslySetInnerHTML={{ __html: processedContent }}
@@ -148,6 +169,6 @@ const TextCorrections = forwardRef<HTMLDivElement, {
   );
 });
 
-TextCorrections.displayName = 'TextCorrections';
+TextCorrections.displayName = "TextCorrections";
 
 export default TextCorrections;

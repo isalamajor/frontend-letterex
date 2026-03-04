@@ -59,7 +59,7 @@ const SocialPageContent = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Función para refrescar todos los datos en paralelo
+  // Function to refresh all data in parallel
   const refreshData = async () => {
     setIsLoading(true);
     try {
@@ -159,7 +159,7 @@ const SocialPageContent = () => {
                   )}
                 </div>
               </div>
-              {/* Columna central (más grande) */}
+              {/* Center column (larger) */}
               <div className="col-span-1 bg-gray-100 rounded-lg p-4">
                 <SuggestedUsers />
               </div>

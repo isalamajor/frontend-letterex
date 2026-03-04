@@ -56,10 +56,10 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       }
     };
 
-    // Añadir el listener con un pequeño delay
+    // Add the listener with a small delay
     const timeout = setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside);
-    }, 0); // se ejecuta después del click actual
+    }, 0); // executes after the current click
 
     return () => {
       clearTimeout(timeout);
@@ -152,7 +152,6 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                 <X
                   onClick={() => {
                     setSelectionInfo(null);
-                    // Aquí podrías agregar la lógica para guardar la corrección
                     console.log("Correction saved for:", selectionInfo.text);
                   }}
                   className="w-5 h-5 text-blue-500 hover:text-white hover:bg-blue-500 hover:rounded"

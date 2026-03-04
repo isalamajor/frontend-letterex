@@ -67,7 +67,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
   const handleNextStep = () => {
     showAlertMessage("");
 
-    // Usuario y contraseña
+    // Username and password
     if (currentStep === 1) {
       setUsernameAttempt();
     }
@@ -76,7 +76,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
       setEmailAttempt(email);
       return;
     }
-    // Código de verificación
+    // Verification code
     else if (currentStep === 3 && confirmationCode.length === CODE_LENGTH) {
       checkCodeAttempt();
       return;
@@ -116,12 +116,12 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
       email: email,
       password: password,
       masterLanguage: languagesSpoken[0]?.name,
-      masterLanguage2: languagesSpoken[1]?.name || null,
+      masterLanguage2: languagesSpoken[1]?.name,
       masterLanguage3: languagesSpoken[2]?.name,
       learningLanguage: languagesLearning[0]?.name,
       learningLanguage2: languagesLearning[1]?.name,
       learningLanguage3: languagesLearning[2]?.name,
-      picture: profileImage || null,
+      image: profileImage || null,
     });
 
     if (result.ok) {
@@ -158,13 +158,13 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
   };
 
   const setEmailAttempt = async (email: string) => {
-    // Validación básica
+    // Basic validation
     if (!email.trim() || !email.includes("@")) {
       showAlertMessage("Please enter a valid email address");
       return;
     }
 
-    // Verificar si el email ya está en uso
+    // Check if email is already in use
     const emailCheckResult = await isEmailInUse(email);
     console.log("in use: ", emailCheckResult);
     if (!emailCheckResult.ok) {
@@ -178,7 +178,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
       return;
     }
 
-    // Si el email no está en uso, enviar el código de verificación
+    // If email is not in use, send the verification code
     setEmail(email);
     const codeResult = await sendVerificationCode(
       email,

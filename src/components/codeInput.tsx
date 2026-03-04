@@ -28,11 +28,11 @@ const CodeInput = ({ setCode }: { setCode: (inputCode: string) => void }) => {
             const newCode = confirmationCode.split("");
             newCode[index] = val;
             handleSetCode(newCode.join(""));
-            // Solo avanza si se ha escrito un número
+            // Only advance if a number has been entered
             if (val && index < 5) {
               inputRefs.current[index + 1]?.focus();
             }
-            // Si es el último input, salta al botón
+            // If it's the last input, skip to the button
             if (val && index === 5) {
               (
                 document.querySelector(
@@ -42,7 +42,7 @@ const CodeInput = ({ setCode }: { setCode: (inputCode: string) => void }) => {
             }
           }}
           onKeyDown={(e) => {
-            // Solo retrocede si se pulsa Backspace y el input está vacío
+            // Only go back if Backspace is pressed and input is empty
             if (
               e.key === "Backspace" &&
               !confirmationCode[index] &&
@@ -57,7 +57,7 @@ const CodeInput = ({ setCode }: { setCode: (inputCode: string) => void }) => {
               .replace(/[^0-9]/g, "");
             if (paste.length === 6) {
               handleSetCode(paste);
-              // Mover el foco al último input
+              // Move focus to the last input
               setTimeout(() => inputRefs.current[5]?.focus(), 0);
               e.preventDefault();
             }

@@ -17,27 +17,30 @@ import TablePagination from "@mui/material/TablePagination";
 const ITEMS_PER_PAGE = 10;
 
 export default function ReceivedLetterBlock() {
-  // Filtros de búsqueda y ordenamiento
+  // Search and sorting filters
   const [filters, setFilters] = useState({
     received: "",
     senders: "",
     onlyPending: false,
   });
 
-  // Datos del servidor
+  // Server data
   const [data, setData] = useState({
     receivedLetters: [] as ReceivedLetter[],
     sendersList: [] as string[],
     isLoading: true,
     totalLettersCount: 0,
+    totalFilteredCount: 0,
     serverError: false,
   });
 
   // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pagesCacheRef = useRef<Record<number, ReceivedLetter[]>>({});
-  const totalLettersCountRef = useRef<number>(0);
   const sendersListRef = useRef<string[]>([]);
+  const previousFiltersRef = useRef(filters);
+  const isInitialMount = useRef(true);
+  const justChangedFilters = useRef(false);
 
   // Triggers/eventos
   const [rotation, setRotation] = useState<number>(0);
@@ -50,16 +53,18 @@ export default function ReceivedLetterBlock() {
       const sentBack = filters.onlyPending ? false : undefined;
       const isBaseQuery =
         query === "" && sender === undefined && filters.onlyPending === false;
+      const hasFilters = !isBaseQuery;
 
       // Check if page is already cached
       if (pagesCacheRef.current[page]) {
-        setData({
+        setData((prev) => ({
           receivedLetters: pagesCacheRef.current[page],
           sendersList: sendersListRef.current,
           isLoading: false,
-          totalLettersCount: totalLettersCountRef.current,
+          totalLettersCount: prev.totalLettersCount,
+          totalFilteredCount: prev.totalFilteredCount,
           serverError: false,
-        });
+        }));
         return;
       }
 
@@ -77,6 +82,7 @@ export default function ReceivedLetterBlock() {
           sendersList: [],
           isLoading: false,
           totalLettersCount: 0,
+          totalFilteredCount: 0,
           serverError: true,
         });
         return;
@@ -91,15 +97,16 @@ export default function ReceivedLetterBlock() {
         sendersListRef.current = sendersList;
       }
 
-      // Store total letters count and calculate total pages
+      // Store total letters count and total filtered count
       const totalCount = result.totalLetters || 0;
-      totalLettersCountRef.current = totalCount;
+      const totalFiltered = result.totalFiltered || 0;
 
       setData({
         receivedLetters: letters,
         sendersList: isBaseQuery ? sendersList : sendersListRef.current,
         isLoading: false,
         totalLettersCount: totalCount,
+        totalFilteredCount: totalFiltered,
         serverError: false,
       });
     },
@@ -144,25 +151,52 @@ export default function ReceivedLetterBlock() {
 
   // Initial fetch and on filter changes
   useEffect(() => {
-    // Clear cache when search filter changes (but not on initial mount with rotation)
-    if (filters.received || filters.senders || filters.onlyPending) {
+    // Clear cache when filters change (detect any change in filters)
+    const filtersChanged =
+      previousFiltersRef.current.received !== filters.received ||
+      previousFiltersRef.current.senders !== filters.senders ||
+      previousFiltersRef.current.onlyPending !== filters.onlyPending;
+
+    if (filtersChanged || isInitialMount.current) {
       pagesCacheRef.current = {};
-      totalLettersCountRef.current = 0;
+      // Only clear sendersList on initial mount, not on filter changes
+      if (isInitialMount.current) {
+        sendersListRef.current = [];
+      }
+      previousFiltersRef.current = filters;
+      setCurrentPage(1);
+      fetchReceivedLetters(1);
+      isInitialMount.current = false;
+      justChangedFilters.current = true;
     }
-    setCurrentPage(1);
-    fetchReceivedLetters(1);
   }, [
-    rotation,
     filters.received,
     filters.senders,
     filters.onlyPending,
     fetchReceivedLetters,
   ]);
 
-  // Refetch when page changes
+  // Fetch when page changes (not on filter changes)
   useEffect(() => {
-    fetchReceivedLetters(currentPage);
+    // Skip if we just changed filters (first useEffect handles that)
+    if (justChangedFilters.current) {
+      justChangedFilters.current = false;
+      return;
+    }
+
+    // Fetch for any page change including back to page 1
+    if (!isInitialMount.current) {
+      fetchReceivedLetters(currentPage);
+    }
   }, [currentPage, fetchReceivedLetters]);
+
+  // Refresh when rotation changes
+  useEffect(() => {
+    if (rotation > 0) {
+      pagesCacheRef.current = {};
+      fetchReceivedLetters(currentPage);
+    }
+  }, [rotation, currentPage, fetchReceivedLetters]);
 
   return (
     <>
@@ -251,11 +285,11 @@ export default function ReceivedLetterBlock() {
         ) : (
           <>
             {/* Pagination */}
-            {data.totalLettersCount > 0 && (
+            {data.totalFilteredCount > 0 && (
               <div className="flex justify-end mt-2 mb-2">
                 <TablePagination
                   component="div"
-                  count={data.totalLettersCount}
+                  count={data.totalFilteredCount}
                   page={currentPage - 1}
                   onPageChange={handlePageChange}
                   rowsPerPage={ITEMS_PER_PAGE}

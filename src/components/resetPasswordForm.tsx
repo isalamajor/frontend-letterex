@@ -56,13 +56,13 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
   };
 
   const sendRecoveryCode = async () => {
-    // Validación básica
+    // Basic validation
     if (!email.trim() || !email.includes("@")) {
       setShowAlert("Please enter a valid email address");
       return;
     }
 
-    // Verificar si el email está en uso
+    // Check if email is in use
     const emailCheckResult = await isEmailInUse(email);
     if (!emailCheckResult.ok) {
       setShowAlert(
@@ -75,7 +75,7 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
       return;
     }
 
-    // Si el email está en uso, enviar el código de verificación
+    // If email is in use, send verification code
     const codeResult = await sendVerificationCode(
       email,
       "password_reset" as ValidationCodePurpose,
@@ -194,7 +194,7 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
       )}
 
       {currentStep === 3 ? (
-        <div className="flex justify-center text-center items-center flex-col gap-2 h-full w-full text-black m-2">
+        <div className="flex justify-center text-center items-center flex-col gap-2 h-full w-full text-black m-2 py-4">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -211,7 +211,7 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
               className={`w-8 h-8 ${iconConfig.iconColorClass}`}
             />
           </motion.div>
-          <p>Password changed succesfully :)</p>
+          <p>Password changed succesfully</p>
         </div>
       ) : (
         <div className="back-go mt-0 pt-0">

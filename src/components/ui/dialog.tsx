@@ -38,6 +38,12 @@ interface Friend {
   alreadySent?: boolean;
 }
 
+export interface SharedWithUser {
+  id: string;
+  nickname: string;
+  image: string;
+}
+
 const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
   if (!open) return null;
   return (
@@ -147,8 +153,8 @@ export interface DialogConfig {
   size?: "sm" | "md" | "lg";
   type?: DialogType;
   letterId?: string;
-  sharedWith?: string[];
-  onShareSuccess?: (shareLetterResult: number) => void;
+  sharedWith?: SharedWithUser[];
+  onShareSuccess?: (shareLetterResult: SharedWithUser[]) => void;
   onNewDiaryCreated?: (diaryName: string) => void;
   prevNewDiaryName?: string;
   onConfirmationPositive?: () => void | Promise<void>;
@@ -168,14 +174,14 @@ const SuccessDialog: React.FC<DialogConfig> = ({
   type = "success", // Default to success
   letterId = null,
   sharedWith = [],
-  onShareSuccess = (_shareLetterResult: number) => {},
+  onShareSuccess = (_shareLetterResult: SharedWithUser[]) => {},
   onNewDiaryCreated = (_diaryName: string) => {},
   prevNewDiaryName = "",
   onConfirmationPositive = () => {},
 }) => {
   const [internalOpen, setInternalOpen] = useState(isOpen);
   const [friendsList, setFriendsList] = useState<Friend[]>([]);
-  const [friendsSelected, setFriendsSelected] = useState<string[]>([]);
+  const [friendsSelected, setFriendsSelected] = useState<SharedWithUser[]>([]);
   const primaryButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
@@ -281,18 +287,24 @@ const SuccessDialog: React.FC<DialogConfig> = ({
 
   const handlePrimaryAction = useCallback(() => {
     onPrimaryAction();
-    if (newDiaryName) onNewDiaryCreated(newDiaryName);
+    if (newDiaryName && onNewDiaryCreated) onNewDiaryCreated(newDiaryName);
     handleClose();
-  }, [onPrimaryAction, handleClose]);
+  }, [onPrimaryAction, handleClose, newDiaryName, onNewDiaryCreated]);
 
   const handleShareLetter = async () => {
-    console.log("share dialog", letterId);
     if (friendsSelected.length === 0 || !letterId) {
       return;
     }
-    const shareLetterResult = await shareLetter(letterId, friendsSelected);
-    if (onShareSuccess) {
-      onShareSuccess(shareLetterResult);
+    const shareLetterResult: number = await shareLetter(
+      letterId,
+      friendsSelected.map((f) => f.id),
+    );
+    if (shareLetterResult === 0) {
+      if (onShareSuccess) {
+        onShareSuccess(friendsSelected);
+      } else {
+        handleClose();
+      }
     }
   };
 
@@ -371,13 +383,17 @@ const SuccessDialog: React.FC<DialogConfig> = ({
         // Mark with alreadySent property
         const friendsWithStatus = friends.map((friend: Friend) => ({
           ...friend,
-          alreadySent: sharedWith.includes(friend.id),
+          alreadySent: sharedWith.some((user) => user.id === friend.id),
         }));
         setFriendsList(friendsWithStatus);
         // Add alreadySent friends to selected
         const alreadySentFriends = friendsWithStatus
           .filter((friend: Friend) => friend.alreadySent)
-          .map((friend: Friend) => friend.id);
+          .map((friend: Friend) => ({
+            id: friend.id,
+            nickname: friend.nickname,
+            image: friend.image || "",
+          }));
         setFriendsSelected((prev) => [...prev, ...alreadySentFriends]);
         console.log("Fetched friends list:", friends);
       } catch (error) {
@@ -609,7 +625,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                       ) : (
                         <>
                           <div className="flex justify-center items-start flex-col gap-2 h-full w-full text-black m-2">
-                            {/* Input con ojo para ocultar contraseña*/}
+                            {/* Input with eye to hide password */}
                             <InputPasswords
                               onSave={(
                                 password,

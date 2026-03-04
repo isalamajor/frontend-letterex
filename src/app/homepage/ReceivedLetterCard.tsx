@@ -92,7 +92,7 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
           </div>
         </div>
 
-        {/* Título de la carta */}
+        {/* Letter title */}
         <div className="flex justify-between">
           <div className="flex flex-row gap-2 align-center items-center">
             <h4 className="items-center text-gray-700 font-bold dark:text-gray-400">
@@ -139,7 +139,7 @@ function formatReceivedDate(received_at: string): string {
   if (diffInDays === 1) return "Yesterday";
   if (diffInDays <= 7) return `${diffInDays} days ago`;
 
-  // Más antiguo → DD/MM/YYYY
+  // Older → DD/MM/YYYY
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();

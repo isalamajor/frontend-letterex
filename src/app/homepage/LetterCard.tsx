@@ -7,7 +7,7 @@ interface LetterCardProps extends Letter {
   deleteMode: boolean;
   swipeOpen: boolean;
   onSelectionChange: (letterId: string) => void;
-  resetSelection?: boolean;
+  resetSelection: boolean;
 }
 
 const LetterCard: React.FC<LetterCardProps> = ({
@@ -19,14 +19,15 @@ const LetterCard: React.FC<LetterCardProps> = ({
   sharedWith,
   deleteMode,
   swipeOpen,
+  resetSelection,
   onSelectionChange,
 }) => {
   const [isSelected, setIsSelected] = useState(false);
 
-  // Si cambia el modo delete, resetea la selección
+  // If delete mode changes, reset the selection
   useEffect(() => {
     setIsSelected(false);
-  }, [deleteMode]);
+  }, [deleteMode, resetSelection]);
 
   const goToCorrection =
     (correctedLetterId: string) =>
@@ -60,7 +61,7 @@ const LetterCard: React.FC<LetterCardProps> = ({
           </p>
         </div>
 
-        {/* Título de la carta */}
+        {/* Letter title */}
         <div className="flex justify-between">
           <h4 className="items-center text-gray-700 font-bold dark:text-gray-400">
             {title}

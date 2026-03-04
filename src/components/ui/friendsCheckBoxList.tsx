@@ -11,10 +11,16 @@ interface Friend {
   alreadySent?: boolean;
 }
 
+export interface SharedWithUser {
+  id: string;
+  nickname: string;
+  image: string;
+}
+
 interface FriendsCheckboxListProps {
   friends: Friend[];
-  selected: string[];
-  setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+  selected: SharedWithUser[];
+  setSelected: React.Dispatch<React.SetStateAction<SharedWithUser[]>>;
 }
 
 const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({
@@ -31,20 +37,40 @@ const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({
     friend.nickname.toLowerCase().includes(searchFilter.toLowerCase())
   );*/
 
-  const handleToggle = (friendId: string) => {
+  const handleToggle = (friend: Friend) => {
+    const isSelected = selected.some((s) => s.id === friend.id);
+    const sharedWithUser: SharedWithUser = {
+      id: friend.id,
+      nickname: friend.nickname,
+      image: friend.image || "",
+    };
+
     if (maxSelectable === 1) {
-      if (selected.includes(friendId)) {
-        setSelected([]);
+      if (isSelected) {
+        // Remove this selection but keep alreadySent users
+        setSelected((prev) =>
+          prev.filter((s) => {
+            const friendInList = friends.find((f) => f.id === s.id);
+            return friendInList?.alreadySent;
+          }),
+        );
       } else {
-        setSelected([friendId]);
+        // Keep alreadySent users and add the new one
+        setSelected((prev) => {
+          const alreadySentUsers = prev.filter((s) => {
+            const friendInList = friends.find((f) => f.id === s.id);
+            return friendInList?.alreadySent;
+          });
+          return [...alreadySentUsers, sharedWithUser];
+        });
       }
-    } else if (selected.includes(friendId)) {
-      setSelected((prev) => prev.filter((id) => id !== friendId));
+    } else if (isSelected) {
+      setSelected((prev) => prev.filter((s) => s.id !== friend.id));
     } else {
       if (selected.length === 2) {
-        setSelected((prev) => [prev[0], friendId]);
+        setSelected((prev) => [prev[0], sharedWithUser]);
       } else {
-        setSelected((prev) => [...prev, friendId]);
+        setSelected((prev) => [...prev, sharedWithUser]);
       }
     }
   };
@@ -64,10 +90,12 @@ const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({
             >
               <input
                 type="checkbox"
-                checked={selected.includes(friend.id) || friend.alreadySent}
+                checked={
+                  selected.some((s) => s.id === friend.id) || friend.alreadySent
+                }
                 disabled={friend.alreadySent || maxSelectable === 0}
                 className="w-4 h-4"
-                onChange={() => handleToggle(friend.id)}
+                onChange={() => handleToggle(friend)}
               />
               {friend.nickname}
             </label>

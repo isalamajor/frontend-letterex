@@ -6,7 +6,11 @@ import { useId, useState, useEffect } from "react";
 import { Label } from "@/components/ui/field";
 
 interface InputPassProps {
-  onSave: (password: string, NewPassword: string, ConfirmPassword: string) => void;
+  onSave: (
+    password: string,
+    NewPassword: string,
+    ConfirmPassword: string,
+  ) => void;
 }
 
 function InputPasswords({ onSave }: InputPassProps) {
@@ -19,15 +23,19 @@ function InputPasswords({ onSave }: InputPassProps) {
   const [ConfirmPassword, setConfirmPassword] = useState<string>("");
   const forbiddenCharsRegex = /[\s'"\\<>]/g;
 
-  // Mensaje de error para la nueva contraseña
-  const isNewPasswordTooShort = NewPassword.length > 0 && NewPassword.length < 8;
-  const isNewPasswordSameAsCurrent = NewPassword.length >= 8 && NewPassword === password;
-  // Mensaje de error para la confirmación
-  const isConfirmPasswordTooShort = ConfirmPassword.length > 0 && ConfirmPassword.length < 8;
-  const isConfirmPasswordMismatch = ConfirmPassword.length >= 8 && ConfirmPassword !== NewPassword;
+  // Error message for new password
+  const isNewPasswordTooShort =
+    NewPassword.length > 0 && NewPassword.length < 8;
+  const isNewPasswordSameAsCurrent =
+    NewPassword.length >= 8 && NewPassword === password;
+  // Error message for confirmation
+  const isConfirmPasswordTooShort =
+    ConfirmPassword.length > 0 && ConfirmPassword.length < 8;
+  const isConfirmPasswordMismatch =
+    ConfirmPassword.length >= 8 && ConfirmPassword !== NewPassword;
 
   useEffect(() => {
-    // Solo llama a onSave si todas las contraseñas son válidas y la nueva contraseña es distinta de la actual
+    // Only calls onSave if all passwords are valid and new password is different from current
     if (
       password &&
       NewPassword &&
@@ -51,12 +59,14 @@ function InputPasswords({ onSave }: InputPassProps) {
             placeholder={"Current password"}
             type={isVisibleCurrent ? "text" : "password"}
             value={password}
-            onChange={e => setPassword(e.target.value.replace(forbiddenCharsRegex, ""))}
+            onChange={(e) =>
+              setPassword(e.target.value.replace(forbiddenCharsRegex, ""))
+            }
           />
           <button
             className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
-            onClick={() => setIsVisibleCurrent(v => !v)}
+            onClick={() => setIsVisibleCurrent((v) => !v)}
             aria-label={isVisibleCurrent ? "Hide password" : "Show password"}
             aria-pressed={isVisibleCurrent}
             aria-controls={id}
@@ -76,17 +86,21 @@ function InputPasswords({ onSave }: InputPassProps) {
           <Input1
             id={id}
             className={`w-full p-2 mb-2 border rounded text-black/80 bg-white ${
-              isNewPasswordTooShort || isNewPasswordSameAsCurrent ? "border-red-500 text-red-500" : ""
+              isNewPasswordTooShort || isNewPasswordSameAsCurrent
+                ? "border-red-500 text-red-500"
+                : ""
             }`}
             placeholder={"New password"}
             type={isVisibleNew ? "text" : "password"}
             value={NewPassword}
-            onChange={e => setNewPassword(e.target.value.replace(forbiddenCharsRegex, ""))}
+            onChange={(e) =>
+              setNewPassword(e.target.value.replace(forbiddenCharsRegex, ""))
+            }
           />
           <button
             className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
-            onClick={() => setIsVisibleNew(v => !v)}
+            onClick={() => setIsVisibleNew((v) => !v)}
             aria-label={isVisibleNew ? "Hide password" : "Show password"}
             aria-pressed={isVisibleNew}
             aria-controls={id}
@@ -100,10 +114,14 @@ function InputPasswords({ onSave }: InputPassProps) {
           </button>
         </div>
         {isNewPasswordTooShort && (
-          <p className="text-red-500 text-xs mt-1">Password must be at least 8 characters long</p>
+          <p className="text-red-500 text-xs mt-1">
+            Password must be at least 8 characters long
+          </p>
         )}
         {isNewPasswordSameAsCurrent && (
-          <p className="text-red-500 text-xs mt-1">New password must be different from current password</p>
+          <p className="text-red-500 text-xs mt-1">
+            New password must be different from current password
+          </p>
         )}
       </div>
       <div className="space-y-2 min-w-[300px]">
@@ -112,17 +130,23 @@ function InputPasswords({ onSave }: InputPassProps) {
           <Input1
             id={id}
             className={`w-full p-2 mb-2 border rounded text-black/80 bg-white ${
-              isConfirmPasswordTooShort || isConfirmPasswordMismatch ? "border-red-500 text-red-500" : ""
+              isConfirmPasswordTooShort || isConfirmPasswordMismatch
+                ? "border-red-500 text-red-500"
+                : ""
             }`}
             placeholder={"Confirm new password"}
             type={isVisibleConfirm ? "text" : "password"}
             value={ConfirmPassword}
-            onChange={e => setConfirmPassword(e.target.value.replace(forbiddenCharsRegex, ""))}
+            onChange={(e) =>
+              setConfirmPassword(
+                e.target.value.replace(forbiddenCharsRegex, ""),
+              )
+            }
           />
           <button
             className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
-            onClick={() => setIsVisibleConfirm(v => !v)}
+            onClick={() => setIsVisibleConfirm((v) => !v)}
             aria-label={isVisibleConfirm ? "Hide password" : "Show password"}
             aria-pressed={isVisibleConfirm}
             aria-controls={id}
@@ -139,7 +163,9 @@ function InputPasswords({ onSave }: InputPassProps) {
           <p className="text-red-500 text-xs mt-1">Passwords do not match</p>
         )}
         {isConfirmPasswordTooShort && (
-          <p className="text-red-500 text-xs mt-1">Password must be at least 8 characters long</p>
+          <p className="text-red-500 text-xs mt-1">
+            Password must be at least 8 characters long
+          </p>
         )}
       </div>
     </div>

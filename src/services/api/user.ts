@@ -3,7 +3,7 @@ import axios, { AxiosError } from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/user";
 
 // Configurar Axios para enviar/recibir cookies
-// Esto permite que el backend devuelva Set-Cookie y que Axios lo maneje automáticamente
+// This allows the backend to return Set-Cookie and Axios to handle it automatically
 axios.defaults.withCredentials = true;
 
 // Generic API Response
@@ -13,48 +13,22 @@ export interface ApiResponse<T = any> {
   errorMessage?: string;
 }
 
-// Interfaces
-export interface User {
-  _id: string;
-  nickname: string;
-  email: string;
-  created_at?: string;
-  name?: string;
-  surname?: string;
-  birthDate?: string;
-  nativeLanguage?: string;
-  learningLanguage?: string;
-  learningLanguage2?: string;
-  learningLanguage3?: string | null;
-  masterLanguage?: string;
-  masterLanguage2?: string;
-  masterLanguage3?: string;
-  country?: string;
-  bio?: string;
-  image?: string;
-  location?: {
-    city?: string;
-    country?: string;
-  };
-}
-
 export interface UserData {
+  id?: string;
   email?: string;
   nickname?: string;
   password?: string;
-  name?: string;
-  surname?: string;
-  birthDate?: string;
-  nativeLanguage?: string;
-  learningLanguage?: string;
+  learningLanguage?: string | null;
   learningLanguage2?: string | null;
   learningLanguage3?: string | null;
-  masterLanguage?: string;
+  masterLanguage?: string | null;
   masterLanguage2?: string | null;
   masterLanguage3?: string | null;
+  countLetters?: Record<string, number>;
+  countCorrectedLetter?: Record<string, number>;
   country?: string;
   bio?: string;
-  picture?: File | null;
+  image?: File | null;
   location?: {
     city?: string;
     country?: string;
@@ -68,7 +42,7 @@ export interface Credentials {
 
 export interface LoginData {
   token: string;
-  userData: User;
+  userData: UserData;
 }
 
 export interface RegisterData {
@@ -81,7 +55,7 @@ export enum ValidationCodePurpose {
   REGISTER = "register",
 }
 
-const getUserData = async (id?: string): Promise<ApiResponse<User>> => {
+const getUserData = async (id?: string): Promise<ApiResponse<UserData>> => {
   try {
     let response;
     if (id) {
@@ -288,7 +262,7 @@ const isEmailInUse = async (email: string): Promise<ApiResponse<boolean>> => {
 const getProfile = async (
   id: string,
   token: string,
-): Promise<ApiResponse<User>> => {
+): Promise<ApiResponse<UserData>> => {
   try {
     const response = await axios.get(`${API_URL}/profile/${id}`);
     return { ok: true, data: response.data };
@@ -321,13 +295,19 @@ const listUsers = async (
   }
 };
 
-const updateUser = async (userData: UserData): Promise<ApiResponse<User>> => {
+const updateUser = async (
+  userData: UserData,
+): Promise<ApiResponse<UserData>> => {
   // Quitar email y nickname de userData
   const { email: _, nickname: __, ...rest } = userData;
   try {
     const response = await axios.put(`${API_URL}/update`, rest);
     if (response.status === 200) {
-      return { ok: true, data: response.data };
+      sessionStorage.setItem(
+        "userData",
+        JSON.stringify(response.data.userData),
+      );
+      return { ok: true, data: response.data.userData };
     }
     console.error("Error updating user:", response.data);
     return { ok: false, errorMessage: "Failed to update user" };

@@ -91,6 +91,25 @@ export default function LetterCardBlock() {
                   <X />
                 </button>
               </motion.div>
+            ) : settings.orderByDiaries ? (
+              <motion.div
+                key="diary-mode"
+                {...fadeInOut}
+                className="flex gap-2"
+              >
+                <button
+                  className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50"
+                  onClick={() =>
+                    setSettings({
+                      ...settings,
+                      orderByDiaries: !settings.orderByDiaries,
+                    })
+                  }
+                >
+                  ✉️ Show all
+                </button>
+                <NewLetterButton />
+              </motion.div>
             ) : (
               <motion.div
                 key="normal-mode"
@@ -117,9 +136,7 @@ export default function LetterCardBlock() {
                     })
                   }
                 >
-                  {settings.orderByDiaries
-                    ? "✉️ Show all"
-                    : "📚 Order by diary"}
+                  📚 Order by diary
                 </button>
                 <NewLetterButton />
                 <button

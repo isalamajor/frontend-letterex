@@ -19,11 +19,14 @@ export function middleware(request: NextRequest) {
   const authToken = request.cookies.get("authToken")?.value;
 
   // Si es ruta protegida y no tiene token, redirigir a login
-  if (protectedRoutes.some((route) => pathname.startsWith(route)) && !authToken) {
+  if (
+    protectedRoutes.some((route) => pathname.startsWith(route)) &&
+    !authToken
+  ) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Si está en login ('/') y tiene token, redirigir a homepage
+  // If at login ('/') and has token, redirect to homepage
   if (pathname === "/" && authToken) {
     return NextResponse.redirect(new URL("/homepage", request.url));
   }
@@ -31,9 +34,7 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Configurar en qué rutas correr el middleware
+// Configure on which routes to run the middleware
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

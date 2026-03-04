@@ -35,14 +35,14 @@ export default function AnimatedForm() {
           login: { top: "20%", left: "50%", width: 150 },
           other: { top: "20%", left: "50%", width: 200 },
         });
-      // móviles pequeños
+      // small mobile devices
       else if (w < 768)
         setFrogSettings({
           register: { top: "25%", left: "50%", width: 150 },
           login: { top: "25%", left: "50%", width: 150 },
           other: { top: "30%", left: "50%", width: 250 },
         });
-      // móviles / tablets pequenos
+      // mobile / small tablets
       else if (w < 1024)
         setFrogSettings({
           register: { top: "32%", left: "50%", width: 180 },
@@ -92,7 +92,7 @@ export default function AnimatedForm() {
         />
       )}
 
-      {/* Formulario de inicio de sesión */}
+      {/* Login form */}
       {formShowing === "LOGIN" && (
         <LoginForm
           goBack={() => {
@@ -126,7 +126,7 @@ export default function AnimatedForm() {
         />
       )}
 
-      {/* Formulario de reset de contraseña */}
+      {/* Password reset form */}
       {formShowing === "RESET_PASSWORD" && (
         <ResetPasswordForm goBack={() => setFormShowing("LOGIN")} />
       )}

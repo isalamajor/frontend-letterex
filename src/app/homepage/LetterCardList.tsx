@@ -198,7 +198,7 @@ const LetterCardList = ({
       window.location.href = `/edit-letter/${id}`;
     };
 
-  // Cambia selección de delete de un Item, entonces notifica al padre
+  // Changes the delete selection of an item, then notifies the parent
   const toggleDeleteItem = (letterId: string) => {
     setSelectedToDeleteIds((prevIds) => {
       const newIds = prevIds.includes(letterId)
@@ -208,7 +208,7 @@ const LetterCardList = ({
     });
   };
 
-  // Resetea selección al salir de delete mode o al clicar en cancelar
+  // Resets selection when exiting delete mode or clicking cancel
   const resetSelection = () => {
     setletters((prevLetters) => {
       const updatedLetters = prevLetters.map((letter) => {

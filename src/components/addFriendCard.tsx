@@ -114,7 +114,7 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
           </div>
         </div>
       </div>
-      {/* Botones añadir amigo */}
+      {/* Add friend buttons */}
       <div className="flex flex-col justify-start h-full">
         {friendRequestJustSent || friendRequestSent ? (
           <UserRoundCheck className="h-6 w-6 text-green-500" />

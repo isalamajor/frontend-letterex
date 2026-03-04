@@ -99,10 +99,10 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
       }
     };
 
-    // Añadir el listener con un pequeño delay
+    // Add the listener with a small delay
     const timeout = setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside);
-    }, 0); // se ejecuta después del click actual
+    }, 0); // executes after the current click
 
     return () => {
       clearTimeout(timeout);
@@ -262,7 +262,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           autoDismiss: true,
           autoDismissDelay: 3000,
         });
-        // Hacer el router.push después del openDialog para que se cargue en el fondo
+        // Perform the router.push after openDialog so it loads in the background
         setTimeout(() => {
           router.push("/homepage");
         }, 3000);
@@ -363,7 +363,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
             if (selection && selection.toString().trim()) {
               const range = selection.getRangeAt(0);
 
-              // Crea un rango desde el inicio del contenedor hasta el inicio de la selección
+              // Create a range from the start of the container to the start of the selection
               const preRange = document.createRange();
               if (!textRef.current) return;
               preRange.setStart(textRef.current, 0);
@@ -573,7 +573,7 @@ function EmojiCursor() {
       setIsVisible(false);
     };
 
-    // Añadir el listener al documento completo
+    // Add the listener to the entire document
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseleave", handleMouseLeave);
 
