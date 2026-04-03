@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
-import { SidebarDemo } from "@/components/sidebardemo";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,12 +14,22 @@ import { DateField, DateInput } from "@/components/ui/datefield";
 import { Label } from "@/components/ui/field";
 import { getDiaries, saveLetter } from "@/services/api";
 import { BookOpen } from "lucide-react";
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
-import "react-quill-new/dist/quill.bubble.css";
+import dynamic from "next/dynamic";
 import { useDialog } from "@/context/dialogContext";
+import { isQuillContentEmpty } from "@/lib/utils";
+import { LetterFormErrors } from "@/lib/types";
+
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 const NewLetterPageContent = () => {
+  const quillRef = useRef<{
+    getEditor: () => {
+      focus: () => void;
+      getLength: () => number;
+      setSelection: (index: number, length: number, source?: string) => void;
+    };
+  } | null>(null);
+
   const [date, setDate] = useState(() =>
     parseDate(new Date().toISOString().split("T")[0]),
   );
@@ -40,23 +49,32 @@ const NewLetterPageContent = () => {
   >(undefined);
   const { openDialog, closeDialog } = useDialog();
 
-  // Estados para manejar errores
-  const [titleError, setTitleError] = useState(false);
-  const [dateError, setDateError] = useState(false);
+  useEffect(() => {
+    // @ts-ignore
+    import("react-quill-new/dist/quill.bubble.css").catch(() => {});
+  }, []);
+
+  const [errors, setErrors] = useState<LetterFormErrors>({
+    title: false,
+    date: false,
+    language: false,
+    content: false,
+  });
 
   const router = useRouter();
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTitleError(false);
+    setErrors((prev) => ({ ...prev, title: false }));
     setTitle(event.target.value);
   };
 
   const handleDateChange = (newDate: any) => {
-    setDateError(false);
+    setErrors((prev) => ({ ...prev, date: false }));
     setDate(newDate);
   };
 
   const handleLanguageChange = (selectedLanguage: string) => {
+    setErrors((prev) => ({ ...prev, language: false }));
     setLanguage(selectedLanguage);
   };
 
@@ -65,25 +83,51 @@ const NewLetterPageContent = () => {
     return;
   };
 
+  const handleQuillContainerMouseDown = (
+    event: React.MouseEvent<HTMLDivElement>,
+  ) => {
+    const target = event.target as HTMLElement;
+    const clickedInsideEditor = target.closest(".ql-editor");
+    const clickedQuillControl = target.closest(".ql-toolbar, .ql-tooltip");
+
+    if (clickedInsideEditor || clickedQuillControl) return;
+
+    event.preventDefault();
+    const quill = quillRef.current?.getEditor();
+    if (!quill) return;
+
+    quill.focus();
+    const endPosition = Math.max(0, quill.getLength() - 1);
+    quill.setSelection(endPosition, 0, "user");
+  };
+
   // Function to save the letter
   const SaveLetterOnClick = async () => {
-    let hasError = false;
+    const nextErrors: LetterFormErrors = {
+      title: !title.trim(),
+      date: !date,
+      language: !language,
+      content: isQuillContentEmpty(letterContent),
+    };
 
-    if (!title.trim()) {
-      setTitleError(true);
-      hasError = true;
-    }
-    if (!date) {
-      setDateError(true);
-      hasError = true;
-    }
-    if (!language) {
-      hasError = true;
-    }
-    if (!letterContent.trim()) {
-      hasError = true;
-    }
+    setErrors(nextErrors);
+
+    const hasError = Object.values(nextErrors).some(Boolean);
     if (hasError) {
+      const missingFields: string[] = [];
+      if (nextErrors.title) missingFields.push("title");
+      if (nextErrors.date) missingFields.push("date");
+      if (nextErrors.language) missingFields.push("language");
+      if (nextErrors.content) missingFields.push("letter content");
+
+      openDialog({
+        title: "Fields missing!",
+        description: `Please complete: ${missingFields.join(", ")}.`,
+        primaryActionText: "OK",
+        type: "error",
+        autoDismiss: true,
+        autoDismissDelay: 3000,
+      });
       return;
     }
 
@@ -143,7 +187,7 @@ const NewLetterPageContent = () => {
             value={title}
             onChange={handleTitleChange}
             className={`placeholder-gray-500 text-center text-2xl font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03] ${
-              titleError ? "placeholder-red-500" : "border-none"
+              errors.title ? "placeholder-red-500" : "border-none"
             }`}
             placeholder="Title of the letter! Edit this, ganster..."
             autoFocus
@@ -157,13 +201,14 @@ const NewLetterPageContent = () => {
                 value={date}
                 onChange={handleDateChange}
               >
-                {dateError && (
+                {errors.date ? (
                   <Label className="text-red-500">Date missing</Label>
+                ) : (
+                  <Label className="text-black">Date</Label>
                 )}
-                {!dateError && <Label className="text-black">Date</Label>}
                 <DateInput
                   className={`bg-white text-black  ${
-                    dateError ? "border-red-500" : "border-neutral-300"
+                    errors.date ? "border-red-500" : "border-neutral-300"
                   }`}
                 />
               </DateField>
@@ -213,14 +258,22 @@ const NewLetterPageContent = () => {
 
             {/* Language select*/}
             <div>
-              <Label className="text-black">Select language</Label>
+              <Label
+                className={errors.language ? "text-red-500" : "text-black"}
+              >
+                Select language
+              </Label>
               <Select
                 value={language}
                 onValueChange={(lang) => {
                   handleLanguageChange(lang);
                 }}
               >
-                <SelectTrigger className="text-black bg-white h-10 rounded-md ring-transparent">
+                <SelectTrigger
+                  className={`text-black bg-white h-10 rounded-md ring-transparent border ${
+                    errors.language ? "border-red-500" : "border-neutral-300"
+                  }`}
+                >
                   <SelectValue placeholder="(None)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -234,13 +287,25 @@ const NewLetterPageContent = () => {
             </div>
           </div>
 
-          <ReactQuill
-            className="min-h-[62vh] sm:min-h-[65vh] border rounded-md bg-white text-gray-900
-              rounded-md p-2 space-y-1 ring-transparent"
-            theme="bubble"
-            value={letterContent}
-            onChange={(content) => setLetterContent(content)}
-          />
+          <div onMouseDown={handleQuillContainerMouseDown}>
+            <ReactQuill
+              // @ts-ignore react-quill-new ref typing is not exposed here
+              ref={quillRef}
+              className={`min-h-[62vh] sm:min-h-[65vh] border rounded-md bg-white text-gray-900
+              rounded-md p-2 space-y-1 ring-transparent text-2xl ${
+                errors.content ? "border-red-500" : "border-neutral-300"
+              }`}
+              theme="bubble"
+              value={letterContent}
+              onChange={(content) => {
+                setLetterContent(content);
+                setErrors((prev) => ({
+                  ...prev,
+                  content: isQuillContentEmpty(content) ? prev.content : false,
+                }));
+              }}
+            />
+          </div>
 
           {/* Buttons */}
           <div className="flex justify-between h-[5%] items-end gap-4 mt-4">

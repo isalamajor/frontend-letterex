@@ -160,9 +160,8 @@ const login = async (
   credentials: Credentials,
 ): Promise<ApiResponse<LoginData>> => {
   try {
-    console.log("creds", credentials);
     const response = await axios.post(`${API_URL}/login`, credentials);
-    if (response.status === 200) {
+    if (response.status === 200 && response.data.status === 0) {
       sessionStorage.setItem("authToken", response.data.token);
       sessionStorage.setItem(
         "userData",

@@ -348,7 +348,7 @@
     @apply bg-background text-foreground text-[3vw] sm:text-[1vw];
   }
   .ql-editor {
-    @apply font-sans text-base;
+    @apply font-sans text-lg;
   }
   h1 {
     @apply text-[6vw] sm:text-[2vw];

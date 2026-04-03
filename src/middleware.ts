@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Obtener el token de las cookies
-  const authToken = request.cookies.get("authToken")?.value;
+  const authToken = request.cookies.get("authToken");
 
   // Si es ruta protegida y no tiene token, redirigir a login
   if (

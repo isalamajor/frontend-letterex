@@ -86,3 +86,25 @@ export interface ReceivedLetter {
   received_at: string;
   seen: boolean;
 }
+
+export interface LetterFormErrors {
+  title: boolean;
+  date: boolean;
+  language: boolean;
+  content: boolean;
+}
+
+export interface NewLetter {
+  id: string;
+  date: CalendarDate;
+  diary: string;
+  language: string;
+  title: string;
+  letterContent: string;
+  sharedWith: SharedWithUser[];
+}
+export interface SharedWithUser {
+  id: string;
+  nickname: string;
+  image: string;
+}

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { SidebarDemo } from "@/components/sidebardemo";
 import Link from "next/link";
 import { useState } from "react";
@@ -20,25 +20,10 @@ import {
 import dynamic from "next/dynamic";
 import { useDialog } from "@/context/dialogContext";
 import { BookOpen } from "lucide-react";
-import { DiarySelect } from "@/components/diarySelect";
+import { isQuillContentEmpty } from "@/lib/utils";
+import { LetterFormErrors, NewLetter } from "@/lib/types";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
-
-interface SharedWithUser {
-  id: string;
-  nickname: string;
-  image: string;
-}
-
-interface Letter {
-  id: string;
-  date: CalendarDate;
-  diary: string;
-  language: string;
-  title: string;
-  letterContent: string;
-  sharedWith: SharedWithUser[];
-}
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -53,6 +38,14 @@ export default function Home({ params }: { params: Promise<{ id: string }> }) {
 
 const NewLetterPageContent = ({ id }: { id: string }) => {
   const { openDialog, closeDialog } = useDialog();
+  const quillRef = useRef<{
+    getEditor: () => {
+      focus: () => void;
+      getLength: () => number;
+      setSelection: (index: number, length: number, source?: string) => void;
+    };
+  } | null>(null);
+
   useEffect(() => {
     // @ts-ignore
     import("react-quill-new/dist/quill.bubble.css").catch(() => {});
@@ -64,7 +57,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   const [diaryAddedPreviously, setDiaryAddedPreviously] = useState<
     string | undefined
   >(undefined);
-  const [letter, setLetter] = useState<Letter>({
+  const [letter, setLetter] = useState<NewLetter>({
     id: id,
     date: parseDate(new Date().toISOString().split("T")[0]),
     diary: "",
@@ -73,7 +66,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     letterContent: "",
     sharedWith: [],
   });
-  const updateLetter = (updates: Partial<Letter>) => {
+  const updateLetter = (updates: Partial<NewLetter>) => {
     setLetter((prev) => ({ ...prev, ...updates }));
     setValuesChanged(true);
   };
@@ -89,9 +82,12 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     "new",
   ]);
 
-  // Estados para manejar errores
-  const [titleError, setTitleError] = useState(false);
-  const [dateError, setDateError] = useState(false);
+  const [errors, setErrors] = useState<LetterFormErrors>({
+    title: false,
+    date: false,
+    language: false,
+    content: false,
+  });
   const [letterNotFound, setLetterNotFound] = useState<boolean>(false);
 
   const modulesQuill = {
@@ -105,18 +101,19 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
   // Funciones
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTitleError(false);
+    setErrors((prev) => ({ ...prev, title: false }));
     updateLetter({ title: event.target.value });
   };
 
   const handleDateChange = (newDate: CalendarDate | null) => {
     if (newDate) {
-      setDateError(false);
+      setErrors((prev) => ({ ...prev, date: false }));
       updateLetter({ date: newDate });
     }
   };
 
   const handleLanguageChange = (selectedLanguage: string) => {
+    setErrors((prev) => ({ ...prev, language: false }));
     updateLetter({ language: selectedLanguage });
   };
 
@@ -124,25 +121,53 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     updateLetter({ diary: selectedDiary });
   };
 
+  const handleQuillContainerMouseDown = (
+    event: React.MouseEvent<HTMLDivElement>,
+  ) => {
+    if (letter.sharedWith.length > 0) return;
+
+    const target = event.target as HTMLElement;
+    const clickedInsideEditor = target.closest(".ql-editor");
+    const clickedQuillControl = target.closest(".ql-toolbar, .ql-tooltip");
+
+    if (clickedInsideEditor || clickedQuillControl) return;
+
+    event.preventDefault();
+    const quill = quillRef.current?.getEditor();
+    if (!quill) return;
+
+    quill.focus();
+    const endPosition = Math.max(0, quill.getLength() - 1);
+    quill.setSelection(endPosition, 0, "user");
+  };
+
   // Function to save the letter (edit)
   const SaveLetterOnClick = async () => {
-    let hasError = false;
+    const nextErrors: LetterFormErrors = {
+      title: !letter.title.trim(),
+      date: !letter.date,
+      language: !letter.language,
+      content: isQuillContentEmpty(letter.letterContent),
+    };
 
-    if (!letter.title.trim()) {
-      setTitleError(true);
-      hasError = true;
-    }
-    if (!letter.date) {
-      setDateError(true);
-      hasError = true;
-    }
-    if (!letter.language) {
-      hasError = true;
-    }
-    if (!letter.letterContent.trim()) {
-      hasError = true;
-    }
+    setErrors(nextErrors);
+
+    const hasError = Object.values(nextErrors).some(Boolean);
     if (hasError) {
+      const missingFields: string[] = [];
+      if (nextErrors.title) missingFields.push("title");
+      if (nextErrors.date) missingFields.push("date");
+      if (nextErrors.language) missingFields.push("language");
+      if (nextErrors.content) missingFields.push("letter content");
+
+      openDialog({
+        title: "Fields missing!",
+        description: `Please complete: ${missingFields.join(", ")}.`,
+        primaryActionText: "OK",
+        type: "error",
+        autoDismiss: true,
+        autoDismissDelay: 3000,
+      });
       return;
     }
 
@@ -300,7 +325,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           disabled={letter.sharedWith.length > 0}
           onChange={handleTitleChange}
           className={`placeholder-gray-400 text-center text-2xl font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03] ${
-            titleError ? "placeholder-red-500" : "border-none"
+            errors.title ? "placeholder-red-500" : "border-none"
           }`}
           placeholder="Title of the letter! Edit this, ganster..."
           autoFocus
@@ -315,13 +340,13 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
               isDisabled={letter.sharedWith.length > 0}
               onChange={handleDateChange}
             >
-              {dateError && (
+              {errors.date && (
                 <Label className="text-red-500">Date missing</Label>
               )}
-              {!dateError && <Label className="text-black">Date</Label>}
+              {!errors.date && <Label className="text-black">Date</Label>}
               <DateInput
                 className={`bg-white text-black  ${
-                  dateError ? "border-red-500" : "border-neutral-300"
+                  errors.date ? "border-red-500" : "border-neutral-300"
                 }`}
               />
             </DateField>
@@ -372,7 +397,10 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
           {/* Language select */}
           <div className="">
-            <Label className="text-black" htmlFor={id}>
+            <Label
+              className={errors.language ? "text-red-500" : "text-black"}
+              htmlFor={id}
+            >
               Select language
             </Label>
             <Select
@@ -384,7 +412,9 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
             >
               <SelectTrigger
                 id={id}
-                className="text-black bg-white h-10 rounded-md ring-transparent"
+                className={`text-black bg-white h-10 rounded-md ring-transparent border ${
+                  errors.language ? "border-red-500" : "border-neutral-300"
+                }`}
               >
                 <SelectValue placeholder="(None)" />
               </SelectTrigger>
@@ -430,18 +460,28 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           )}
         </div>
 
-        <ReactQuill
-          className="min-h-[60vh] sm:min-h-[65vh] border rounded-md bg-white text-gray-900
-              rounded-md p-2 space-y-1 ring-transparent"
-          theme="bubble"
-          value={letter.letterContent}
-          onChange={(content) => {
-            updateLetter({ letterContent: content });
-            setValuesChanged(true);
-          }}
-          modules={modulesQuill}
-          readOnly={letter.sharedWith.length > 0}
-        />
+        <div onMouseDown={handleQuillContainerMouseDown}>
+          <ReactQuill
+            // @ts-ignore dynamic import makes the ref type opaque
+            ref={quillRef}
+            className={`min-h-[60vh] sm:min-h-[65vh] border rounded-md bg-white text-gray-900
+              rounded-md p-2 space-y-1 ring-transparent ${
+                errors.content ? "border-red-500" : "border-neutral-300"
+              }`}
+            theme="bubble"
+            value={letter.letterContent}
+            onChange={(content) => {
+              updateLetter({ letterContent: content });
+              setErrors((prev) => ({
+                ...prev,
+                content: isQuillContentEmpty(content) ? prev.content : false,
+              }));
+              setValuesChanged(true);
+            }}
+            modules={modulesQuill}
+            readOnly={letter.sharedWith.length > 0}
+          />
+        </div>
 
         {/* Buttons */}
         <div className="flex justify-between h-[5%] items-center gap-4 mt-4">
