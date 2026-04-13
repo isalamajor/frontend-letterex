@@ -4,8 +4,8 @@ export interface User {
   id: string;
   nickname: string;
   image: string;
+  createdAt?: string;
 }
-
 export interface CorrectedLetter {
   id: string;
   title: string;
@@ -18,6 +18,7 @@ export interface CorrectedLetter {
   deleted: boolean;
   sender: User;
   reviewer: User;
+  createdAt?: string;
 }
 
 export interface Correction {
@@ -107,4 +108,54 @@ export interface SharedWithUser {
   id: string;
   nickname: string;
   image: string;
+}
+
+export interface UserData {
+  id?: string;
+  email?: string;
+  nickname?: string;
+  password?: string;
+  learningLanguage?: string | null;
+  learningLanguage2?: string | null;
+  learningLanguage3?: string | null;
+  masterLanguage?: string | null;
+  masterLanguage2?: string | null;
+  masterLanguage3?: string | null;
+  countLetters?: Record<string, number>;
+  countCorrectedLetter?: Record<string, number>;
+  country?: string;
+  bio?: string;
+  image?: File | null;
+  location?: {
+    city?: string;
+    country?: string;
+  };
+  created_at?: Date | null;
+  isFriend?: boolean;
+}
+
+export interface ApiResponse<T = any> {
+  ok: boolean;
+  data?: T;
+  errorMessage?: string;
+}
+
+export interface Credentials {
+  email: string;
+  password: string;
+}
+
+export interface LoginData {
+  token: string;
+  userData: UserData;
+}
+
+export interface RegisterData {
+  message: string;
+  userId?: string;
+}
+
+export enum ValidationCodePurpose {
+  PASSWORD_RESET = "password_reset",
+  REGISTER = "register",
 }

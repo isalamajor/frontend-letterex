@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { SidebarDemo } from "@/components/sidebardemo";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { getLetterToCorrect } from "@/services/api";
@@ -11,16 +11,11 @@ import { CorrectedLetter } from "../../../lib/types";
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  return (
-    <div className="page-container">
-      <SidebarDemo>
-        <CorrectLetterPageContent id={id} />
-      </SidebarDemo>
-    </div>
-  );
+  return <CorrectLetterPageContent id={id} />;
 }
 
 const CorrectLetterPageContent = ({ id }: { id: string }) => {
+  const router = useRouter();
   const textRef = useRef<HTMLDivElement | null>(null);
   const correctionRef = useRef<HTMLDivElement | null>(null);
   const [currentCorrectionText, setcurrentCorrectionText] =
@@ -70,7 +65,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   if (!letter) {
     return (
       <div className="rounded-tl-2xl bg-white border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-full h-full flex justify-center align-center items-stretch h-screen">
-        <div className="h-full flex flex-col gap-5 justify-center items-center text-gray-800">
+        <div className="h-full flex flex-col gap-5 justify-center items-center text-gray-800 dark:text-gray-200">
           <h3>Letter not found. Try again later.</h3>
           <HeartCrack size={100} strokeWidth={1} />
         </div>
@@ -81,12 +76,12 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     <div className="rounded-tl-2xl bg-white border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-full h-full flex justify-center align-center items-stretch h-screen">
       <div className="my-4 w-[95%] rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-10 sm:px-20 flex flex-col justify-around">
         {/* Title field */}
-        <h1 className="placeholder-gray-400 text-center font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03]">
+        <h1 className="placeholder-gray-400 text-center font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#60a5fa]">
           {letter.title}
         </h1>
 
         {/* Date field */}
-        <div className="flex flex-col text-gray-800 justify-end text-center lg:text-right ">
+        <div className="flex flex-col text-gray-800 dark:text-gray-200 justify-end text-center lg:text-right ">
           <p>
             Written day{" "}
             {letter.date
@@ -102,9 +97,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
               />
               <span
                 className="text-blue-500 cursor-pointer"
-                onClick={() =>
-                  (window.location.href = `/profile/${letter.reviewer.id}`)
-                }
+                onClick={() => router.push(`/profile/${letter.reviewer.id}`)}
               >
                 {letter.reviewer.nickname}
               </span>
@@ -113,7 +106,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         </div>
 
         {/* Letter content field */}
-        <div className="w-full min-h-[55vh] sm:min-h-[58vh] pt-5 pb-10 text-gray-900 outline-none rounded cursor-text text-xl leading-loose">
+        <div className="w-full min-h-[55vh] sm:min-h-[58vh] pt-5 pb-10 text-gray-900 dark:text-gray-100 outline-none rounded cursor-text text-xl leading-loose">
           <TextCorrections
             ref={textRef}
             text={letter.content}
@@ -159,7 +152,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
               </div>
             </div>
             <textarea
-              className="border w-64 p-2 text-sm rounded text-gray-800"
+              className="border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-64 p-2 text-sm rounded text-gray-800 dark:text-gray-100"
               rows={3}
               disabled={letter.sentBack}
               placeholder="Enter your correction..."
@@ -177,7 +170,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
             placeholder={"No additional comments"}
             value={letter.comments}
             disabled={true}
-            className="px-5 py-4 w-full text-gray-800 bg-gray-50 rounded-lg outline-none
+            className="px-5 py-4 w-full text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-neutral-900 rounded-lg outline-none
                   resize-none
                   opacity-100"
           />

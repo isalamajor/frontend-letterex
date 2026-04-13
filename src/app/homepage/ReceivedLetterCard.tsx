@@ -3,6 +3,7 @@ import React from "react";
 import { Check, Trash2 } from "lucide-react";
 import { deleteCorrectedLetter } from "@/services/api";
 import { useDialog } from "@/context/dialogContext";
+import { useRouter } from "next/navigation";
 
 interface ReceivedLetterCardProps {
   id: string;
@@ -29,6 +30,7 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
   letterDeleted,
 }) => {
   const { openDialog, closeDialog } = useDialog();
+  const router = useRouter();
 
   const deleteOnClick = async () => {
     const result = await deleteCorrectedLetter(id);
@@ -50,22 +52,22 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
 
   return (
     <Link
-      onClick={() => console.log("Link clicked")}
+      onMouseEnter={() => router.prefetch(`/correct-letter/${id}`)}
       href={`/correct-letter/${id}`}
     >
       <div
-        className={`mb-2 w-full h-full sm:h-[12vh] px-8 py-4 rounded-lg bg-gray-50 shadow-md relative group
-      ${deleted ? "hover:bg-red-100" : sentBack ? "hover:bg-green-100" : "hover:bg-blue-100"}`}
+        className={`mb-2 w-full h-full sm:h-[12vh] px-8 py-4 rounded-lg bg-gray-50 dark:bg-neutral-850 shadow-md relative group
+      ${deleted ? "hover:bg-red-100 dark:hover:bg-red-950/40" : sentBack ? "hover:bg-green-100 dark:hover:bg-gray-900/50" : "hover:bg-blue-100 dark:hover:bg-blue-500/20"}`}
       >
         {/* Fecha */}
         <div className="flex flex-row align-center items-center justify-between mb-6">
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-gray-500 dark:text-gray">
             {"Received " + formatReceivedDate(received_at)}
           </p>
           <div className="flex flex-row gap-x-2">
             <p
               className={`opacity-0 group-hover:opacity-100 flex items-center justify-center
-            ${deleted ? "text-red-500 " : sentBack ? "text-green-500 " : "text-blue-500 "}`}
+            ${deleted ? "text-red-500 " : sentBack ? "text-green-500" : "text-blue-500"}`}
             >
               {deleted
                 ? "Deleted by the author"
@@ -87,7 +89,9 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
               )}
             </p>
             {!seen && (
-              <p className="text-xs bg-red-400 mb-2 rounded-md p-1">New</p>
+              <p className="text-xs bg-red-400 dark:bg-red-700 text-white mb-2 rounded-md p-1">
+                New
+              </p>
             )}
           </div>
         </div>
@@ -95,7 +99,7 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
         {/* Letter title */}
         <div className="flex justify-between">
           <div className="flex flex-row gap-2 align-center items-center">
-            <h4 className="items-center text-gray-700 font-bold dark:text-gray-400">
+            <h4 className="items-center text-gray-700 font-bold dark:text-gray-200">
               {title}
             </h4>
             {sentBack && (
@@ -104,9 +108,10 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
           </div>
 
           {/* Usuario que la manda e Idioma */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-gray-800 dark:text-gray">
+            <p className="text-md">By {sender.nickname}</p>
             <img
-              src={`http://localhost:3090/uploads/profile_pictures//${sender.image}`}
+              src={`${sender.image || "default.png"}`}
               alt={sender.nickname}
               className="w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600"
             />

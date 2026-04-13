@@ -25,14 +25,14 @@ export const DiarySelect = ({
   const { openDialog } = useDialog();
   return (
     <div>
-      <Label className="text-black">Select diary</Label>
+      <Label className="text-black dark:text-gray-200">Select diary</Label>
       <Select
         value={diarySelected}
         onValueChange={(diary) => {
           onDiaryChanged(diary);
         }}
       >
-        <SelectTrigger className="text-black bg-white h-10 rounded-md ring-transparent">
+        <SelectTrigger className="text-black dark:text-gray-100 bg-white dark:bg-neutral-900 h-10 rounded-md ring-transparent border border-neutral-300 dark:border-neutral-700">
           <SelectValue placeholder="(None)" />
         </SelectTrigger>
         <SelectContent>
@@ -43,7 +43,7 @@ export const DiarySelect = ({
           ))}
           <div
             key="new"
-            className="cursor-pointer flex justify-center items-center hover:bg-gray-100 w-full text-sm bg-white h-8 rounded-md ring-transparent text-[#8EBA03]"
+            className="cursor-pointer flex justify-center items-center hover:bg-gray-100 dark:hover:bg-neutral-800 w-full text-sm bg-white dark:bg-neutral-900 h-8 rounded-md ring-transparent text-[#60a5fa]"
             onClick={(e) => {
               e.preventDefault();
               openDialog({

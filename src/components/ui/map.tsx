@@ -99,8 +99,8 @@ export default function Mapa({
           key={selectedCountry}
           data={highlighted as any}
           style={{
-            fillColor: "#8EBA03",
-            color: "#8EBA03",
+            fillColor: "#3b82f6",
+            color: "#3b82f6",
             weight: 2,
           }}
         />
@@ -109,7 +109,7 @@ export default function Mapa({
         <FitBounds geoJson={highlighted} />
       </MapContainer>
       {editing ? (
-        <div className="absolute top-4 right-4 bg-white text-black p-1 rounded shadow-md z-500">
+        <div className="absolute top-4 right-4 bg-white dark:bg-neutral-900 text-black dark:text-gray-200 p-1 rounded shadow-md z-500 border border-gray-200 dark:border-neutral-700">
           <Combobox
             placeholder="Select a country"
             value={selectedCountry}
@@ -132,7 +132,7 @@ export default function Mapa({
           </Combobox>
         </div>
       ) : (
-        <div className="absolute top-4 right-4 bg-white text-black px-3 py-1 rounded shadow-md z-500">
+        <div className="absolute top-4 right-4 bg-white dark:bg-neutral-900 text-black dark:text-gray-200 px-3 py-1 rounded shadow-md z-500 border border-gray-200 dark:border-neutral-700">
           📍 {selectedCountry}{" "}
         </div>
       )}

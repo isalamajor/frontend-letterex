@@ -33,12 +33,12 @@ function InputPass({
   const toggleVisibility = () => setIsVisible((prevState) => !prevState);
 
   return (
-    <div className="space-y-2 min-w-[200px] text-black">
+    <div className="space-y-2 min-w-[200px] text-black dark:text-gray-100">
       {label && <Label htmlFor={id}>{label}</Label>}
       <div className="relative">
         <Input1
           id={id}
-          className={`${styles ? styles : `w-full p-2 border rounded text-black/80 bg-white ${markRed ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-gray-300"}`}
+          className={`${styles ? styles : `w-full p-2 border rounded text-black/80  placeholder:text-gray-500 ${markRed ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-gray-300 dark:focus:border-green-300"}`}
           `}
           placeholder={placeholder ? placeholder : "Password"}
           type={isVisible ? "text" : "password"}
@@ -52,7 +52,7 @@ function InputPass({
           maxLength={20}
         />
         <button
-          className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+          className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 dark:text-gray-300 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
           type="button"
           onClick={toggleVisibility}
           aria-label={isVisible ? "Hide password" : "Show password"}

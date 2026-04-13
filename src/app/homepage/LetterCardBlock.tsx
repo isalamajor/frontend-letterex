@@ -35,7 +35,7 @@ export default function LetterCardBlock() {
   if (noLetters) {
     return (
       <div className="flex-1 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8 h-full">
-        <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#57A02D] via-[#39c167] to-[#004D40] p-4 transition-transform duration-300 animate-gradient">
+        <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#246135] via-[#3C8632] to-[#82BC6A] p-4">
           Letters written
         </h2>
         <div className="flex gap-2 flex-col lg:flex-row justify-end">
@@ -49,16 +49,16 @@ export default function LetterCardBlock() {
   }
 
   return (
-    <div className="flex-1 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8">
-      <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#57A02D] via-[#39c167] to-[#004D40] p-4 transition-transform duration-300 animate-gradient">
+    <div className="flex-1 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 px-8 ">
+      <h2 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#246135] via-[#3C8632] to-[#82BC6A] p-4 dark:from-green-400 dark:via-dark-green-800 to-dark-green-800 ">
         Letters written
       </h2>
-      <div className="flex gap-2 flex-col lg:flex-row justify-between items-center">
-        <div className="flex flex-row gap-2 cursor-pointer border border-lightblack text-gray-700 rounded-sm py-2 px-4 bg-gray-50">
+      <div className="flex gap-2 flex-col lg:flex-row justify-between items-center text-gray-800 dark:text-gray-200">
+        <div className="flex flex-row gap-2 cursor-pointer border border-lightblack dark:border-neutral-700 rounded-sm py-2 px-4 bg-gray-50 dark:bg-neutral-850">
           <Search className="text-gray-500" />
           <input
             placeholder="Search a letter..."
-            className="w-full outline-none"
+            className="w-full outline-none bg-transparent placeholder:text-gray-500"
             value={settings.searchFilter}
             onChange={(e) => {
               setSettings({ ...settings, searchFilter: e.target.value });
@@ -80,7 +80,7 @@ export default function LetterCardBlock() {
                   <Trash2 />
                 </button>
                 <button
-                  className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 shadow-md p-2 hover:bg-gray-50"
+                  className="cursor-pointer text-gray-700 dark:text-gray-200 border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md p-2 hover:bg-gray-50 dark:hover:bg-neutral-700"
                   onClick={() =>
                     setSettings({
                       ...settings,
@@ -95,10 +95,10 @@ export default function LetterCardBlock() {
               <motion.div
                 key="diary-mode"
                 {...fadeInOut}
-                className="flex gap-2"
+                className="flex gap-2 text-gray-700 dark:text-gray-150"
               >
                 <button
-                  className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50"
+                  className="cursor-pointer border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50 dark:hover:bg-neutral-700"
                   onClick={() =>
                     setSettings({
                       ...settings,
@@ -114,10 +114,10 @@ export default function LetterCardBlock() {
               <motion.div
                 key="normal-mode"
                 {...fadeInOut}
-                className="flex gap-2"
+                className="flex gap-2 text-gray-700 dark:text-gray"
               >
                 <button
-                  className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50"
+                  className="cursor-pointer border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50 dark:hover:bg-neutral-700"
                   onClick={() =>
                     setSettings({
                       ...settings,
@@ -128,7 +128,7 @@ export default function LetterCardBlock() {
                   {settings.allLetterSwipeOpen ? <EyeOff /> : <Eye />}
                 </button>
                 <button
-                  className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50"
+                  className="cursor-pointer border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50 dark:hover:bg-neutral-700"
                   onClick={() =>
                     setSettings({
                       ...settings,
@@ -140,7 +140,7 @@ export default function LetterCardBlock() {
                 </button>
                 <NewLetterButton />
                 <button
-                  className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 shadow-md p-2 hover:bg-gray-50"
+                  className="cursor-pointer border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md p-2 hover:bg-gray-50 dark:hover:bg-neutral-700"
                   onClick={() => setSettings({ ...settings, deleteMode: true })}
                 >
                   <Trash2 />
@@ -174,7 +174,7 @@ export default function LetterCardBlock() {
 const NewLetterButton = () => {
   return (
     <Link href="/new-letter">
-      <button className="cursor-pointer text-gray-700 border border-lightblack rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50">
+      <button className="cursor-pointer text-gray-700 dark:text-gray border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50 dark:hover:bg-neutral-700">
         💌 New
       </button>
     </Link>

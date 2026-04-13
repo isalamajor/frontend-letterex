@@ -1,15 +1,32 @@
 "use client";
-import { SidebarDemo } from "@/components/sidebardemo";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import LetterCardBlock from "./LetterCardBlock";
 import ReceivedLetterBlock from "./ReceivedLetterBlock";
+import { UserContext } from "@/context/userContext";
+import { isUserComplete } from "@/lib/utils";
+import { getUserData } from "@/services/api";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  return (
-    <SidebarDemo>
-      <HomepageContent />
-    </SidebarDemo>
-  );
+  const { userData, setUserData } = useContext(UserContext);
+  const router = useRouter();
+
+  const fetchUserData = async () => {
+    if (!isUserComplete(userData)) {
+      const me = await getUserData();
+      if (me.data) {
+        setUserData(me.data);
+        console.log("userdata", me.data);
+      } else {
+        router.push("/");
+      }
+    }
+  };
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  return <HomepageContent />;
 }
 
 const HomepageContent = () => {
@@ -28,7 +45,7 @@ const HomepageContent = () => {
 
   return (
     <div
-      className="p-2 md:p-10 md:pt-2 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900
+      className="p-2 md:p-10 md:pt-2 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-850
       h-screen custom-scroll box-border overflow-auto overflow-x-hidden
       sm:h-full sm:overflow-hidden pb-6 sm:pb-2"
     >
@@ -42,13 +59,13 @@ const HomepageContent = () => {
         <div className="flex flex-row gap-2 justify-center sm:hidden">
           <button
             onClick={() => setSectionVisible(1)}
-            className={`rounded-full border border-1 px-3 py-1 ${sectionVisible === 1 ? "border-black bg-gray-300 text-gray-900" : " border-gray-500 bg-gray-100 text-gray-800"}`}
+            className={`rounded-full border border-1 px-3 py-1 ${sectionVisible === 1 ? "border-black dark:border-neutral-600 bg-gray-300 dark:bg-neutral-700 text-gray-900 dark:text-gray-100" : " border-gray-500 dark:border-neutral-700 bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-300"}`}
           >
             Letters written
           </button>
           <button
             onClick={() => setSectionVisible(2)}
-            className={`rounded-full border border-1 px-3 py-1 ${sectionVisible === 2 ? "border-black bg-gray-300 text-gray-900" : " border-gray-500 bg-gray-100 text-gray-800"}`}
+            className={`rounded-full border border-1 px-3 py-1 ${sectionVisible === 2 ? "border-black dark:border-neutral-600 bg-gray-300 dark:bg-neutral-700 text-gray-900 dark:text-gray-100" : " border-gray-500 dark:border-neutral-700 bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-300"}`}
           >
             Letters received
           </button>

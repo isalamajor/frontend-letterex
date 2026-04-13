@@ -86,7 +86,7 @@ const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({
           .map((friend) => (
             <label
               key={friend.id}
-              className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+              className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer"
             >
               <input
                 type="checkbox"
@@ -94,7 +94,7 @@ const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({
                   selected.some((s) => s.id === friend.id) || friend.alreadySent
                 }
                 disabled={friend.alreadySent || maxSelectable === 0}
-                className="w-4 h-4"
+                className="w-4 h-4 accent-blue-500 dark:accent-[#ffff4d] disabled:accent-gray-400"
                 onChange={() => handleToggle(friend)}
               />
               {friend.nickname}
@@ -102,7 +102,7 @@ const FriendsCheckboxList: React.FC<FriendsCheckboxListProps> = ({
           ))}
       </ul>
       {friends.length === 0 && (
-        <p className="text-sm text-gray-500 mb-5">
+        <p className="text-sm text-gray-500 dark:text-gray-200 mb-5">
           No friends matching the filter...
         </p>
       )}

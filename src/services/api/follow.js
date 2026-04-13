@@ -4,10 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/follow";
 
 const declineFriendRequest = async (senderId) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/decline/${senderId}`,
-      {},
-    );
+    const response = await axios.post(`${API_URL}/decline/${senderId}`, {});
     if (response.status === 200) {
       return 0;
     }
@@ -20,10 +17,7 @@ const declineFriendRequest = async (senderId) => {
 
 const acceptFriendRequest = async (senderId) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/accept/${senderId}`,
-      {},
-    );
+    const response = await axios.post(`${API_URL}/accept/${senderId}`, {});
     if (response.status === 200) {
       return 0;
     }
@@ -54,10 +48,7 @@ const getFriendRequests = async () => {
 
 const sendFollowRequest = async (receiverId) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/request/${receiverId}`,
-      {},
-    );
+    const response = await axios.post(`${API_URL}/request/${receiverId}`, {});
     if (response.status === 200) {
       return 0;
     }
@@ -142,6 +133,24 @@ const getFriendsList = async () => {
   }
 };
 
+const deleteFriend = async (userId) => {
+  if (!userId) return { ok: false };
+  try {
+    const response = await axios.delete(`${API_URL}/friend/${userId}`);
+    if (response.status === 204) {
+      return { ok: true };
+    }
+    return { ok: false };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.data);
+    } else {
+      console.error("Unknown error:", error);
+    }
+    return { ok: false };
+  }
+};
+
 export {
   declineFriendRequest,
   acceptFriendRequest,
@@ -151,4 +160,5 @@ export {
   getFriends,
   getFriendsList,
   getSuggestedUsers,
+  deleteFriend,
 };

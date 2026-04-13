@@ -11,6 +11,7 @@ export default function FrogAnimation({ toggle, velocidad = 150 }) {
   ];
   const [init, setInit] = useState(true);
   const [frameIndex, setFrameIndex] = useState(0);
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
     if (init) {
@@ -33,11 +34,26 @@ export default function FrogAnimation({ toggle, velocidad = 150 }) {
     }, velocidad);
 
     return () => clearInterval(interval);
-  }, [toggle]);
+  }, [toggle, velocidad]);
 
   // Mostrar el frame correcto
-  const displayFrame =
-    frameIndex < frames.length ? frames[frameIndex] : frames[frames.length - 1];
+  const safeFrameIndex = Math.max(0, Math.min(frameIndex, frames.length - 1));
+  const displayFrame = frames[safeFrameIndex] || frames[0];
+  console.log("frame", displayFrame);
 
-  return <img src={displayFrame} alt="Logo Frog" />;
+  if (imageFailed) {
+    return null;
+  }
+
+  return (
+    <img
+      src={displayFrame}
+      alt="logo-frog"
+      className="block w-full h-auto object-contain"
+      draggable={false}
+      width={50}
+      height={50}
+      onError={() => setImageFailed(true)}
+    />
+  );
 }

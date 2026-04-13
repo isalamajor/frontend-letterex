@@ -1,16 +1,16 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import React from "react";
+import { useRouter } from "next/navigation";
 import LetterCard from "./LetterCard";
 import {
   searchLetters,
-  changeLetterDiary,
+  searchDiaryLetters,
   deleteLetters,
+  getDiariesWithCount,
 } from "@/services/api";
 import { BookCopy, BookX } from "lucide-react";
 import { useDialog } from "@/context/dialogContext";
-import DraggableItem from "@/components/DraggableItem";
-import DropZone from "@/components/DropZone";
 import { AnimatePresence, motion } from "framer-motion";
 import { fadeInOut } from "@/lib/constants";
 import type { Letter } from "@/lib/types";
@@ -45,12 +45,17 @@ const LetterCardList = ({
     useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
+  const diaryItemsPerPage = 6;
+  const [diaryCurrentPage, setDiaryCurrentPage] = useState<number>(1);
+  const [diaryLetters, setDiaryLetters] = useState<Letter[]>([]);
+  const [diaryTotalCount, setDiaryTotalCount] = useState<number>(0);
   const [totalLettersCount, setTotalLettersCount] = useState<number>(0);
   const { openDialog, closeDialog } = useDialog();
   const pagesCacheRef = useRef<Record<number, Letter[]>>({});
   const totalPagesRef = useRef<number>(1);
   const totalLettersCountRef = useRef<number>(0);
+  const router = useRouter();
 
   // Initialize letters
   useEffect(() => {
@@ -58,7 +63,14 @@ const LetterCardList = ({
       const zeroLetters = await fetchLetters();
       onDataLoaded(zeroLetters);
     };
+    const getDiaries = async () => {
+      const res = await getDiariesWithCount();
+      if (res.ok) {
+        setDiaries(res.data);
+      }
+    };
     callFetchLetters();
+    getDiaries();
   }, []);
 
   // Get user letters from the API using search
@@ -80,6 +92,7 @@ const LetterCardList = ({
       setTotalPages(1);
       return true;
     }
+    console.log("letters:", result);
 
     const letters = result.letters;
     letters.forEach((letter: Letter) => (letter.selectedToDelete = false));
@@ -93,36 +106,45 @@ const LetterCardList = ({
     const totalCount = result.totalLetters || 0;
     setTotalLettersCount(totalCount);
     totalLettersCountRef.current = totalCount;
-    const total = Math.ceil(totalCount / itemsPerPage);
-    const totalPagesCount = total > 0 ? total : 1;
+    const totalPagesCount = result.totalPages;
     totalPagesRef.current = totalPagesCount;
     setTotalPages(totalPagesCount);
 
     return letters.length === 0;
   };
 
+  const fetchLettersByDiary = async (
+    selectedDiary: string,
+    page: number = diaryCurrentPage,
+  ) => {
+    if (!selectedDiary) {
+      setDiaryLetters([]);
+      setDiaryTotalCount(0);
+      return;
+    }
+
+    const query = searchFilter || "";
+    const result = await searchDiaryLetters(
+      query,
+      page,
+      diaryItemsPerPage,
+      selectedDiary,
+    );
+
+    if (!result || !result.letters) {
+      setDiaryLetters([]);
+      setDiaryTotalCount(0);
+      return;
+    }
+
+    setDiaryLetters(result.letters);
+    setDiaryTotalCount(result.totalLetters || 0);
+  };
+
   // Organise letters by diaries on trigger
   useEffect(() => {
     if (!filteredLetters || filteredLetters.length < 1) return;
     setDiarySelected("");
-    const counts = filteredLetters.reduce(
-      (acc, letter) => {
-        const diaryName =
-          letter.diary && letter.diary.trim() !== ""
-            ? letter.diary
-            : "Unclassified";
-        const found = acc.find((item) => item.diary === diaryName);
-
-        if (found) {
-          found.count += 1;
-        } else {
-          acc.push({ diary: letter.diary || "Unclassified", count: 1 });
-        }
-        return acc;
-      },
-      [] as { diary: string; count: number }[],
-    );
-    setDiaries(counts);
     setDiaryOrganised(!diaryOrganised);
   }, [orderByDiaryTrigger]);
 
@@ -133,6 +155,7 @@ const LetterCardList = ({
     totalPagesRef.current = 1;
     totalLettersCountRef.current = 0;
     setCurrentPage(1);
+    setDiaryCurrentPage(1);
     const refetchLetters = async () => {
       await fetchLetters(1);
     };
@@ -153,6 +176,36 @@ const LetterCardList = ({
   useEffect(() => {
     setFilteredLetters(letters);
   }, [letters]);
+
+  // Prefetch visible edit routes for snappier navigation.
+  useEffect(() => {
+    filteredLetters.slice(0, 10).forEach((letter) => {
+      router.prefetch(`/edit-letter/${letter.id}`);
+    });
+  }, [filteredLetters, router]);
+
+  useEffect(() => {
+    setDiaryCurrentPage(1);
+    if (!diarySelected) {
+      setDiaryLetters([]);
+      setDiaryTotalCount(0);
+    }
+  }, [diarySelected]);
+
+  useEffect(() => {
+    if (!diaryOrganised || !diarySelected || diaryCurrentPage < 1) {
+      if (!diarySelected || !diaryOrganised) {
+        setDiaryLetters([]);
+        setDiaryTotalCount(0);
+      }
+      return;
+    }
+
+    const refetchDiaryLetters = async () => {
+      await fetchLettersByDiary(diarySelected, diaryCurrentPage);
+    };
+    refetchDiaryLetters();
+  }, [diaryCurrentPage, diarySelected, diaryOrganised, searchFilter]);
 
   // Delete selected letters
   useEffect(() => {
@@ -195,7 +248,7 @@ const LetterCardList = ({
     (id: string) => (event: React.MouseEvent<HTMLDivElement>) => {
       event.stopPropagation();
       event.preventDefault();
-      window.location.href = `/edit-letter/${id}`;
+      router.push(`/edit-letter/${id}`);
     };
 
   // Changes the delete selection of an item, then notifies the parent
@@ -220,18 +273,7 @@ const LetterCardList = ({
     setResetSelectionToDelete(!resetSelectionToDelete);
   };
 
-  const handleDropAction = (
-    letterId: string,
-    oldDiary: string,
-    newDiary: string,
-  ) => {
-    console.log("Cambiar de ", oldDiary, " a ", newDiary);
-    if (oldDiary === newDiary) return;
-    changeLetterDiary(letterId, newDiary);
-  };
-
-  const showDiaries =
-    diaryOrganised && filteredLetters && filteredLetters.length > 0;
+  const showDiaries = diaryOrganised && diaries && diaries.length > 0;
 
   const handlePageChange = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
@@ -242,24 +284,29 @@ const LetterCardList = ({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleDiaryPageChange = (
+    _event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number,
+  ) => {
+    // TablePagination uses 0-based indexing, convert to 1-based
+    setDiaryCurrentPage(newPage + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       {showDiaries ? (
         <motion.div
           key="diary-view"
           {...fadeInOut}
-          className="flex flex-row gap-4 pb-10 pt-3 custom-scroll sm:max-h-[80%] sm:overflow-y-auto"
+          className="flex flex-row gap-4 pb-10 pt-3"
         >
           {/* Diaries */}
           <div className="flex flex-col gap-y-3 w-[50%]">
             {diaries.map((diary) => (
-              <DropZone
-                onDropAction={handleDropAction}
-                key={diary.diary}
-                diaryDropZone={diary.diary}
-              >
+              <div key={diary.diary}>
                 <div
-                  className="flex flex-row group relative cursor-pointer"
+                  className="flex flex-row group relative cursor-pointer dark:text-blue-100"
                   onClick={() => {
                     if (diary.diary === diarySelected) {
                       setDiarySelected("");
@@ -270,7 +317,7 @@ const LetterCardList = ({
                     }
                   }}
                 >
-                  <p className="flex rounded-l-lg bg-yellow-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
+                  <p className="flex rounded-l-lg bg-yellow-200 dark:bg-dark-green-800 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
                     <span className="block group-hover:hidden transition-opacity duration-900">
                       {diary.diary === "Unclassified"
                         ? diary.diary === diarySelected
@@ -285,7 +332,7 @@ const LetterCardList = ({
                     </span>
                   </p>
                   <div
-                    className={`px-8 py-4 rounded-r-lg bg-gray-50 shadow-md w-full max-w-5xl text-black ${diary.diary === diarySelected && "bg-yellow-50"}`}
+                    className={`px-8 py-4 rounded-r-lg bg-gray-50 dark:bg-neutral-850 shadow-md w-full max-w-5xl text-black dark:text-blue-100 ${diary.diary === diarySelected && "bg-yellow-50 dark:bg-dark-bg-tertiary/50"}`}
                   >
                     <p className="font-semibold">
                       {diary.diary === "Unclassified"
@@ -298,7 +345,7 @@ const LetterCardList = ({
                     </p>
                   </div>
                 </div>
-              </DropZone>
+              </div>
             ))}
           </div>
 
@@ -307,18 +354,13 @@ const LetterCardList = ({
             <motion.div
               key="select-diary"
               {...fadeInOut}
-              className="text-gray-500 bg-white rounded-lg shadow-md flex flex-col gap-y-3 items-center justify-center align-middle p-5 text-center h-[15rem]"
+              className="text-gray-500 dark:text-blue-100 bg-white dark:bg-neutral-800 rounded-lg shadow-md flex flex-col gap-y-3 items-center justify-center align-middle p-5 text-center h-[15rem]"
             >
               Select a diary and its letters will appear here
               <BookCopy className="h-20 w-20" strokeWidth={0.75}></BookCopy>
             </motion.div>
-          ) : filteredLetters.filter((letter) => {
-              if (diarySelected === "Unclassified") {
-                return !letter.diary || letter.diary.trim() === "";
-              }
-              return letter.diary === diarySelected;
-            }).length === 0 ? (
-            <div className="text-gray-500 bg-white rounded-lg shadow-md flex flex-col gap-y-3 items-center justify-center align-middle p-5 text-center">
+          ) : diaryLetters.length === 0 ? (
+            <div className="text-gray-500 dark:text-blue-00 bg-white dark:bg-neutral-800 rounded-lg shadow-md flex flex-col gap-y-3 items-center justify-center align-middle p-5 text-center">
               No letters in this diary matching the filter
               <BookX className="h-20 w-20" strokeWidth={0.75}></BookX>
             </div>
@@ -326,49 +368,82 @@ const LetterCardList = ({
             <motion.div
               key="list-letters"
               {...fadeInOut}
-              className="flex flex-col gap-4 custom-scroll h-[60vh] overflow-y-auto w-[50%]"
+              className="flex flex-col gap-4 h-[60vh] w-[50%]"
             >
-              {filteredLetters
-                .filter((letter) => {
-                  if (diarySelected === "Unclassified") {
-                    return !letter.diary || letter.diary.trim() === "";
-                  }
-                  return letter.diary === diarySelected;
-                })
-                .map((letter, index) => (
-                  <DraggableItem
-                    id={letter.id}
-                    key={index}
-                    diaryName={letter.diary || "Unclassified"}
+              {diaryLetters.map((letter, index) => (
+                <div key={index}>
+                  <div
+                    className="flex flex-row group relative cursor-pointer"
+                    onMouseEnter={() =>
+                      router.prefetch(`/edit-letter/${letter.id}`)
+                    }
+                    onClick={goToEditLetter(letter.id)}
                   >
-                    <div
-                      className="flex flex-row group relative cursor-pointer"
-                      onClick={goToEditLetter(letter.id)}
-                    >
-                      <p className="flex rounded-l-lg bg-blue-200 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
-                        <span className="block group-hover:hidden transition-opacity duration-900">
-                          ✉️
-                        </span>
-                        <span className="hidden group-hover:block transition-opacity duration-900">
-                          💌
-                        </span>
-                      </p>
-                      <div className="px-8 py-4 rounded-r-lg bg-gray-50 shadow-md w-full max-w-5xl text-black">
-                        <div className="flex flex-row justify-between">
-                          <div className="flex flex-row gap-2 text-gray-500 items-center">
-                            <img
-                              src={`/flags/${letter.language}.svg`}
-                              className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600"
-                            />
-                            <p>{letter.language}</p>
-                          </div>
-                          <p>{letter.created_at.slice(0, 10)}</p>
+                    <p className="flex rounded-l-lg bg-blue-200 dark:bg-dark-green-600 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
+                      <span className="block group-hover:hidden transition-opacity duration-900">
+                        ✉️
+                      </span>
+                      <span className="hidden group-hover:block transition-opacity duration-900">
+                        💌
+                      </span>
+                    </p>
+                    <div className="px-8 py-4 rounded-r-lg bg-gray-50 dark:bg-neutral-850 shadow-md w-full max-w-5xl text-black dark:text-gray-200">
+                      <div className="flex flex-row justify-between">
+                        <div className="flex flex-row gap-2 text-gray-500 items-center">
+                          <img
+                            src={`/flags/${letter.language}.svg`}
+                            className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600"
+                          />
+                          <p>{letter.language}</p>
                         </div>
-                        <p className="font-semibold">{letter.title}</p>
+                        <p className="dark:text-green-100">
+                          {letter.created_at.slice(5, 10)}
+                        </p>
                       </div>
+                      <p className="font-semibold">{letter.title}</p>
                     </div>
-                  </DraggableItem>
-                ))}
+                  </div>
+                </div>
+              ))}
+              {diaryTotalCount > diaryItemsPerPage && (
+                <div className="flex justify-end mt-2">
+                  <TablePagination
+                    component="div"
+                    count={diaryTotalCount}
+                    page={diaryCurrentPage - 1}
+                    onPageChange={handleDiaryPageChange}
+                    rowsPerPage={diaryItemsPerPage}
+                    rowsPerPageOptions={[]}
+                    className="text-gray-700 dark:text-gray-200"
+                    sx={{
+                      color: "rgb(55 65 81)",
+                      "& .MuiTablePagination-toolbar": { color: "inherit" },
+                      "& .MuiTablePagination-selectLabel": { color: "inherit" },
+                      "& .MuiTablePagination-displayedRows": {
+                        color: "inherit",
+                      },
+                      "& .MuiTablePagination-actions": { color: "inherit" },
+                      "& .MuiSvgIcon-root": { color: "inherit" },
+                      ".dark &": { color: "rgb(243 244 246)" },
+                      ".dark & .MuiTablePagination-toolbar": {
+                        color: "rgb(243 244 246)",
+                      },
+                      ".dark & .MuiTablePagination-selectLabel": {
+                        color: "rgb(243 244 246)",
+                      },
+                      ".dark & .MuiTablePagination-displayedRows": {
+                        color: "rgb(243 244 246)",
+                      },
+                      ".dark & .MuiTablePagination-actions": {
+                        color: "rgb(243 244 246)",
+                      },
+                      ".dark & .MuiSvgIcon-root": {
+                        color: "rgb(243 244 246)",
+                      },
+                    }}
+                  />
+                </div>
+              )}
             </motion.div>
           )}
         </motion.div>
@@ -384,14 +459,38 @@ const LetterCardList = ({
                 onPageChange={handlePageChange}
                 rowsPerPage={itemsPerPage}
                 rowsPerPageOptions={[]}
-                className="text-gray-700"
+                className="text-gray-700 dark:text-gray-200"
+                sx={{
+                  color: "rgb(55 65 81)",
+                  "& .MuiTablePagination-toolbar": { color: "inherit" },
+                  "& .MuiTablePagination-selectLabel": { color: "inherit" },
+                  "& .MuiTablePagination-displayedRows": { color: "inherit" },
+                  "& .MuiTablePagination-actions": { color: "inherit" },
+                  "& .MuiSvgIcon-root": { color: "inherit" },
+                  ".dark &": { color: "rgb(243 244 246)" },
+                  ".dark & .MuiTablePagination-toolbar": {
+                    color: "rgb(243 244 246)",
+                  },
+                  ".dark & .MuiTablePagination-selectLabel": {
+                    color: "rgb(243 244 246)",
+                  },
+                  ".dark & .MuiTablePagination-displayedRows": {
+                    color: "rgb(243 244 246)",
+                  },
+                  ".dark & .MuiTablePagination-actions": {
+                    color: "rgb(243 244 246)",
+                  },
+                  ".dark & .MuiSvgIcon-root": {
+                    color: "rgb(243 244 246)",
+                  },
+                }}
               />
             </div>
           )}
           <motion.div
             key="list-view"
             {...fadeInOut}
-            className="flex flex-col h-full sm:h-[64vh] custom-scroll overflow-y-auto pb-10"
+            className="flex flex-col h-full sm:h-[64vh] pb-10"
           >
             {filteredLetters && filteredLetters.length > 0 ? (
               filteredLetters.map((letter, index) => (

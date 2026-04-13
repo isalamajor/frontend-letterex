@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReceivedLetterCardProps from "./ReceivedLetterCard";
 import type { ReceivedLetter } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 interface ChildProps {
   letters: ReceivedLetter[];
@@ -8,41 +9,17 @@ interface ChildProps {
 }
 
 const ReceivedLetterList = ({ letters, noLetters }: ChildProps) => {
-  /*const [filteredLetters, setFilteredLetters] = useState<ReceivedLetter[]>([]);
-  const [childAskedForRefresh, setChildAskedForRefresh] =
-    useState<boolean>(false);
+  const router = useRouter();
 
-  // Filter letters by search text
   useEffect(() => {
-    const filteredLetters = async () => {
-      const q = searchFilter.toLowerCase();
-      const results = letters.filter(
-        (letter) =>
-          letter.originalLetter.title.toLowerCase().includes(q) ||
-          letter.originalLetter.language.toLowerCase().includes(q) ||
-          letter.originalLetter.created_at
-            .slice(0, 10)
-            .toLocaleLowerCase()
-            .includes(q),
-      );
-      const lettersReduced = orderBySender
-        ? results.filter((letter) => letter.sender.nickname === orderBySender)
-        : results;
-      if (showOnlyPending) {
-        const lettersPending = lettersReduced.filter(
-          (letter) => !letter.sentBack,
-        );
-        setFilteredLetters(lettersPending);
-      } else {
-        setFilteredLetters(lettersReduced);
-      }
-    };
-    filteredLetters();
-  }, [searchFilter, letters, orderBySender, showOnlyPending]);*/
+    letters.slice(0, 5).forEach((letter) => {
+      router.prefetch(`/correct-letter/${letter.id}`);
+    });
+  }, [letters, router]);
 
   if (letters && letters.length > 0) {
     return (
-      <div className="flex flex-col h-full sm:h-[64vh] custom-scroll overflow-y-auto pb-10">
+      <div className="flex flex-col h-full sm:h-[64vh] pb-10">
         {letters.map((letter, index) => (
           <ReceivedLetterCardProps
             id={letter.id}

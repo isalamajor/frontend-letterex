@@ -118,20 +118,22 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
 
   return (
     <motion.div
-      className="mt-10 bg-white p-6 rounded-lg shadow-lg w-80 w-[22rem]"
+      className="mt-10 bg-white dark:bg-neutral-900 p-6 rounded-lg shadow-lg w-80 w-[22rem] text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-neutral-700"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
       {currentStep === 0 && (
         <>
-          <h3 className="text-lg font-semibold ">📬 Enter your email</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            📬 Enter your email
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             It must be the email you signed up with
           </p>
           <div className="flex flex-col gap-2 mt-5 mb-3 mx-0 justify-start">
             <input
-              className="w-full p-2 mb-2 border rounded form-blank"
+              className="w-full p-2 mb-2 border rounded form-blank bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-700 placeholder:text-gray-500 dark:placeholder:text-gray-400"
               type="text"
               value={email}
               placeholder="Email"
@@ -150,8 +152,12 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
 
       {currentStep === 1 && (
         <>
-          <h3 className="text-lg font-semibold mb-4">Check your mailbox</h3>
-          <h4 className="text-lg mb-2">We sent you a verification code...</h4>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+            Check your mailbox
+          </h3>
+          <h4 className="text-lg mb-2 text-gray-700 dark:text-gray-300">
+            We sent you a verification code...
+          </h4>
           <div className="flex flex-col gap-2 mt-5 mb-3 mx-0 justify-start">
             <CodeInput
               setCode={(code) => {
@@ -166,9 +172,11 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
 
       {currentStep === 2 && (
         <>
-          <h3 className="text-lg font-semibold mb-4">Ok! Set a new password</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+            Ok! Set a new password
+          </h3>
           <InputPass
-            styles="w-full p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
+            styles="w-full p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
             onChange={(pass) => {
               setPassword(pass);
               setShowAlert("");
@@ -178,7 +186,7 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
             wrongPassword={false}
           />
           <InputPass
-            styles="w-full mb-4 p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900"
+            styles="w-full mb-4 p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
             onChange={(pass) => {
               setConfirmPassword(pass);
               setShowAlert("");
@@ -194,7 +202,7 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
       )}
 
       {currentStep === 3 ? (
-        <div className="flex justify-center text-center items-center flex-col gap-2 h-full w-full text-black m-2 py-4">
+        <div className="flex justify-center text-center items-center flex-col gap-2 h-full w-full text-black dark:text-gray-100 m-2 py-4">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -211,16 +219,21 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
               className={`w-8 h-8 ${iconConfig.iconColorClass}`}
             />
           </motion.div>
-          <p>Password changed succesfully</p>
+          <p className="text-gray-900 dark:text-gray-100">
+            Password changed succesfully
+          </p>
         </div>
       ) : (
         <div className="back-go mt-0 pt-0">
-          <button onClick={goBack} className={btnClass}>
+          <button
+            onClick={goBack}
+            className={`${btnClass} dark:bg-neutral-700 dark:text-gray-100`}
+          >
             ← Back
           </button>
           <button
             onClick={handleNextStep}
-            className={`${btnClass} flex flex-row gap-1 justify-center items-center`}
+            className={`${btnClass} flex flex-row gap-1 justify-center items-center dark:bg-dark-bg-secondary dark:text-white`}
           >
             {currentStep === 2 ? "Confirm" : "Next"}
           </button>

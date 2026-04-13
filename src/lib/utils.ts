@@ -1,15 +1,16 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { UserData } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function isQuillContentEmpty(html: string) {
-  if (!html) return true
+  if (!html) return true;
 
-  const hasEmbeds = /<(img|video|audio|iframe)\b/i.test(html)
-  if (hasEmbeds) return false
+  const hasEmbeds = /<(img|video|audio|iframe)\b/i.test(html);
+  if (hasEmbeds) return false;
 
   const plainText = html
     .replace(/<p><br><\/p>/gi, "")
@@ -17,7 +18,17 @@ export function isQuillContentEmpty(html: string) {
     .replace(/&nbsp;/gi, " ")
     .replace(/<[^>]+>/g, "")
     .replace(/\s+/g, "")
-    .trim()
+    .trim();
 
-  return plainText.length === 0
+  return plainText.length === 0;
+}
+
+export function isUserComplete(userData: UserData) {
+  return (
+    !!userData.id &&
+    !!userData.nickname &&
+    !!userData.learningLanguage &&
+    !!userData.learningLanguage2 &&
+    !!userData.learningLanguage3
+  );
 }

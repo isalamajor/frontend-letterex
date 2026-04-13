@@ -40,6 +40,26 @@ const getDiaries = async () => {
   }
 };
 
+const getDiariesWithCount = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/diaries/counts`);
+    if (response.status === 200) {
+      console.log("Diaries API:", response.data);
+      return { ok: true, data: response.data };
+    }
+    console.error("Error obtaining diaries:", response.data.message);
+    return { ok: false, message: response.data.message };
+  } catch (error) {
+    console.error("Error obtaining diaries:", error.message);
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.data);
+    } else {
+      console.error("Unknown error:", error);
+    }
+    return { ok: false, message: error?.message || "Error obtaining diaries" };
+  }
+};
+
 const getCountLetters = async (userId) => {
   try {
     let response;
@@ -194,15 +214,54 @@ const getUserLetters = async () => {
 
 const searchLetters = async (query, page = 1, itemsPerPage = 10) => {
   try {
-    const response = await axios.get(`${API_URL}/list/search`, {
+    const response = await axios.get(`${API_URL}/list/`, {
       params: {
         q: query,
         page: page,
         itemsPerPage: itemsPerPage,
+        _: Date.now(),
+      },
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
       },
     });
 
     if (response.status === 200) {
+      console.log("letters", response);
+      return response.data;
+    }
+    console.error("Error searching letters:", response.data);
+    return null;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.data);
+    } else {
+      console.error("Unknown error:", error);
+    }
+    return null;
+  }
+};
+
+const searchDiaryLetters = async (query, page = 1, itemsPerPage = 6, diary) => {
+  try {
+    if (!diary) return;
+    const response = await axios.get(`${API_URL}/list/diary`, {
+      params: {
+        q: query,
+        page: page,
+        itemsPerPage: itemsPerPage,
+        diary: diary,
+        _: Date.now(),
+      },
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+    });
+
+    if (response.status === 200) {
+      console.log("letters", response);
       return response.data;
     }
     console.error("Error searching letters:", response.data);
@@ -220,6 +279,7 @@ const searchLetters = async (query, page = 1, itemsPerPage = 10) => {
 export {
   deleteLetters,
   getDiaries,
+  getDiariesWithCount,
   getCountLetters,
   shareLetter,
   getLetter,
@@ -228,4 +288,5 @@ export {
   saveLetter,
   getUserLetters,
   searchLetters,
+  searchDiaryLetters,
 };

@@ -54,17 +54,17 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
     window.location.href = `/profile/${id}`;
   };
   return (
-    <div className="px-6 pt-4 rounded-lg bg-white hover:bg-gray-50 border border-gray-200 shadow-md w-full flex flex-row justify-between gap-4">
+    <div className="px-6 pt-4 rounded-lg bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 dark:border-neutral-700 shadow-md w-full flex flex-row justify-between gap-4">
       <div className="flex flex-row gap-7 items-center">
         <img
-          src={`${process.env.NEXT_PUBLIC_PICTURES_BASE_URL}/${image}`}
+          src={`${image || "default.png"}`}
           alt={image}
           className="w-15 h-15 rounded-full border border-gray-300 dark:border-gray-600"
         />
         <div className="flex flex-col gap-2 items-start mb-4">
           {/* Fecha y Diario */}
           <h4
-            className="cursor-pointer hover:text-purple-400 hover:underline items-center text-gray-700 font-bold dark:text-gray-400"
+            className="cursor-pointer hover:text-purple-400 dark:hover:text-indigo-400 hover:underline items-center text-gray-700 font-bold dark:text-indigo-100"
             onClick={goToProfile}
           >
             {nickname}
@@ -73,42 +73,46 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
             <img
               src={`/flags/${masterLanguage}.svg`}
               alt={masterLanguage}
-              className="h-6 w-6 rounded-full object-cover border border-gray-300 shadow"
+              className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow"
             ></img>
             {masterLanguage2 && (
               <img
                 src={`/flags/${masterLanguage2}.svg`}
                 alt={masterLanguage2}
-                className="h-6 w-6 rounded-full object-cover border border-gray-300 shadow ml-1"
+                className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1"
               ></img>
             )}
             {masterLanguage3 && (
               <img
                 src={`/flags/${masterLanguage3}.svg`}
                 alt={masterLanguage3}
-                className="h-6 w-6 rounded-full object-cover border border-gray-300 shadow ml-1"
+                className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1"
               ></img>
             )}
-            <Dot className="text-gray-700 h-6 w-6" color="gray" size={300}>
+            <Dot
+              className="text-gray-700 dark:text-gray-300 h-6 w-6"
+              color="gray"
+              size={300}
+            >
               |
             </Dot>
             <img
               src={`/flags/${learningLanguage}.svg`}
               alt={learningLanguage}
-              className="h-6 w-6 rounded-full object-cover border border-gray-300 shadow"
+              className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow"
             ></img>
             {learningLanguage2 && (
               <img
                 src={`/flags/${learningLanguage2}.svg`}
                 alt={learningLanguage2}
-                className="h-6 w-6 rounded-full object-cover border border-gray-300 shadow ml-1"
+                className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1"
               ></img>
             )}
             {learningLanguage3 && (
               <img
                 src={`/flags/${learningLanguage3}.svg`}
                 alt={learningLanguage3}
-                className="h-6 w-6 rounded-full object-cover border border-gray-300 shadow ml-1"
+                className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1"
               ></img>
             )}
           </div>
@@ -117,10 +121,10 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
       {/* Add friend buttons */}
       <div className="flex flex-col justify-start h-full">
         {friendRequestJustSent || friendRequestSent ? (
-          <UserRoundCheck className="h-6 w-6 text-green-500" />
+          <UserRoundCheck className="h-6 w-6 text-green-400" />
         ) : (
           <button
-            className="flex justify-center align-center bg-green-400 hover:bg-green-500 border-2 border-green-500 text-white rounded-md p-1"
+            className="flex justify-center align-center bg-green-400 hover:bg-green-500 text-white rounded-md p-1 "
             onClick={addFriendOnClick}
           >
             <UserRoundPlus className="h-5 w-5" />

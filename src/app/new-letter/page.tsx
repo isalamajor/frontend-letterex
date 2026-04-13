@@ -1,5 +1,4 @@
 "use client";
-import { SidebarDemo } from "@/components/sidebardemo";
 import dynamic from "next/dynamic";
 import { Spinner } from "@/components/ui/spinner-1";
 
@@ -12,11 +11,5 @@ const NewLetterPageContent = dynamic(() => import("./NewLetterPageContent"), {
 });
 
 export default function Home() {
-  return (
-    <div className="page-container">
-      <SidebarDemo>
-        <NewLetterPageContent />
-      </SidebarDemo>
-    </div>
-  );
+  return <NewLetterPageContent />;
 }

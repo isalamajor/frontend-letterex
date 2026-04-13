@@ -9,7 +9,6 @@ interface ImageUploaderProps {
   currentPicLocalUrl?: string | null;
   size?: string | null;
   active?: boolean | null;
-  type?: string;
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -17,13 +16,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   currentPicLocalUrl = null,
   size = "125px",
   active = true,
-  type = "profile",
 }) => {
   const { openDialog } = useDialog();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [imageRemoved, setImageRemoved] = useState<string | null>(null);
-  const defaultImage =
-    type === "profile" ? "/default.png" : "/community-frogs-bw.png";
+  const defaultImage = "/default.png";
+  const normalizedCurrentPic =
+    currentPicLocalUrl === "default.png" ? "/default.png" : currentPicLocalUrl;
 
   useEffect(() => {
     setImageRemoved(null);
@@ -50,67 +49,23 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     }
   };
 
-  if (type === "profile") {
-    return (
-      <div className="flex flex-col justify-center items-center">
-        <div
-          className="relative rounded-full overflow-hidden cursor-pointer group mr-2"
-          style={{ height: size ?? "", width: size ?? "" }}
-          onClick={() => document.getElementById("fileInput")?.click()}
-        >
-          <ImageZoom
-            src={
-              profileImage ?? imageRemoved ?? currentPicLocalUrl ?? defaultImage
-            }
-            alt="Imagen de perfil"
-            className="w-full h-full object-cover rounded-full border-2 border-gray-300 transition-opacity duration-300"
-          />
-          {/* overlay */}
-          {active && (
-            <div className="absolute inset-0 hover:bg-black/50 text-white flex items-center justify-center text-sm font-bold opacity-0 transition-opacity duration-300 rounded-full group-hover:opacity-100">
-              <FolderUp size={70} />
-            </div>
-          )}
-          <input
-            id="fileInput"
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-            disabled={!active}
-          />
-        </div>
-        {active && (
-          <p
-            className="text-red-500 flex flex-row gap-1 justify-center items-center mt-2 hover:underline underline-2 cursor-pointer"
-            onClick={() => {
-              setProfileImage(null);
-              onImageSelect(null);
-              setImageRemoved("/default.png");
-            }}
-          >
-            <Trash2 size={20} />
-            Remove
-          </p>
-        )}
-      </div>
-    );
-  } else {
-    return (
+  return (
+    <div className="flex flex-col justify-center items-center">
       <div
-        className="relative rounded-md cursor-pointer group mr-2 w-full"
+        className="relative rounded-full overflow-hidden cursor-pointer group mr-2"
+        style={{ height: size ?? "", width: size ?? "" }}
         onClick={() => document.getElementById("fileInput")?.click()}
       >
-        <img
+        <ImageZoom
           src={
-            profileImage ?? imageRemoved ?? currentPicLocalUrl ?? defaultImage
+            profileImage ?? imageRemoved ?? normalizedCurrentPic ?? defaultImage
           }
-          alt="CommunityImage"
-          className="w-full h-full object-cover rounded-md border-1 border-gray-300 transition-opacity duration-300 aspect-square"
+          alt="Error al cargar la imagen :("
+          className="w-full h-full object-cover rounded-full border-2 border-gray-100 transition-opacity duration-300"
         />
         {/* overlay */}
         {active && (
-          <div className="absolute inset-0 hover:bg-black/50 text-white flex items-center justify-center text-sm font-bold opacity-0 transition-opacity duration-300 rounded-md group-hover:opacity-100">
+          <div className="absolute inset-0 hover:bg-black/50 text-white flex items-center justify-center text-sm font-bold opacity-0 transition-opacity duration-300 rounded-full group-hover:opacity-100">
             <FolderUp size={70} />
           </div>
         )}
@@ -120,10 +75,24 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           accept="image/*"
           onChange={handleImageChange}
           className="hidden"
+          disabled={!active}
         />
       </div>
-    );
-  }
+      {active && (
+        <p
+          className="text-red-500 flex flex-row gap-1 justify-center items-center mt-2 hover:underline underline-2 cursor-pointer"
+          onClick={() => {
+            setProfileImage(null);
+            onImageSelect(null);
+            setImageRemoved("/default.png");
+          }}
+        >
+          <Trash2 size={20} />
+          Remove
+        </p>
+      )}
+    </div>
+  );
 };
 
 export default ImageUploader;

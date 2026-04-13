@@ -45,16 +45,16 @@ const SuggestedUsers = () => {
 
   return (
     <>
-      <div className=" bg-white rounded-lg p-4 h-full px-4">
+      <div className=" bg-white dark:bg-neutral-850 rounded-lg p-4 h-full px-4">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-          <h2 className="text-3xl text-center text-indigo-500">
+          <h2 className="text-3xl text-center text-indigo-500 dark:text-[#b63aff]">
             Suggested users
           </h2>
-          <div className="flex flex-row mt-2 sm:mt-0 ml-auto gap-2 cursor-pointer border border-lightblack text-gray-700 rounded-sm py-2 px-4 bg-gray-50 w-full sm:w-[45%]">
-            <Search className="text-gray-500"></Search>
+          <div className="flex flex-row mt-2 sm:mt-0 ml-auto gap-2 cursor-pointer border border-lightblack dark:border-neutral-700 text-gray-700 dark:text-gray-200 rounded-sm py-2 px-4 bg-gray-50 dark:bg-neutral-800 w-full sm:w-[45%]">
+            <Search className="text-gray-500 dark:text-gray-300"></Search>
             <input
               placeholder="Search for a user..."
-              className="w-full outline-none"
+              className="w-full outline-none bg-transparent text-gray-800 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             ></input>
@@ -63,7 +63,9 @@ const SuggestedUsers = () => {
         <>
           {(query ? queryResults : suggested).length === 0 ? (
             <div className="flex items-center gap-2 justify-center w-full h-full justify-center align-center items-center pb-15">
-              <p className="text-gray-500">...No users found...</p>
+              <p className="text-gray-500 dark:text-gray">
+                ...No users found...
+              </p>
               <Ghost color="gray" />
             </div>
           ) : (

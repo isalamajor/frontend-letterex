@@ -1,59 +1,16 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
+import {
+  UserData,
+  ApiResponse,
+  Credentials,
+  LoginData,
+  RegisterData,
+  ValidationCodePurpose,
+} from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/user";
 
-// Configurar Axios para enviar/recibir cookies
-// This allows the backend to return Set-Cookie and Axios to handle it automatically
 axios.defaults.withCredentials = true;
-
-// Generic API Response
-export interface ApiResponse<T = any> {
-  ok: boolean;
-  data?: T;
-  errorMessage?: string;
-}
-
-export interface UserData {
-  id?: string;
-  email?: string;
-  nickname?: string;
-  password?: string;
-  learningLanguage?: string | null;
-  learningLanguage2?: string | null;
-  learningLanguage3?: string | null;
-  masterLanguage?: string | null;
-  masterLanguage2?: string | null;
-  masterLanguage3?: string | null;
-  countLetters?: Record<string, number>;
-  countCorrectedLetter?: Record<string, number>;
-  country?: string;
-  bio?: string;
-  image?: File | null;
-  location?: {
-    city?: string;
-    country?: string;
-  };
-}
-
-export interface Credentials {
-  email: string;
-  password: string;
-}
-
-export interface LoginData {
-  token: string;
-  userData: UserData;
-}
-
-export interface RegisterData {
-  message: string;
-  userId?: string;
-}
-
-export enum ValidationCodePurpose {
-  PASSWORD_RESET = "password_reset",
-  REGISTER = "register",
-}
 
 const getUserData = async (id?: string): Promise<ApiResponse<UserData>> => {
   try {
@@ -158,35 +115,29 @@ const register = async (
 
 const login = async (
   credentials: Credentials,
-): Promise<ApiResponse<LoginData>> => {
+): Promise<ApiResponse<UserData>> => {
   try {
-    const response = await axios.post(`${API_URL}/login`, credentials);
-    if (response.status === 200 && response.data.status === 0) {
-      sessionStorage.setItem("authToken", response.data.token);
-      sessionStorage.setItem(
-        "userData",
-        JSON.stringify(response.data.userData),
-      );
-      if (response.data.userData.id) {
+    const response = await axios.post(`${API_URL}/login`, credentials, {
+      validateStatus: (status) => [200, 400, 401, 404].includes(status),
+    });
+    if (response.status === 200) {
+      console.log("api", response);
+
+      /*if (response.data.userData.id) {
         SavePPicInSessionStorage(
           response.data.token,
           response.data.userData.id,
         );
-      }
+      }*/
       return {
         ok: true,
-        data: {
-          token: response.data.token,
-          userData: response.data.userData,
-        },
-      };
-    } else if (response.data.status > 0) {
-      return {
-        ok: false,
-        errorMessage: response.data.message || "Invalid credentials",
+        data: response.data.userData,
       };
     }
-    return { ok: false, errorMessage: "Login failed" };
+    return {
+      ok: false,
+      errorMessage: response.data?.message || "Login failed",
+    };
   } catch (error) {
     if (axios.isAxiosError(error)) {
       return {
@@ -258,10 +209,7 @@ const isEmailInUse = async (email: string): Promise<ApiResponse<boolean>> => {
   }
 };
 
-const getProfile = async (
-  id: string,
-  token: string,
-): Promise<ApiResponse<UserData>> => {
+const getProfile = async (id: string): Promise<ApiResponse<UserData>> => {
   try {
     const response = await axios.get(`${API_URL}/profile/${id}`);
     return { ok: true, data: response.data };
@@ -386,8 +334,6 @@ const uploadProfilePicture = async (file: File): Promise<ApiResponse<void>> => {
 
 const deleteProfilePicture = async (): Promise<ApiResponse<void>> => {
   try {
-    console.log("delete api");
-
     const response = await axios.delete(`${API_URL}/profile-picture`);
     if (response.status === 200) {
       sessionStorage.removeItem("profilePictureBase64");

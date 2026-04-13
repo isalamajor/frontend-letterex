@@ -111,7 +111,7 @@ const TextCorrections = forwardRef<
 
       const correctionSpan = `<span
         id="correction-${startIndex}-${endIndex}"
-        class="underline decoration-red-500 decoration-2 hover:bg-yellow-200 cursor-pointer relative"
+        class="underline decoration-red-500 decoration-2 hover:bg-yellow-200 dark:hover:text-gray-900 cursor-pointer relative"
         title="Sugerencia: ${textCorrected.replace(/"/g, "&quot;")}"
         data-correction="${encodeURIComponent(JSON.stringify(correction))}"
       >${textOriginal}</span>`;

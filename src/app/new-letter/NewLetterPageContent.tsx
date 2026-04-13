@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,6 +18,7 @@ import dynamic from "next/dynamic";
 import { useDialog } from "@/context/dialogContext";
 import { isQuillContentEmpty } from "@/lib/utils";
 import { LetterFormErrors } from "@/lib/types";
+import { UserContext } from "@/context/userContext";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
@@ -48,6 +49,7 @@ const NewLetterPageContent = () => {
     string | undefined
   >(undefined);
   const { openDialog, closeDialog } = useDialog();
+  const { userData } = useContext(UserContext);
 
   useEffect(() => {
     // @ts-ignore
@@ -137,14 +139,18 @@ const NewLetterPageContent = () => {
     if (res) {
       router.push("/edit-letter/" + res.id);
     } else {
-      console.error("Error saving letter.");
+      openDialog({
+        title: "Server Error",
+        description: `Error saving letter. Please try again later.`,
+        primaryActionText: "OK",
+        type: "error",
+        autoDismiss: true,
+        autoDismissDelay: 3000,
+      });
     }
   };
 
   useEffect(() => {
-    // Get languages from sessionStorage
-    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-
     const learningLanguages = [
       userData.learningLanguage,
       userData.learningLanguage2,
@@ -159,7 +165,9 @@ const NewLetterPageContent = () => {
     };
 
     fetchDiaries();
-    setLanguageList(learningLanguages);
+    if (learningLanguages.length > 0) {
+      setLanguageList(learningLanguages as string[]);
+    }
   }, []);
 
   const addNewDiary = (diaryName: string) => {
@@ -178,7 +186,7 @@ const NewLetterPageContent = () => {
   };
 
   return (
-    <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
+    <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200  dark:border-neutral-700 bg-white dark:bg-neutral-850 flex flex-col gap-2 flex-1 w-full h-full">
       <div className="flex gap-2 flex-1">
         <div className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-5 sm:px-20">
           {/* Title field */}
@@ -186,7 +194,7 @@ const NewLetterPageContent = () => {
             type="text"
             value={title}
             onChange={handleTitleChange}
-            className={`placeholder-gray-500 text-center text-2xl font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03] ${
+            className={`placeholder-gray-500 dark:placeholder-gray text-center text-2xl font-bold text-gray-700 dark:text-gray-200 p-4 w-full focus:border-blue-500 outline-none caret-[#60a5fa] ${
               errors.title ? "placeholder-red-500" : "border-none"
             }`}
             placeholder="Title of the letter! Edit this, ganster..."
@@ -204,11 +212,13 @@ const NewLetterPageContent = () => {
                 {errors.date ? (
                   <Label className="text-red-500">Date missing</Label>
                 ) : (
-                  <Label className="text-black">Date</Label>
+                  <Label className="text-black dark:text-gray-200">Date</Label>
                 )}
                 <DateInput
-                  className={`bg-white text-black  ${
-                    errors.date ? "border-red-500" : "border-neutral-300"
+                  className={`bg-white dark:bg-neutral-850 text-black dark:text-gray-200  ${
+                    errors.date
+                      ? "border-red-500"
+                      : "border-neutral-300 dark:border-neutral-700"
                   }`}
                 />
               </DateField>
@@ -216,14 +226,16 @@ const NewLetterPageContent = () => {
 
             {/* Diary select */}
             <div>
-              <Label className="text-black">Select diary</Label>
+              <Label className="text-black dark:text-gray-200">
+                Select diary
+              </Label>
               <Select
                 value={diary}
                 onValueChange={(diary) => {
                   handleDiaryChange(diary);
                 }}
               >
-                <SelectTrigger className="text-black bg-white h-10 rounded-md ring-transparent">
+                <SelectTrigger className="text-black dark:text-gray-200 bg-white dark:bg-neutral-850 h-10 rounded-md ring-transparent border border-neutral-300 dark:border-neutral-700">
                   <SelectValue placeholder="(None)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -234,7 +246,7 @@ const NewLetterPageContent = () => {
                   ))}
                   <div
                     key="new"
-                    className="flex justify-center items-center hover:bg-gray-100 w-full text-sm bg-white h-8 rounded-md ring-transparent text-[#8EBA03]"
+                    className="flex justify-center items-center hover:bg-gray-100 dark:hover:bg-neutral-800 w-full text-sm bg-white dark:bg-neutral-850 h-8 rounded-md ring-transparent text-[#60a5fa] dark:text-dark-green-500"
                     onClick={(e) => {
                       e.preventDefault();
                       openDialog({
@@ -259,7 +271,11 @@ const NewLetterPageContent = () => {
             {/* Language select*/}
             <div>
               <Label
-                className={errors.language ? "text-red-500" : "text-black"}
+                className={
+                  errors.language
+                    ? "text-red-500"
+                    : "text-black dark:text-gray-200"
+                }
               >
                 Select language
               </Label>
@@ -270,8 +286,10 @@ const NewLetterPageContent = () => {
                 }}
               >
                 <SelectTrigger
-                  className={`text-black bg-white h-10 rounded-md ring-transparent border ${
-                    errors.language ? "border-red-500" : "border-neutral-300"
+                  className={`text-black dark:text-gray-200 bg-white dark:bg-neutral-850 h-10 rounded-md ring-transparent border ${
+                    errors.language
+                      ? "border-red-500"
+                      : "border-neutral-300 dark:border-neutral-700"
                   }`}
                 >
                   <SelectValue placeholder="(None)" />
@@ -291,9 +309,11 @@ const NewLetterPageContent = () => {
             <ReactQuill
               // @ts-ignore react-quill-new ref typing is not exposed here
               ref={quillRef}
-              className={`min-h-[62vh] sm:min-h-[65vh] border rounded-md bg-white text-gray-900
-              rounded-md p-2 space-y-1 ring-transparent text-2xl ${
-                errors.content ? "border-red-500" : "border-neutral-300"
+              className={`min-h-[62vh] sm:min-h-[65vh] border rounded-md bg-white dark:bg-neutral-850 text-gray-900 dark:text-gray-200
+              rounded-md p-2 space-y-1 ring-transparent ${
+                errors.content
+                  ? "border-red-500"
+                  : "border-neutral-300 dark:border-neutral-700"
               }`}
               theme="bubble"
               value={letterContent}
@@ -310,7 +330,7 @@ const NewLetterPageContent = () => {
           {/* Buttons */}
           <div className="flex justify-between h-[5%] items-end gap-4 mt-4">
             <Link href={"/homepage"}>
-              <button className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945]">
+              <button className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] dark:bg-red-700 dark:hover:bg-red-800">
                 Back
               </button>
             </Link>
@@ -318,7 +338,7 @@ const NewLetterPageContent = () => {
               onClick={() => {
                 SaveLetterOnClick();
               }}
-              className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b]"
+              className="h-[100%] w-auto flex items-center justify-center bg-[#3b82f6] text-white rounded py-2 px-4 hover:bg-[#2563eb] dark:bg-dark-green-500 dark:hover:bg-dark-green-600"
             >
               💾 Save Letter
             </button>

@@ -55,7 +55,7 @@ function InputPasswords({ onSave }: InputPassProps) {
         <div className="relative">
           <Input1
             id={id}
-            className="w-full p-2 mb-2 border rounded text-black/80 bg-white"
+            className="w-full p-2 mb-2 border rounded text-black/80 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
             placeholder={"Current password"}
             type={isVisibleCurrent ? "text" : "password"}
             value={password}
@@ -64,7 +64,7 @@ function InputPasswords({ onSave }: InputPassProps) {
             }
           />
           <button
-            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 dark:text-gray-300 outline-offset-2 transition-colors hover:text-black dark:hover:text-white focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             onClick={() => setIsVisibleCurrent((v) => !v)}
             aria-label={isVisibleCurrent ? "Hide password" : "Show password"}
@@ -85,7 +85,7 @@ function InputPasswords({ onSave }: InputPassProps) {
         <div className="relative">
           <Input1
             id={id}
-            className={`w-full p-2 mb-2 border rounded text-black/80 bg-white ${
+            className={`w-full p-2 mb-2 border rounded text-black/80 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 ${
               isNewPasswordTooShort || isNewPasswordSameAsCurrent
                 ? "border-red-500 text-red-500"
                 : ""
@@ -98,7 +98,7 @@ function InputPasswords({ onSave }: InputPassProps) {
             }
           />
           <button
-            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 dark:text-gray-300 outline-offset-2 transition-colors hover:text-black dark:hover:text-white focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             onClick={() => setIsVisibleNew((v) => !v)}
             aria-label={isVisibleNew ? "Hide password" : "Show password"}
@@ -129,7 +129,7 @@ function InputPasswords({ onSave }: InputPassProps) {
         <div className="relative">
           <Input1
             id={id}
-            className={`w-full p-2 mb-2 border rounded text-black/80 bg-white ${
+            className={`w-full p-2 mb-2 border rounded text-black/80 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 ${
               isConfirmPasswordTooShort || isConfirmPasswordMismatch
                 ? "border-red-500 text-red-500"
                 : ""
@@ -144,7 +144,7 @@ function InputPasswords({ onSave }: InputPassProps) {
             }
           />
           <button
-            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 outline-offset-2 transition-colors hover:text-black focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-black/80 dark:text-gray-300 outline-offset-2 transition-colors hover:text-black dark:hover:text-white focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             onClick={() => setIsVisibleConfirm((v) => !v)}
             aria-label={isVisibleConfirm ? "Hide password" : "Show password"}

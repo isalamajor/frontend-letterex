@@ -119,6 +119,11 @@ h2 {
   border: 1.5px solid var(--background);
 }
 
+.dark .form-blank:focus {
+  border: 1.5px solid #00f386;
+  box-shadow: 0 0 0 2px rgba(0, 243, 202, 0.25);
+}
+
 .code {
   display: flex;
   flex-direction: row;
@@ -151,7 +156,7 @@ h2 {
 .back-go {
   display: flex;
   flex-direction: row;
-  column-gap: 1px;
+  column-gap: 5px;
   justify-content: space-between;
 }
 .btn-back {

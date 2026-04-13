@@ -1,5 +1,4 @@
 "use client";
-import { SidebarDemo } from "@/components/sidebardemo";
 import { useState, useEffect, Suspense } from "react";
 import { getFriends, getFriendRequests } from "@/services/api";
 import FriendCard from "@/components/friendCard";
@@ -11,7 +10,7 @@ import { Spinner } from "@/components/ui/spinner-1";
 
 const SuggestedUsers = dynamic(() => import("./suggestedUsers"), {
   loading: () => (
-    <div className="bg-white rounded-lg p-4 h-full flex items-center justify-center text-gray-500">
+    <div className="bg-white dark:bg-neutral-900 rounded-lg p-4 h-full flex items-center justify-center text-gray-500 dark:text-gray-300">
       <Spinner />
     </div>
   ),
@@ -42,13 +41,7 @@ interface FriendRequestList {
 }
 
 export default function Home() {
-  return (
-    <div className="page-container">
-      <SidebarDemo>
-        <SocialPageContent />
-      </SidebarDemo>
-    </div>
-  );
+  return <SocialPageContent />;
 }
 
 const SocialPageContent = () => {
@@ -79,8 +72,8 @@ const SocialPageContent = () => {
   }, []);
 
   return (
-    <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
-      <h1 className="h-[5%] text-5xl font-semibold bg-gradient-to-r bg-clip-text text-transparent from-purple-500 via-indigo-500 to-purple-500 animate-text">
+    <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-850 flex flex-col gap-2 flex-1 w-full h-full">
+      <h1 className="h-[5%] text-5xl font-semibold bg-gradient-to-r bg-clip-text text-transparent from-purple-500 via-indigo-500 to-purple-500 dark:from-indigo-500 dark:via-purple-300">
         Friends
       </h1>
 
@@ -91,13 +84,13 @@ const SocialPageContent = () => {
       ) : (
         <div className="flex gap-2 flex-1 h-[95%] text-xl">
           {/* Bloque pantalla */}
-          <div className="h-full w-full rounded-lg mt-2 text-black flex flex-col">
+          <div className="h-full w-full rounded-lg mt-2 text-black dark:text-gray-100 flex flex-col">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full h-full">
               {/* Columna izquierda: dos filas iguales */}
-              <div className="col-span-1 bg-gray-100 rounded-lg p-4 flex flex-col gap-4 h-full">
-                <div className="items-center px-8 py-5 justify-center bg-white rounded-lg p-2 h-[35%]">
+              <div className="col-span-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-4 flex flex-col gap-4 h-full">
+                <div className="items-center px-8 py-5 justify-center bg-white dark:bg-neutral-850 rounded-lg p-2 h-[35%]">
                   {/* Fila superior */}
-                  <h2 className="text-3xl text-end text-indigo-500 h-[20%]">
+                  <h2 className="text-3xl text-end text-indigo-500 dark:text-[#b63aff] h-[20%]">
                     Friend requests
                   </h2>
                   {friendRequests.length > 0 ? (
@@ -114,16 +107,16 @@ const SocialPageContent = () => {
                   ) : (
                     <div className="flex sm:h-[80%] overflow-auto items-center justify-center w-full sm:pb-15">
                       <MessageCircleDashed className="mr-2" color="gray" />
-                      <p className="text-gray-500 my-10">
+                      <p className="text-gray-500 dark:text-gray my-10">
                         No friend requests received...
                       </p>
                     </div>
                   )}
                 </div>
 
-                <div className="flex-1 bg-white rounded-lg px-8 py-5 sm:h-[70%]">
+                <div className="flex-1 bg-white dark:bg-neutral-850 rounded-lg px-8 py-5 sm:h-[70%]">
                   {/* Fila inferior */}
-                  <h2 className="text-3xl text-start mb-2 text-indigo-500">
+                  <h2 className="text-3xl text-start mb-2 text-indigo-500 dark:text-[#b63aff]">
                     My friends
                   </h2>
                   {friends.length > 0 ? (
@@ -153,14 +146,16 @@ const SocialPageContent = () => {
                     </div>
                   ) : (
                     <div className="flex h-[80%] overflow-auto items-center gap-2 justify-center w-full pb-15">
-                      <p className="text-gray-500">No friends yet</p>
+                      <p className="text-gray-500 dark:text-gray">
+                        No friends yet
+                      </p>
                       <Frown color="gray" />
                     </div>
                   )}
                 </div>
               </div>
               {/* Center column (larger) */}
-              <div className="col-span-1 bg-gray-100 rounded-lg p-4">
+              <div className="col-span-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-4">
                 <SuggestedUsers />
               </div>
             </div>

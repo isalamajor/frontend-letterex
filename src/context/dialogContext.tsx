@@ -39,8 +39,8 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
   const closeDialog = () => setConfig((prev) => ({ ...prev, isOpen: false }));
 
   const openDialog = (cfg: Partial<DialogConfig>) =>
-    setConfig((prev) => ({
-      ...prev,
+    setConfig(() => ({
+      ...defaultConfig,
       ...cfg,
       isOpen: true,
       onClose: closeDialog,

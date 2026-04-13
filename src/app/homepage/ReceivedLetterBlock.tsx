@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Spinner } from "@/components/ui/spinner-1";
 import TablePagination from "@mui/material/TablePagination";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 export default function ReceivedLetterBlock() {
   // Search and sorting filters
@@ -47,7 +47,6 @@ export default function ReceivedLetterBlock() {
 
   const fetchReceivedLetters = useCallback(
     async (page: number = currentPage) => {
-      setData((prev) => ({ ...prev, isLoading: true }));
       const query = filters.received || "";
       const sender = filters.senders || undefined;
       const sentBack = filters.onlyPending ? false : undefined;
@@ -210,19 +209,19 @@ export default function ReceivedLetterBlock() {
               transform: `rotate(${rotation}deg)`,
               transition: "transform 0.6s ease-in-out",
             }}
-            className="cursor-pointer select-none text-gray-500 active:text-yellow-300"
+            className="cursor-pointer select-none text-gray-500 active:text-yellow-300 dark:active:text-green-500"
           />
-          <h2 className="text-right font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] py-4 transition-transform duration-300 animate-gradient-dark">
+          <h2 className="text-right font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] dark:from-green-100 dark:via-green-200 dark:to-green-300 py-4">
             Letters received
           </h2>
         </div>
         {data.totalLettersCount > 0 && (
           <div className="flex flex-col sm:flex-row justify-between mb-2 sm:mb-4">
-            <div className="flex flex-row gap-2 cursor-pointer border border-lightblack text-gray-700 mb-2 sm:mb-0 rounded-sm py-2 px-4 bg-gray-50">
+            <div className="flex flex-row gap-2 cursor-pointer border border-lightblack dark:border-neutral-700 mb-2 sm:mb-0 rounded-sm py-2 px-4 bg-gray-50 dark:bg-neutral-850 text-gray-800 dark:text-gray-200">
               <Search className="text-gray-500" />
               <input
                 placeholder="Search a letter..."
-                className="w-full outline-none"
+                className="w-full outline-none bg-transparent text-gray-800 dark:text-white placeholder:text-gray-500"
                 value={filters.received}
                 onChange={handleReceivedSearchChange}
               ></input>
@@ -249,7 +248,7 @@ export default function ReceivedLetterBlock() {
                     trySetFilterSenders(sender);
                   }}
                 >
-                  <SelectTrigger className="text-black bg-white h-10 rounded-md ring-transparent">
+                  <SelectTrigger className="text-black dark:text-gray-100 bg-white dark:bg-neutral-900 h-10 rounded-md ring-transparent border border-neutral-300 dark:border-neutral-700">
                     <SelectValue placeholder="🙋 (Select a friend)" />
                   </SelectTrigger>
                   <SelectContent>
@@ -274,7 +273,7 @@ export default function ReceivedLetterBlock() {
             </div>
           </div>
         )}
-        {data.isLoading ? (
+        {data.isLoading && data.receivedLetters.length === 0 ? (
           <div className="flex justify-center items-center h-[70vh]">
             <Spinner size={40} color="gray" />
           </div>
@@ -294,7 +293,31 @@ export default function ReceivedLetterBlock() {
                   onPageChange={handlePageChange}
                   rowsPerPage={ITEMS_PER_PAGE}
                   rowsPerPageOptions={[]}
-                  className="text-gray-700"
+                  className="text-gray-700 dark:text-gray-200"
+                  sx={{
+                    color: "rgb(55 65 81)",
+                    "& .MuiTablePagination-toolbar": { color: "inherit" },
+                    "& .MuiTablePagination-selectLabel": { color: "inherit" },
+                    "& .MuiTablePagination-displayedRows": { color: "inherit" },
+                    "& .MuiTablePagination-actions": { color: "inherit" },
+                    "& .MuiSvgIcon-root": { color: "inherit" },
+                    ".dark &": { color: "rgb(243 244 246)" },
+                    ".dark & .MuiTablePagination-toolbar": {
+                      color: "rgb(243 244 246)",
+                    },
+                    ".dark & .MuiTablePagination-selectLabel": {
+                      color: "rgb(243 244 246)",
+                    },
+                    ".dark & .MuiTablePagination-displayedRows": {
+                      color: "rgb(243 244 246)",
+                    },
+                    ".dark & .MuiTablePagination-actions": {
+                      color: "rgb(243 244 246)",
+                    },
+                    ".dark & .MuiSvgIcon-root": {
+                      color: "rgb(243 244 246)",
+                    },
+                  }}
                 />
               </div>
             )}

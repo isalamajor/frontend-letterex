@@ -247,11 +247,12 @@ const SuccessDialog: React.FC<DialogConfig> = ({
     },
     newDiary: {
       icon: BookOpen,
-      iconBgClass: "bg-purple-100 dark:bg-purple-900/20",
-      iconColorClass: "text-purple-600 dark:text-purple-400",
+      iconBgClass: "bg-purple-100 dark:bg-dark-bg-tertiary/20",
+      iconColorClass: "text-purple-600 dark:text-dark-text-secondary",
       titleDefault: "New Diary Created",
       descriptionDefault: "Your new diary has been created successfully.",
-      buttonClass: "bg-purple-600 text-white hover:bg-purple-700",
+      buttonClass:
+        "bg-purple-600 text-white hover:bg-purple-700 dark:bg-[#00ae91] dark:hover:bg-[#00977d]",
     },
     askConfirmation: {
       icon: MailQuestionMark,
@@ -287,9 +288,11 @@ const SuccessDialog: React.FC<DialogConfig> = ({
 
   const handlePrimaryAction = useCallback(() => {
     onPrimaryAction();
-    if (newDiaryName && onNewDiaryCreated) onNewDiaryCreated(newDiaryName);
+    if (type === "newDiary" && newDiaryName && onNewDiaryCreated) {
+      onNewDiaryCreated(newDiaryName);
+    }
     handleClose();
-  }, [onPrimaryAction, handleClose, newDiaryName, onNewDiaryCreated]);
+  }, [onPrimaryAction, handleClose, newDiaryName, onNewDiaryCreated, type]);
 
   const handleShareLetter = async () => {
     if (friendsSelected.length === 0 || !letterId) {
@@ -451,7 +454,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
   return (
     <Dialog open={internalOpen} onOpenChange={handleClose}>
       <DialogContent
-        className={`${sizeClasses[size]} p-0 overflow-hidden border-border bg-background bg-white`}
+        className={`${sizeClasses[size]} p-0 overflow-hidden bg-white dark:bg-neutral-800 dark:text-gray-200`}
         onKeyDown={handleKeyDown}
         aria-labelledby="success-dialog-title"
         aria-describedby="success-dialog-description"
@@ -526,12 +529,12 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                     </div>
                   ) : (
                     <div>
-                      <h3 className="text-base font-semibold text-gray-700 dark:text-gray-300">
+                      <h3 className="text-base font-semibold text-gray-700 dark:text-gray-200">
                         Share with friends (choose at most 2)
                       </h3>
                       <h4 className="text-xs text-gray-500 mx-15">
                         ⚠️ Note that{" "}
-                        <span className="bg-yellow-300/40">
+                        <span className="bg-yellow-300/40 dark:text-gray-900">
                           you won't be able to modify
                         </span>{" "}
                         the letter after sharing it.
@@ -546,7 +549,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                       <div className="flex justify-center items-center gap-4 pt-4">
                         <Button
                           onClick={handlePrimaryAction}
-                          className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                          className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
                           size="default"
                         >
                           {" "}
@@ -554,7 +557,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                         </Button>
                         <Button
                           onClick={handleShareLetter}
-                          className={`min-w-[120px] bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                          className={`min-w-[120px] bg-[#6495ED] dark:bg-[#ffff4d] text-white dark:text-gray-100 rounded py-2 px-4 hover:bg-[#537dc9] dark:hover:bg-[#c8c800]`}
                           size="default"
                         >
                           {" "}
@@ -590,7 +593,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                   {settingSwitch === "password" ? (
                     <>
                       {passwordChangeMessage ? (
-                        <div className="flex justify-center text-center items-center flex-col gap-2 h-full w-full text-black m-2">
+                        <div className="flex justify-center text-center items-center flex-col gap-2 h-full w-full text-black dark:text-gray-100 m-2">
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
@@ -624,7 +627,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                         </div>
                       ) : (
                         <>
-                          <div className="flex justify-center items-start flex-col gap-2 h-full w-full text-black m-2">
+                          <div className="flex justify-center items-start flex-col gap-2 h-full w-full text-black dark:text-gray-100 m-2">
                             {/* Input with eye to hide password */}
                             <InputPasswords
                               onSave={(
@@ -638,7 +641,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                               }}
                             />
                           </div>
-                          <div className="flex justify-between items-center flex-row h-full w-full text-black mt-2">
+                          <div className="flex justify-between items-center flex-row h-full w-full text-black dark:text-gray-100 mt-2">
                             <Button
                               onClick={() => {
                                 handlePrimaryAction();
@@ -723,12 +726,12 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                           </Button>
                         </>
                       ) : deleteAccountResult === 0 ? (
-                        <p className="text-gray-900 mb-3 font-bold w-[60%] text-center">
+                        <p className="text-gray-900 dark:text-gray-100 mb-3 font-bold w-[60%] text-center">
                           Account deleted succesfully. See you soon!
                         </p>
                       ) : (
                         <>
-                          <p className="text-black mb-3 font-bold w-[60%] text-center">
+                          <p className="text-black dark:text-gray-100 mb-3 font-bold w-[60%] text-center">
                             Your password is required to perform this action
                           </p>
                           <InputPass
@@ -783,7 +786,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                   <DialogHeader className="space-y-2 display-inline-flex items-center justify-center">
                     <DialogTitle
                       id="success-dialog-title"
-                      className="text-xl font-semibold text-black text-center mx-10"
+                      className="text-xl font-semibold text-black dark:text-gray-100 text-center mx-10"
                     >
                       <motion.span
                         initial={{ opacity: 0, y: 10 }}
@@ -812,7 +815,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                   <div className="flex justify-center items-center gap-4 pt-2">
                     <Button
                       onClick={handlePrimaryAction}
-                      className={`min-w-[120px] bg-gray-300 text-black rounded py-2 px-4 hover:bg-gray-200! transition-colors`}
+                      className={`min-w-[120px] bg-gray-300 dark:bg-neutral-700 text-black dark:text-gray-100 rounded py-2 px-4 hover:bg-gray-200! dark:hover:bg-neutral-600 transition-colors`}
                       size="default"
                     >
                       {" "}
@@ -867,7 +870,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                     <DialogHeader className="space-y-2 display-inline-flex items-center justify-center">
                       <DialogTitle
                         id="success-dialog-title"
-                        className="text-xl font-semibold text-black text-center"
+                        className="text-xl font-semibold text-black dark:text-gray-100 text-center"
                       >
                         <motion.span
                           initial={{ opacity: 0, y: 10 }}
@@ -897,7 +900,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
 
                     {type === "newDiary" && (
                       <input
-                        className="text-gray-900 border border-gray-300 focus:ring-2 focus:ring-purple-500 rounded-md p-2"
+                        className="text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-200 dark:focus:ring-blue-100/50"
                         placeholder="Diary name"
                         value={newDiaryName}
                         onChange={(e) => setNewDiaryName(e.target.value)}

@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
-import { SidebarDemo } from "@/components/sidebardemo";
+import { useContext, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useState } from "react";
 import { CalendarDate, parseDate } from "@internationalized/date";
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/field";
 import { getLetter, getDiaries, editLetter } from "@/services/api";
 import { Check, HeartCrack } from "lucide-react";
 import { use } from "react";
-import { Spinner } from "@/components/ui/spinner-1";
+import AppPageSkeleton from "@/components/appPageSkeleton";
 import {
   Select,
   SelectContent,
@@ -22,22 +21,19 @@ import { useDialog } from "@/context/dialogContext";
 import { BookOpen } from "lucide-react";
 import { isQuillContentEmpty } from "@/lib/utils";
 import { LetterFormErrors, NewLetter } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { UserContext } from "@/context/userContext";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  return (
-    <div className="page-container">
-      <SidebarDemo>
-        <NewLetterPageContent id={id} />
-      </SidebarDemo>
-    </div>
-  );
+  return <NewLetterPageContent id={id} />;
 }
 
 const NewLetterPageContent = ({ id }: { id: string }) => {
   const { openDialog, closeDialog } = useDialog();
+  const router = useRouter();
   const quillRef = useRef<{
     getEditor: () => {
       focus: () => void;
@@ -98,6 +94,8 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       [{ align: [] }], // alignment (left, center, right, justified)
     ],
   };
+
+  const { userData } = useContext(UserContext);
 
   // Funciones
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -259,21 +257,13 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
         return;
       }
 
-      // Get languages from sessionStorage
-      const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-
-      // If userData is not available, redirect to login
-      if (userData === "{}") {
-        console.error("User data not found in sessionStorage.");
-        window.location.href = "/";
-        return;
-      }
-
+      // Get languages
       const learningLanguages = [
         userData.learningLanguage,
         userData.learningLanguage2,
         userData.learningLanguage3,
       ].filter((lang) => lang !== null);
+
       const fetchDiaries = async () => {
         const res = await getDiaries();
         if (Array.isArray(res)) {
@@ -291,23 +281,27 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
         letterContent: letterData.content || "",
         sharedWith: letterData.sharedWith || [],
       });
-      setLanguageList(learningLanguages || []);
+
+      if (learningLanguages.length > 0) {
+        setLanguageList(learningLanguages as string[]);
+      }
       fetchDiaries();
       setIsLoading(false);
     })();
-  }, [id]);
+  }, [id, router]);
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Spinner size={40} color="gray" />
-      </div>
+      <AppPageSkeleton
+        titleWidthClass="w-2/3 mx-auto"
+        contentHeightClass="h-[60vh]"
+      />
     );
   }
 
   if (letterNotFound) {
     return (
-      <div className="h-full flex flex-col gap-5 justify-center items-center text-gray-800">
+      <div className="h-full flex flex-col gap-5 justify-center items-center text-gray-800 dark:text-gray-200">
         <h3>Letter not found. Try again later.</h3>
         <HeartCrack size={100} strokeWidth={1} />
         <BackButton />
@@ -324,7 +318,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           value={letter.title}
           disabled={letter.sharedWith.length > 0}
           onChange={handleTitleChange}
-          className={`placeholder-gray-400 text-center text-2xl font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#8EBA03] ${
+          className={`placeholder-gray-500 dark:placeholder-gray text-center text-2xl font-bold text-gray-850 dark:text-gray-200 p-4 w-full focus:border-blue-500 outline-none caret-[#60a5fa] ${
             errors.title ? "placeholder-red-500" : "border-none"
           }`}
           placeholder="Title of the letter! Edit this, ganster..."
@@ -343,10 +337,14 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
               {errors.date && (
                 <Label className="text-red-500">Date missing</Label>
               )}
-              {!errors.date && <Label className="text-black">Date</Label>}
+              {!errors.date && (
+                <Label className="text-black dark:text-gray-200">Date</Label>
+              )}
               <DateInput
-                className={`bg-white text-black  ${
-                  errors.date ? "border-red-500" : "border-neutral-300"
+                className={`bg-white dark:bg-neutral-850 text-black dark:text-gray-200  ${
+                  errors.date
+                    ? "border-red-500"
+                    : "border-neutral-300 dark:border-neutral-700"
                 }`}
               />
             </DateField>
@@ -354,7 +352,9 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
           {/* Diary select */}
           <div>
-            <Label className="text-black">Select diary</Label>
+            <Label className="text-black dark:text-gray-200">
+              Select diary
+            </Label>
             <Select
               value={letter.diary}
               onValueChange={(diary) => {
@@ -362,7 +362,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
               }}
               disabled={letter.sharedWith.length > 0}
             >
-              <SelectTrigger className="text-black bg-white h-10 rounded-md ring-transparent">
+              <SelectTrigger className="text-black dark:text-gray-200 bg-white dark:bg-neutral-850 h-10 rounded-md ring-transparent border border-neutral-300 dark:border-neutral-700">
                 <SelectValue placeholder="(None)" />
               </SelectTrigger>
               <SelectContent>
@@ -373,7 +373,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                 ))}
                 <div
                   key="new"
-                  className="cursor-pointer flex justify-center items-center hover:bg-gray-100 w-full text-sm bg-white h-8 rounded-md ring-transparent text-[#8EBA03]"
+                  className="cursor-pointer flex justify-center items-center hover:bg-gray-100 dark:hover:bg-neutral-800 w-full text-sm bg-white dark:bg-neutral-850 h-8 rounded-md ring-transparent text-purple-500 dark:text-dark-green-500"
                   onClick={(e) => {
                     e.preventDefault();
                     openDialog({
@@ -398,7 +398,11 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           {/* Language select */}
           <div className="">
             <Label
-              className={errors.language ? "text-red-500" : "text-black"}
+              className={
+                errors.language
+                  ? "text-red-500"
+                  : "text-black dark:text-gray-200"
+              }
               htmlFor={id}
             >
               Select language
@@ -412,8 +416,10 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
             >
               <SelectTrigger
                 id={id}
-                className={`text-black bg-white h-10 rounded-md ring-transparent border ${
-                  errors.language ? "border-red-500" : "border-neutral-300"
+                className={`text-black dark:text-gray-200 bg-white dark:bg-neutral-850 h-10 rounded-md ring-transparent border ${
+                  errors.language
+                    ? "border-red-500"
+                    : "border-neutral-300 dark:border-neutral-700"
                 }`}
               >
                 <SelectValue placeholder="(None)" />
@@ -430,7 +436,9 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
           {letter.sharedWith && letter.sharedWith[0] && (
             <div className="col-span-5 text-[#6495ED] m-4 flex flex-row gap-2 justify-end">
-              <span className="text-gray-600">Shared with</span>
+              <span className="text-gray-600 dark:text-gray-300">
+                Shared with
+              </span>
               <div
                 key={letter.sharedWith[0].id}
                 className="flex items-center gap-1"
@@ -447,7 +455,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                   key={letter.sharedWith[1].id}
                   className="flex items-center gap-1"
                 >
-                  <span className="text-gray-600">and</span>
+                  <span className="text-gray-600 dark:text-gray-300">and</span>
                   <img
                     src={`http://localhost:3090/uploads/profile_pictures//${letter.sharedWith[1].image}`}
                     alt={letter.sharedWith[1].nickname}
@@ -464,9 +472,11 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           <ReactQuill
             // @ts-ignore dynamic import makes the ref type opaque
             ref={quillRef}
-            className={`min-h-[60vh] sm:min-h-[65vh] border rounded-md bg-white text-gray-900
+            className={`min-h-[60vh] sm:min-h-[65vh] border rounded-md bg-white dark:bg-neutral-850 text-gray-900 dark:text-gray-200
               rounded-md p-2 space-y-1 ring-transparent ${
-                errors.content ? "border-red-500" : "border-neutral-300"
+                errors.content
+                  ? "border-red-500"
+                  : "border-neutral-300 dark:border-neutral-700"
               }`}
             theme="bubble"
             value={letter.letterContent}
@@ -508,7 +518,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                   });
                 }}
               >
-                <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
+                <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] dark:bg-[#ffff4d] dark:text-gray-900 text-white rounded py-2 px-4 hover:bg-[#537dc9] dark:hover:bg-[#c8c800]">
                   📬 Send Letter
                 </div>
               </button>
@@ -521,7 +531,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                   SaveLetterOnClick();
                 }}
               >
-                <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] text-white rounded py-2 px-4 hover:bg-[#708e0b] transition-colors">
+                <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] hover:bg-[#708e0b] dark:bg-border dark:hover:bg-card text-white rounded py-2 px-4">
                   💾 Save Letter
                 </div>
               </button>
@@ -529,7 +539,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
             {/* Letter sent indicator - show if sent to at least 1 person */}
             {letter.sharedWith.length > 0 && (
-              <div className="text-[#6495ED] display flex items-center gap-2">
+              <div className="text-[#60a5fa] display flex items-center gap-2">
                 Letter sent
                 <Check className="w-5 h-5" />
               </div>
@@ -537,7 +547,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
             {/* Letter saved indicator - show if saved but not sent and no changes */}
             {!valuesChanged && letter.sharedWith.length === 0 && (
-              <div className="text-[#8EBA03] display flex items-center gap-2">
+              <div className="text-[#8EBA03] dark:text-ring display flex items-center gap-2">
                 Letter saved
                 <Check className="w-5 h-5" />
               </div>
