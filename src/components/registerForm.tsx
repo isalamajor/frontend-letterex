@@ -46,7 +46,6 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
   const [confirmationCode, setConfirmationCode] = useState<string>("");
   const [languagesSpoken, setLanguagesSpoken] = useState<language[]>([]);
   const [languagesLearning, setLanguagesLearning] = useState<language[]>([]);
-  const [profileImage, setProfileImage] = useState<File | null>(null);
 
   // Auto-submit verification code when complete
   useEffect(() => {
@@ -55,9 +54,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
     }
   }, [confirmationCode, currentStep]);
 
-  const handleImageUpload = (imageFile: File | null) => {
-    setProfileImage(imageFile); // Guardar imagen en el estado del padre
-  };
+  const handleImageUpload = (_imageFile: File | null) => {};
 
   const showAlertMessage = (message: string) => {
     setShowAlert(message);
