@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { resetPassword, ValidationCodePurpose } from "@/services/api";
+import { resetPassword } from "@/services/api";
+import { ValidationCodePurpose } from "@/lib/types";
 import CodeInput from "./codeInput";
 import { motion } from "framer-motion";
 import { InputPass } from "./ui/inputPass";
