@@ -120,7 +120,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
       learningLanguage: languagesLearning[0]?.name,
       learningLanguage2: languagesLearning[1]?.name,
       learningLanguage3: languagesLearning[2]?.name,
-      image: profileImage || null,
+      image: null,
     });
 
     if (result.ok) {
