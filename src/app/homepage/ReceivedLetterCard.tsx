@@ -99,7 +99,7 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
         {/* Letter title */}
         <div className="flex justify-between">
           <div className="flex flex-row gap-2 align-center items-center">
-            <h4 className="items-center text-gray-700 font-bold dark:text-gray-200">
+            <h4 className="items-center text-gray-800 font-bold dark:text-gray-200">
               {title}
             </h4>
             {sentBack && (

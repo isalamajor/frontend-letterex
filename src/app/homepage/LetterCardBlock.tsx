@@ -80,7 +80,7 @@ export default function LetterCardBlock() {
                   <Trash2 />
                 </button>
                 <button
-                  className="cursor-pointer text-gray-700 dark:text-gray-200 border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md p-2 hover:bg-gray-50 dark:hover:bg-neutral-700"
+                  className="cursor-pointer text-gray-800 dark:text-gray-200 border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md p-2 hover:bg-gray-50 dark:hover:bg-neutral-700"
                   onClick={() =>
                     setSettings({
                       ...settings,
@@ -95,7 +95,7 @@ export default function LetterCardBlock() {
               <motion.div
                 key="diary-mode"
                 {...fadeInOut}
-                className="flex gap-2 text-gray-700 dark:text-gray-150"
+                className="flex gap-2 text-gray-800 dark:text-gray-150"
               >
                 <button
                   className="cursor-pointer border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50 dark:hover:bg-neutral-700"
@@ -114,7 +114,7 @@ export default function LetterCardBlock() {
               <motion.div
                 key="normal-mode"
                 {...fadeInOut}
-                className="flex gap-2 text-gray-700 dark:text-gray"
+                className="flex gap-2 text-gray-800 dark:text-gray"
               >
                 <button
                   className="cursor-pointer border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50 dark:hover:bg-neutral-700"
@@ -174,7 +174,7 @@ export default function LetterCardBlock() {
 const NewLetterButton = () => {
   return (
     <Link href="/new-letter">
-      <button className="cursor-pointer text-gray-700 dark:text-gray border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50 dark:hover:bg-neutral-700">
+      <button className="cursor-pointer text-gray-800 dark:text-gray border border-lightblack dark:border-neutral-700 rounded-sm bg-gray-150 dark:bg-neutral-800 shadow-md py-2 px-4 hover:bg-gray-50 dark:hover:bg-neutral-700">
         💌 New
       </button>
     </Link>

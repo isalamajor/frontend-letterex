@@ -10,6 +10,7 @@ import {
   Plus,
   Trash2,
   Settings,
+  Loader,
 } from "lucide-react";
 import {
   uploadProfilePicture,
@@ -50,9 +51,11 @@ const ProfilePageContent = ({ id }: { id: string }) => {
     fetchError: false,
   });
   const [editing, setEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [addingLanguage, setAddingLanguage] = useState<string | null>(null);
   const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageWasRemoved, setImageWasRemoved] = useState(false);
   const { openDialog } = useDialog();
   const { userData, setUserData } = useContext(UserContext);
 
@@ -215,60 +218,85 @@ const ProfilePageContent = ({ id }: { id: string }) => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (!editing) {
+      setImageWasRemoved(false);
+      setImageFile(null);
+    }
+  }, [editing]);
+
   const SaveOnClick = async () => {
     if (!data || !data.userData) return;
-    // Save image
-    let resPicChange;
-    if (imageFile) {
-      resPicChange = await uploadProfilePicture(imageFile);
-    } else {
-      resPicChange = await deleteProfilePicture();
-      if (resPicChange.ok) {
-        updateUserData({ image: null });
+    setIsSaving(true);
+    try {
+      // Save image only if it was modified
+      let resPicChange = undefined;
+      if (imageFile) {
+        // New image was uploaded
+        resPicChange = await uploadProfilePicture(imageFile);
+      } else if (imageWasRemoved && data.userData.image) {
+        // Image was removed (only delete if one existed before)
+        resPicChange = await deleteProfilePicture();
+        if (resPicChange.ok) {
+          updateUserData({ image: null });
+        }
       }
-    }
+      // If neither imageFile nor imageWasRemoved, don't call upload/delete APIs
 
-    // Save data
-    const { image, ...dataToSave } = data.userData;
-    const response = await updateUser(dataToSave);
-    if (!response.ok) {
-      openDialog({
-        title: "Failed to save changes",
-        description: "Please try again later...",
-        primaryActionText: "OK",
-        autoDismiss: false,
-        type: "error",
-      });
-      return;
-    }
-    if (response.data) {
-      updateData({
-        userData: {
-          ...response.data,
-          countLetters: data.userData.countLetters,
-          countCorrectedLetter: data.userData.countCorrectedLetter,
-        },
-      });
-    }
-    setEditing(false);
+      // Save data
+      const { image, ...dataToSave } = data.userData;
+      const response = await updateUser(dataToSave);
+      if (!response.ok) {
+        openDialog({
+          title: "Failed to save changes",
+          description: "Please try again later...",
+          primaryActionText: "OK",
+          autoDismiss: false,
+          type: "error",
+        });
+        return;
+      }
+      if (response.data) {
+        updateData({
+          userData: {
+            ...response.data,
+            countLetters: data.userData.countLetters,
+            countCorrectedLetter: data.userData.countCorrectedLetter,
+          },
+        });
+      }
+      setEditing(false);
+      setImageFile(null);
+      setImageWasRemoved(false);
 
-    if (resPicChange && resPicChange.ok) {
-      openDialog({
-        title: "Profile updated!",
-        description: "Your data has been updated successfully 👍🏽",
-        primaryActionText: "OK",
-        autoDismiss: true,
-        type: "success",
-      });
-    } else {
-      openDialog({
-        title: "Profile updated!",
-        description:
-          "However, these was trouble changing your profile picture. Try again later.",
-        primaryActionText: "OK",
-        autoDismiss: true,
-        type: "success",
-      });
+      if (resPicChange && resPicChange.ok) {
+        openDialog({
+          title: "Profile updated!",
+          description: "Your data has been updated successfully 👍🏽",
+          primaryActionText: "OK",
+          autoDismiss: true,
+          type: "success",
+        });
+      } else if (resPicChange && !resPicChange.ok) {
+        openDialog({
+          title: "Profile updated!",
+          description:
+            "However, these was trouble changing your profile picture. Try again later.",
+          primaryActionText: "OK",
+          autoDismiss: true,
+          type: "success",
+        });
+      } else {
+        openDialog({
+          title: "Profile updated!",
+          description: "Your data has been updated successfully 👍🏽",
+          primaryActionText: "OK",
+          autoDismiss: true,
+          type: "success",
+        });
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -337,10 +365,26 @@ const ProfilePageContent = ({ id }: { id: string }) => {
 
                   <button
                     onClick={() => SaveOnClick()}
-                    className="w-auto h-[3rem] cursor-pointer text-white border border-lightblack rounded-sm bg-blue-500 shadow-md py-2 px-4 hover:bg-blue-600 flex flex-row gap-2 justify-center items-center"
+                    disabled={isSaving}
+                    className="w-auto h-[3rem] cursor-pointer text-white border border-lightblack rounded-sm bg-blue-500 shadow-md py-2 px-4 hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed flex flex-row gap-2 justify-center items-center"
                   >
-                    <Save></Save>
-                    Save
+                    {isSaving ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                      >
+                        <Loader />
+                      </motion.div>
+                    ) : (
+                      <>
+                        <Save />
+                        Save
+                      </>
+                    )}
                   </button>
                 </>
               ) : (
@@ -387,7 +431,8 @@ const ProfilePageContent = ({ id }: { id: string }) => {
               <div className="w-[35%]">
                 <ImageUploader
                   onImageSelect={(f: File | null) => setImageFile(f)}
-                  currentPicLocalUrl={`${data.userData.image}`}
+                  onImageRemove={() => setImageWasRemoved(true)}
+                  currentPicLocalUrl={data.userData.image}
                   active={editing}
                   size={innerWidth > 750 ? "125px" : null}
                 />
@@ -439,7 +484,7 @@ const ProfilePageContent = ({ id }: { id: string }) => {
             </div>
           </div>
           {/* Segunda fila info */}
-          <div className="flex flex-col lg:flex-row gap-10 w-full h-[70%] justify-between dark:text-gray-200">
+          <div className="flex flex-col lg:flex-row gap-10 w-full h-[70%] justify-between dark:text-gray-200 ">
             {/* Idiomas */}
             <div className="lg:w-[40%] h-[90%]">
               <div className="flex flex-col gap-10 items-center p-7 rounded-lg bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-700 border-2 mb-3 ">

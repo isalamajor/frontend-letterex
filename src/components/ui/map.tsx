@@ -2,7 +2,7 @@
 
 import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { feature } from "topojson-client";
 import { Topology } from "topojson-specification";
 import worldData from "world-atlas/countries-110m.json";
@@ -40,6 +40,24 @@ export default function Mapa({
   editing,
   onCountryChange,
 }: MapProps) {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   // Convertir TopoJSON → GeoJSON
   const countries = useMemo(() => {
     const topo: Topology = worldData as any;
@@ -74,7 +92,7 @@ export default function Mapa({
         zoom={2}
         minZoom={2}
         maxZoom={18}
-        className="h-full w-full"
+        className={`h-full w-full ${isDarkMode ? "leaflet-dark" : ""}`}
         attributionControl={false}
         maxBounds={[
           [-85, -180],
@@ -84,12 +102,16 @@ export default function Mapa({
       >
         {/* Fondo gris */}
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+          url={`https://{s}.basemaps.cartocdn.com/${
+            isDarkMode ? "dark_nolabels" : "light_nolabels"
+          }/{z}/{x}/{y}{r}.png`}
           subdomains={["a", "b", "c", "d"]}
           maxZoom={20}
         />
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
+          url={`https://{s}.basemaps.cartocdn.com/${
+            isDarkMode ? "dark_only_labels" : "light_only_labels"
+          }/{z}/{x}/{y}{r}.png`}
           subdomains={["a", "b", "c", "d"]}
           maxZoom={20}
         />

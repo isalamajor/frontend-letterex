@@ -61,6 +61,7 @@ const SocialPageContent = () => {
         getFriendRequests(),
       ]);
       setFriends(friendsRes || []);
+      console.log(friendsRes);
       setFriendRequests(requestsRes || []);
     } finally {
       setIsLoading(false);

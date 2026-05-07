@@ -125,7 +125,7 @@ export interface UserData {
   countCorrectedLetter?: Record<string, number>;
   country?: string;
   bio?: string;
-  image?: File | null;
+  image?: string | null;
   location?: {
     city?: string;
     country?: string;

@@ -6,6 +6,7 @@ import { useDialog } from "@/context/dialogContext";
 
 interface ImageUploaderProps {
   onImageSelect: (file: File | null) => void;
+  onImageRemove?: () => void;
   currentPicLocalUrl?: string | null;
   size?: string | null;
   active?: boolean | null;
@@ -13,6 +14,7 @@ interface ImageUploaderProps {
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   onImageSelect,
+  onImageRemove,
   currentPicLocalUrl = null,
   size = "125px",
   active = true,
@@ -25,8 +27,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     currentPicLocalUrl === "default.png" ? "/default.png" : currentPicLocalUrl;
 
   useEffect(() => {
-    setImageRemoved(null);
-  }, [active]);
+    if (!active) {
+      setProfileImage(null);
+      setImageRemoved(null);
+      onImageSelect(null);
+    }
+  }, [active, onImageSelect]);
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!active) return;
@@ -48,6 +54,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       });
     }
   };
+  console.log(profileImage, imageRemoved, normalizedCurrentPic, defaultImage);
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -58,10 +65,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       >
         <ImageZoom
           src={
-            profileImage ?? imageRemoved ?? normalizedCurrentPic ?? defaultImage
+            profileImage ??
+            imageRemoved ??
+            normalizedCurrentPic ??
+            "/default.png"
           }
           alt="Error al cargar la imagen :("
-          className="w-full h-full object-cover rounded-full border-2 border-gray-100 transition-opacity duration-300"
+          className="w-full h-full object-cover rounded-full border-2 border-gray-200 transition-opacity duration-300"
         />
         {/* overlay */}
         {active && (
@@ -85,6 +95,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             setProfileImage(null);
             onImageSelect(null);
             setImageRemoved("/default.png");
+            onImageRemove?.();
           }}
         >
           <Trash2 size={20} />

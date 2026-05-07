@@ -219,7 +219,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
     updateLetter({ diary: diaryName });
   };
 
-  const handleShareSuccess = async (result: number) => {
+  /*const handleShareSuccess = async (result: number) => {
     // Fetch letter data again to get its uploaded version
     if (result === 0) {
       openDialog({
@@ -245,7 +245,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       return;
     }
     updateLetter({ sharedWith: letterData.sharedWith || [] });
-  };
+  };*/
 
   useEffect(() => {
     (async () => {
@@ -270,7 +270,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           setDiaryList(res);
         }
       };
-
+      console.log(letterData);
       updateLetter({
         date: parseDate(
           new Date(letterData.created_at).toISOString().split("T")[0],
@@ -289,6 +289,10 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       setIsLoading(false);
     })();
   }, [id, router]);
+
+  const goToProfile = (userId: string) => {
+    window.location.href = `/profile/${userId}`;
+  };
 
   if (isLoading) {
     return (
@@ -441,10 +445,11 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
               </span>
               <div
                 key={letter.sharedWith[0].id}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 cursor-pointer"
+                onClick={() => goToProfile(letter.sharedWith[0].id)}
               >
                 <img
-                  src={`http://localhost:3090/uploads/profile_pictures//${letter.sharedWith[0].image}`}
+                  src={letter.sharedWith[0].image || "/default.png"}
                   alt={letter.sharedWith[0].nickname}
                   className="w-5 h-5 rounded-full border border-gray-300"
                 />
@@ -453,11 +458,12 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
               {letter.sharedWith[1] && (
                 <div
                   key={letter.sharedWith[1].id}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 cursor-pointer"
+                  onClick={() => goToProfile(letter.sharedWith[1].id)}
                 >
                   <span className="text-gray-600 dark:text-gray-300">and</span>
                   <img
-                    src={`http://localhost:3090/uploads/profile_pictures//${letter.sharedWith[1].image}`}
+                    src={letter.sharedWith[1].image || "/default.png"}
                     alt={letter.sharedWith[1].nickname}
                     className="w-5 h-5 rounded-full border border-gray-300"
                   />

@@ -411,6 +411,28 @@
     scrollbar-color: #888 #f1f1f1;
   }
 
+  .leaflet-dark .leaflet-bar a,
+  .leaflet-dark .leaflet-control-zoom a,
+  .dark .leaflet-bar a,
+  .dark .leaflet-control-zoom a {
+    background-color: #171717 !important;
+    border-color: #404040 !important;
+    color: #e5e7eb !important;
+  }
+
+  .leaflet-dark .leaflet-bar a:hover,
+  .leaflet-dark .leaflet-control-zoom a:hover,
+  .dark .leaflet-bar a:hover,
+  .dark .leaflet-control-zoom a:hover {
+    background-color: #262626 !important;
+    color: #ffffff !important;
+  }
+
+  .leaflet-dark .leaflet-control-zoom-in,
+  .dark .leaflet-control-zoom-in {
+    border-bottom-color: #404040 !important;
+  }
+
   .custom-scroll::-webkit-scrollbar-thumb {
     background-color: #888;
     border-radius: 9999px;

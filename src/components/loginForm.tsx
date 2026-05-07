@@ -81,7 +81,7 @@ const LoginForm = ({
         style={{ opacity: isLoading ? 0.5 : 1 }}
       >
         <input
-          className="w-full p-2 mb-2 border rounded form-blank bg-white dark:bg-neutral-900 text-gray-100 border-gray-300 dark:border-neutral-700 "
+          className="w-full p-2 mb-2 border rounded form-blank bg-white text-gray-900  dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 "
           type="text"
           value={email}
           placeholder="Email/Username"

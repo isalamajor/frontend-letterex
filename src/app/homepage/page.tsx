@@ -16,7 +16,6 @@ export default function Home() {
       const me = await getUserData();
       if (me.data) {
         setUserData(me.data);
-        console.log("userdata", me.data);
       } else {
         router.push("/");
       }

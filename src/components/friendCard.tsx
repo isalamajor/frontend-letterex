@@ -26,11 +26,11 @@ const FriendCard: React.FC<Friend> = ({
       <img
         src={`${image || "default.png"}`}
         alt={image}
-        className="w-14 h-14 rounded-full border border-gray-300 dark:border-gray-600"
+        className="w-14 h-14 rounded-full border border-gray-200 dark:border-gray-600"
       />
       {/* Fecha y Diario */}
       <div className="flex flex-col gap-2 items-start justify-between mb-4">
-        <h4 className="items-center text-gray-700 font-bold dark:text-purple-100">
+        <h4 className="items-center text-gray-800 font-bold dark:text-purple-100">
           {nickname}
         </h4>
         <p className="text-gray-800 text-base dark:text-gray-200 mb-2 text-sm">

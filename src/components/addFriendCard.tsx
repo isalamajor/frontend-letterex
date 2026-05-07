@@ -59,12 +59,12 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
         <img
           src={`${image || "default.png"}`}
           alt={image}
-          className="w-15 h-15 rounded-full border border-gray-300 dark:border-gray-600"
+          className="w-15 h-15 rounded-full border border-gray-200 dark:border-gray-600"
         />
         <div className="flex flex-col gap-2 items-start mb-4">
           {/* Fecha y Diario */}
           <h4
-            className="cursor-pointer hover:text-purple-400 dark:hover:text-indigo-400 hover:underline items-center text-gray-700 font-bold dark:text-indigo-100"
+            className="cursor-pointer hover:text-purple-400 dark:hover:text-indigo-400 hover:underline items-center text-gray-800 font-bold dark:text-indigo-100"
             onClick={goToProfile}
           >
             {nickname}

@@ -87,7 +87,7 @@ const LetterCard: React.FC<LetterCardProps> = ({
 
         {/* Letter title */}
         <div className="flex justify-between">
-          <h4 className="items-center text-gray-700 font-bold dark:text-dark-green-400">
+          <h4 className="items-center text-gray-800 font-bold dark:text-dark-green-400">
             {title}
           </h4>
 

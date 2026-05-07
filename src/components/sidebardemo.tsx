@@ -118,14 +118,6 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
       prefetch: true,
     },
     {
-      label: "Community",
-      href: "/community",
-      icon: (
-        <LeafyGreen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-      prefetch: true,
-    },
-    {
       label: "Logout",
       href: "/",
       icon: (

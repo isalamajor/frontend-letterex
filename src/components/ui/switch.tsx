@@ -102,8 +102,8 @@ const SwitchControl = ({
           clsx(
             "flex items-center justify-center flex-1 cursor-pointer font-sans duration-150 ",
             checked
-              ? "bg-gray-100 dark:bg-dark-bg-secondary text-gray-1000 dark:text-white fill-gray-1000 dark:fill-white rounded-sm"
-              : "text-gray-900 dark:text-gray-200 hover:text-gray-1000 dark:hover:text-white fill-gray-900 dark:fill-gray-200 hover:fill-gray-1000 dark:hover:fill-white",
+              ? "bg-gray-100 dark:bg-dark-bg-secondary text-gray-800 dark:text-white fill-gray-1000 dark:fill-white rounded-sm"
+              : "text-gray-800 dark:text-gray-200 hover:text-gray-800 dark:hover:text-white fill-gray-900 dark:fill-gray-200 hover:fill-gray-1000 dark:hover:fill-white",
             disabled &&
               "text-gray-800 dark:text-gray-500 fill-gray-800 dark:fill-gray-500",
             !icon && size === "small" && "text-sm px-3",
