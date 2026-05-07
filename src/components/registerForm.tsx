@@ -8,6 +8,7 @@ import {
   sendVerificationCode,
   isEmailInUse,
   checkVerificationCode,
+  uploadProfilePicture,
 } from "../services/api";
 import { InputPass } from "./ui/inputPass";
 import languagesData from "../app/resources/languagesData";
@@ -46,6 +47,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
   const [confirmationCode, setConfirmationCode] = useState<string>("");
   const [languagesSpoken, setLanguagesSpoken] = useState<language[]>([]);
   const [languagesLearning, setLanguagesLearning] = useState<language[]>([]);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
 
   // Auto-submit verification code when complete
   useEffect(() => {
@@ -54,7 +56,9 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
     }
   }, [confirmationCode, currentStep]);
 
-  const handleImageUpload = (_imageFile: File | null) => {};
+  const handleImageUpload = (imageFile: File | null) => {
+    setProfileImage(imageFile); // Guardar imagen en el estado del padre
+  };
 
   const showAlertMessage = (message: string) => {
     setShowAlert(message);
@@ -122,6 +126,9 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
 
     if (result.ok) {
       goLogin();
+      if (profileImage) {
+        await uploadProfilePicture(profileImage);
+      }
     } else {
       setShowAlert(result.errorMessage || "Registration failed");
     }
