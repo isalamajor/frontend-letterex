@@ -9,7 +9,6 @@ import FrogAnimation from "@/components/frogAnimation1";
 import RegisterForm from "./registerForm";
 import LoginForm from "./loginForm";
 import ResetPasswordForm from "./resetPasswordForm";
-import Image from "next/image";
 
 const phrases = [
   "Write about your passions",

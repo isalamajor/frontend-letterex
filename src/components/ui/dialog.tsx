@@ -174,8 +174,8 @@ const SuccessDialog: React.FC<DialogConfig> = ({
   type = "success", // Default to success
   letterId = null,
   sharedWith = [],
-  onShareSuccess = (_shareLetterResult: SharedWithUser[]) => {},
-  onNewDiaryCreated = (_diaryName: string) => {},
+  onShareSuccess = () => {},
+  onNewDiaryCreated = () => {},
   prevNewDiaryName = "",
   onConfirmationPositive = () => {},
 }) => {
@@ -535,7 +535,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                       <h4 className="text-xs text-gray-500 mx-15">
                         ⚠️ Note that{" "}
                         <span className="bg-yellow-300/40 dark:text-gray-900">
-                          you won't be able to modify
+                          you won&apos;t be able to modify
                         </span>{" "}
                         the letter after sharing it.
                       </h4>

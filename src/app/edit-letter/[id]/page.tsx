@@ -43,7 +43,6 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   } | null>(null);
 
   useEffect(() => {
-    // @ts-ignore
     import("react-quill-new/dist/quill.bubble.css").catch(() => {});
   }, []);
 
@@ -476,7 +475,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
         <div onMouseDown={handleQuillContainerMouseDown}>
           <ReactQuill
-            // @ts-ignore dynamic import makes the ref type opaque
+            // @ts-expect-error: dynamic import makes the ref type opaque
             ref={quillRef}
             className={`min-h-[60vh] sm:min-h-[65vh] border rounded-md bg-white dark:bg-neutral-850 text-gray-900 dark:text-gray-200
               rounded-md p-2 space-y-1 ring-transparent ${

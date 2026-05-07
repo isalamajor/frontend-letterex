@@ -10,7 +10,8 @@ const declineFriendRequest = async (senderId) => {
     }
     console.error("Error declining friend request:", response.data.message);
     return -1;
-  } catch (_error) {
+  } catch (error) {
+    console.error("Error declining friend request:", error);
     return -1;
   }
 };
@@ -23,7 +24,8 @@ const acceptFriendRequest = async (senderId) => {
     }
     console.error("Error accepting friend request:", response.data.message);
     return -1;
-  } catch (_error) {
+  } catch (error) {
+    console.error("Error accepting friend request:", error);
     return -1;
   }
 };

@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { Check, X } from "lucide-react";
-import { useState } from "react";
 import { acceptFriendRequest, declineFriendRequest } from "@/services/api";
 import { useDialog } from "@/context/dialogContext";
 

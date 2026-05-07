@@ -54,7 +54,7 @@ export const Error = ({ error, label, size = "medium", children }: ErrorProps) =
           large: "text-base"
         }[size]}`
       }
-      // @ts-expect-error
+      // @ts-expect-error: CSS custom property is not part of React.CSSProperties
       style={{ "--geist-link-color": "var(--ds-red-900)" }}
     >
       <ErrorIcon />

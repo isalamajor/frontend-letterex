@@ -3,7 +3,6 @@ import {
   UserData,
   ApiResponse,
   Credentials,
-  LoginData,
   RegisterData,
   ValidationCodePurpose,
 } from "@/lib/types";
@@ -85,6 +84,7 @@ const checkVerificationCode = async (
       errorMessage: response.data.message || "Invalid code",
     };
   } catch (error) {
+    console.error("Error checking verification code:", error);
     return { ok: false, errorMessage: "Server Error checking code" };
   }
 };
@@ -149,28 +149,6 @@ const login = async (
   }
 };
 
-const SavePPicInSessionStorage = async (
-  token: string,
-  userId: string,
-): Promise<void> => {
-  try {
-    if (!token || !userId) return;
-    const response = await axios.get(`${API_URL}/profile-picture/${userId}`, {
-      responseType: "blob",
-    });
-    if (response) {
-      const file = response.data;
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        sessionStorage.setItem("profilePictureBase64", reader.result as string);
-      };
-    }
-  } catch (error) {
-    console.error("Error fetching profile picture:", error);
-  }
-};
-
 const isUsernameInUse = async (
   username: string,
 ): Promise<ApiResponse<boolean>> => {
@@ -227,7 +205,8 @@ const getProfile = async (id: string): Promise<ApiResponse<UserData>> => {
 const listUsers = async (
   token: string,
   page: number = 1,
-): Promise<ApiResponse<any>> => {
+): Promise<ApiResponse<unknown>> => {
+  void token;
   try {
     const response = await axios.get(`${API_URL}/list-users/${page}`);
     return { ok: true, data: response.data };
@@ -246,7 +225,9 @@ const updateUser = async (
   userData: UserData,
 ): Promise<ApiResponse<UserData>> => {
   // Quitar email y nickname de userData
-  const { email: _, nickname: __, ...rest } = userData;
+  const { email, nickname, ...rest } = userData;
+  void email;
+  void nickname;
   try {
     const response = await axios.put(`${API_URL}/update`, rest);
     if (response.status === 200) {

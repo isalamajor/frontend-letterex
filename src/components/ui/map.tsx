@@ -6,13 +6,13 @@ import { useEffect, useMemo, useState } from "react";
 import { feature } from "topojson-client";
 import { Topology } from "topojson-specification";
 import worldData from "world-atlas/countries-110m.json";
-import L, { geoJSON } from "leaflet";
+import L from "leaflet";
 import { Combobox } from "@/components/ui/combobox";
 
 interface CountryFeature {
   type: "Feature";
-  properties: { name: string; [key: string]: any };
-  geometry: any;
+  properties: { name: string; [key: string]: unknown };
+  geometry: GeoJSON.Geometry;
 }
 
 interface MapProps {
@@ -28,7 +28,7 @@ function FitBounds({ geoJson }: { geoJson: GeoJSON.FeatureCollection }) {
   useMemo(() => {
     if (geoJson.features.length === 0) return;
 
-    const layer = L.geoJSON(geoJson as any);
+    const layer = L.geoJSON(geoJson as GeoJSON.GeoJsonObject);
     map.fitBounds(layer.getBounds(), { padding: [20, 20] });
   }, [geoJson, map]);
 
@@ -60,17 +60,9 @@ export default function Mapa({
 
   // Convertir TopoJSON → GeoJSON
   const countries = useMemo(() => {
-    const topo: Topology = worldData as any;
+    const topo = worldData as unknown as Topology;
     return feature(topo, topo.objects.countries) as GeoJSON.FeatureCollection;
   }, []);
-
-  // Handle country change
-  const handleCountryChange = (country: string) => {
-    if (editing) {
-      // If we're in edit mode, update the selected country
-      onCountryChange?.(country);
-    }
-  };
 
   // Selected country
   const highlighted = useMemo(() => {
@@ -119,7 +111,7 @@ export default function Mapa({
         {/* Highlighted country */}
         <GeoJSON
           key={selectedCountry}
-          data={highlighted as any}
+          data={highlighted as GeoJSON.GeoJsonObject}
           style={{
             fillColor: "#3b82f6",
             color: "#3b82f6",

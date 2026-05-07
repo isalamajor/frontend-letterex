@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { getFriends, getFriendRequests } from "@/services/api";
 import FriendCard from "@/components/friendCard";
 import { MessageCircleDashed, Frown } from "lucide-react";

@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback, useContext } from "react";
 import {
   CircleUserRound,
-  Mail,
   Leaf,
   Calendar,
   SquarePen,
@@ -244,7 +243,8 @@ const ProfilePageContent = ({ id }: { id: string }) => {
       // If neither imageFile nor imageWasRemoved, don't call upload/delete APIs
 
       // Save data
-      const { image, ...dataToSave } = data.userData;
+      const { image: previousImage, ...dataToSave } = data.userData;
+      void previousImage;
       const response = await updateUser(dataToSave);
       if (!response.ok) {
         openDialog({

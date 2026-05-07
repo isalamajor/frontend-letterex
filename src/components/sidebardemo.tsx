@@ -6,7 +6,6 @@ import {
   UserCog,
   Handshake,
   LogOut,
-  LeafyGreen,
   Moon,
   Sun,
 } from "lucide-react";
@@ -46,7 +45,8 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
 
       setTheme(nextTheme);
       document.documentElement.classList.toggle("dark", nextTheme === "dark");
-    } catch (_error) {
+    } catch (error) {
+      console.error("Unable to load theme preference:", error);
       // Ignore localStorage/window errors in restricted environments.
     }
   }, []);
@@ -57,7 +57,8 @@ export function SidebarDemo({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.toggle("dark", nextTheme === "dark");
     try {
       localStorage.setItem("theme", nextTheme);
-    } catch (_error) {
+    } catch (error) {
+      console.error("Unable to save theme preference:", error);
       // Ignore localStorage errors.
     }
   };

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { parseDate } from "@internationalized/date";
+import { CalendarDate, parseDate } from "@internationalized/date";
 import { DateField, DateInput } from "@/components/ui/datefield";
 import { Label } from "@/components/ui/field";
 import { getDiaries, saveLetter } from "@/services/api";
@@ -48,11 +48,10 @@ const NewLetterPageContent = () => {
   const [diaryAddedPreviously, setDiaryAddedPreviously] = useState<
     string | undefined
   >(undefined);
-  const { openDialog, closeDialog } = useDialog();
+  const { openDialog } = useDialog();
   const { userData } = useContext(UserContext);
 
   useEffect(() => {
-    // @ts-ignore
     import("react-quill-new/dist/quill.bubble.css").catch(() => {});
   }, []);
 
@@ -70,7 +69,8 @@ const NewLetterPageContent = () => {
     setTitle(event.target.value);
   };
 
-  const handleDateChange = (newDate: any) => {
+  const handleDateChange = (newDate: CalendarDate | null) => {
+    if (!newDate) return;
     setErrors((prev) => ({ ...prev, date: false }));
     setDate(newDate);
   };
@@ -307,7 +307,7 @@ const NewLetterPageContent = () => {
 
           <div onMouseDown={handleQuillContainerMouseDown}>
             <ReactQuill
-              // @ts-ignore react-quill-new ref typing is not exposed here
+              // @ts-expect-error: react-quill-new ref typing is not exposed here
               ref={quillRef}
               className={`min-h-[62vh] sm:min-h-[65vh] border rounded-md bg-white dark:bg-neutral-850 text-gray-900 dark:text-gray-200
               rounded-md p-2 space-y-1 ring-transparent ${

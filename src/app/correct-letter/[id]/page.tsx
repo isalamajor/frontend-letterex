@@ -40,7 +40,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   );
   const [overlapping, setOverlapping] = useState<boolean>(false);
   const [valuesChanged, setValuesChanged] = useState(false);
-  const [date, setDate] = useState(() =>
+  const [date] = useState(() =>
     parseDate(new Date().toISOString().split("T")[0]),
   );
   const [correctionMode, setCorrectionMode] = useState(false);
@@ -106,7 +106,8 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     if (!selectionInfo || !selectionInfo.text || currentCorrectionText === "")
       return;
 
-    let { text, startIndex, endIndex } = selectionInfo;
+    const { startIndex } = selectionInfo;
+    let { text, endIndex } = selectionInfo;
 
     // Eliminar espacio al final
     if (text.endsWith(" ")) {
@@ -230,7 +231,8 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         type: "askConfirmation",
         onConfirmationPositive: sendBack,
       });
-    } catch (_error) {
+    } catch (error) {
+      console.log("Error sending letter back:", error);
       openDialog({
         title: "Fail to send back",
         description: "There was an error sending letter back :(",
@@ -301,7 +303,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
               By
               <img
                 className="rounded-full w-6 h-6 border border-1 border-gray-500 ml-2 mr-0.5"
-                src={`${process.env.NEXT_PUBLIC_PICTURES_BASE_URL}/${letter.sender.image}`}
+                src={letter.sender.image || "/default.png"}
               />
               <span
                 className="text-blue-500 cursor-pointer"
@@ -318,8 +320,8 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                 This letter has been deleted by the author.
               </p>
               <p className="text-red-400">
-                You can review it and add corrections, but you won't be able to
-                send it back.
+                You can review it and add corrections, but you won&apos;t be
+                able to send it back.
               </p>
             </>
           )}

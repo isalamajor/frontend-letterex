@@ -44,7 +44,6 @@ const LetterCardList = ({
   const [resetSelectionToDelete, setResetSelectionToDelete] =
     useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage = 5;
   const diaryItemsPerPage = 6;
   const [diaryCurrentPage, setDiaryCurrentPage] = useState<number>(1);
@@ -80,7 +79,6 @@ const LetterCardList = ({
     // Check if page is already cached
     if (pagesCacheRef.current[page]) {
       setletters(pagesCacheRef.current[page]);
-      setTotalPages(totalPagesRef.current);
       setTotalLettersCount(totalLettersCountRef.current);
       return false;
     }
@@ -89,7 +87,6 @@ const LetterCardList = ({
 
     if (!result || !result.letters) {
       setletters([]);
-      setTotalPages(1);
       return true;
     }
     console.log("letters:", result);
@@ -108,7 +105,6 @@ const LetterCardList = ({
     totalLettersCountRef.current = totalCount;
     const totalPagesCount = result.totalPages;
     totalPagesRef.current = totalPagesCount;
-    setTotalPages(totalPagesCount);
 
     return letters.length === 0;
   };

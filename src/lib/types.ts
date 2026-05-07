@@ -34,7 +34,6 @@ export interface MyLetters {
   language: string;
   created_at: string;
 }
-[];
 
 export interface ReceivedLetterListProps {
   letters: {
@@ -134,7 +133,7 @@ export interface UserData {
   isFriend?: boolean;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   ok: boolean;
   data?: T;
   errorMessage?: string;

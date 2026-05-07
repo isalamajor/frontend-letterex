@@ -52,7 +52,6 @@ export default function ReceivedLetterBlock() {
       const sentBack = filters.onlyPending ? false : undefined;
       const isBaseQuery =
         query === "" && sender === undefined && filters.onlyPending === false;
-      const hasFilters = !isBaseQuery;
 
       // Check if page is already cached
       if (pagesCacheRef.current[page]) {

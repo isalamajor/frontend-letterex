@@ -21,6 +21,7 @@ const getCommunities = async (language) => {
 };
 
 const getMyCommunities = async (language) => {
+  void language;
   try {
     const response = await axios.get(`${API_URL}/`);
     if (response.status === 200) {

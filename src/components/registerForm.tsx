@@ -3,7 +3,6 @@ import "../stylesheets/animatedForm.css";
 import { motion } from "framer-motion";
 import LanguageSelector from "./languageSelector";
 import {
-  login,
   register,
   isUsernameInUse,
   sendVerificationCode,
