@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { Input } from "@/components/ui/input";
 import clsx from "clsx";
-import { Material } from "@/components/ui/material-1";
+import { Material } from "@/components/ui/material";
 import { Button } from "@/components/ui/button-1";
 
 const SearchIcon = ({ className }: { className?: string }) => (

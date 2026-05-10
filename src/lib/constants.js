@@ -5,3 +5,5 @@ export const fadeInOut = {
   exit: { opacity: 0, y: -8, scale: 0.98 },
   transition: { duration: 0.2, ease: "easeOut" },
 };
+
+export const VERIFICATION_CODE_LENGTH = 6;

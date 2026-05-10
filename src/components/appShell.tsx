@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { SidebarDemo } from "@/components/sidebardemo";
+import { Sidebarex } from "@/components/sidebarex";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -11,5 +11,5 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  return <SidebarDemo>{children}</SidebarDemo>;
+  return <Sidebarex>{children}</Sidebarex>;
 }

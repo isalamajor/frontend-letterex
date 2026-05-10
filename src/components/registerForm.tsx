@@ -12,7 +12,7 @@ import {
 } from "../services/api";
 import { InputPass } from "./ui/inputPass";
 import languagesData from "../app/resources/languagesData";
-import CodeInput from "./codeInput";
+import CodeInput from "./ui/codeInput";
 import { ValidationCodePurpose } from "@/lib/types";
 import dynamic from "next/dynamic";
 
@@ -224,7 +224,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
           </h2>
           <div className="flex flex-col gap-2 my-5 mx-0 justify-start">
             <input
-              className="w-full p-2 mb-2 border rounded form-blank bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-700"
+              className="w-full p-2 mb-2 border rounded form-blank bg-white dark:bg-neutral-900 text-gray-900 border-gray-300 dark:border-neutral-700"
               type="text"
               placeholder="Username"
               value={username}
@@ -236,7 +236,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
               }}
             />
             <InputPass
-              styles="w-full p-0 mb-2 border rounded form-blank focus-visible:ring-[0px] text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
+              styles="w-full p-0 mb-2 border rounded form-blank focus-visible:ring-[0px] text-gray-900 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
               onChange={(pass) => {
                 setPassword(pass);
                 setShowAlert("");
@@ -255,7 +255,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
             Enter an email 📫
           </h2>
           <input
-            className="w-full p-2 mb-2 border rounded form-blank bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-700"
+            className="w-full p-2 mb-2 border rounded form-blank bg-white dark:bg-neutral-900 text-gray-900 border-gray-300 dark:border-neutral-700"
             type="email"
             placeholder="Email"
             value={email}
@@ -385,7 +385,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
 
         {currentStep < 6 ? (
           <motion.button
-            className="p-2 bg-blue-500 text-white rounded btn-animated-form btn-go dark:bg-dark-bg-secondary dark:text-white"
+            className="p-2 rounded btn-animated-form btn-go dark:bg-dark-bg-secondary dark:text-white"
             onClick={handleNextStep}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}

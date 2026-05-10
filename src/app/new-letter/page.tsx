@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { Spinner } from "@/components/ui/spinner-1";
+import { Spinner } from "@/components/ui/spinner";
 
 const NewLetterPageContent = dynamic(() => import("./NewLetterPageContent"), {
   loading: () => (

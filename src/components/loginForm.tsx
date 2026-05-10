@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { login } from "@/services/api";
 import { InputPass } from "./ui/inputPass";
 import { motion } from "framer-motion";
-import { Spinner } from "./ui/spinner-1";
+import { Spinner } from "./ui/spinner";
 import { KeyRound } from "lucide-react";
 import axios from "axios";
 import { UserContext } from "@/context/userContext";
@@ -68,7 +68,7 @@ const LoginForm = ({
 
   return (
     <motion.div
-      className="mt-10 bg-white dark:bg-neutral-900 p-6 rounded-lg shadow-lg w-80 w-[22rem] text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-neutral-700"
+      className="mt-10 bg-white dark:bg-neutral-900 p-6 rounded-lg shadow-lg w-80 w-[22rem] text-gray-900 border border-gray-200 dark:border-neutral-700"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
@@ -81,7 +81,7 @@ const LoginForm = ({
         style={{ opacity: isLoading ? 0.5 : 1 }}
       >
         <input
-          className="w-full p-2 mb-2 border rounded form-blank bg-white text-gray-900  dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 "
+          className="w-full p-2 mb-2 border rounded form-blank bg-white text-gray-900 dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 "
           type="text"
           value={email}
           placeholder="Email/Username"
@@ -91,7 +91,7 @@ const LoginForm = ({
           }}
         />
         <InputPass
-          styles="w-full p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
+          styles="w-full p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 "
           onChange={(pass) => {
             setPassword(pass);
             setShowAlert("");

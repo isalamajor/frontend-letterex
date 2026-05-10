@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Spinner } from "@/components/ui/spinner-1";
+import { Spinner } from "@/components/ui/spinner";
 import TablePagination from "@mui/material/TablePagination";
 
 const ITEMS_PER_PAGE = 5;

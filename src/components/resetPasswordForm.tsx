@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { resetPassword } from "@/services/api";
 import { ValidationCodePurpose } from "@/lib/types";
-import CodeInput from "./codeInput";
+import CodeInput from "./ui/codeInput";
 import { motion } from "framer-motion";
 import { InputPass } from "./ui/inputPass";
+import { Spinner } from "./ui/spinner";
 import {
   checkVerificationCode,
   sendVerificationCode,
   isEmailInUse,
 } from "@/services/api";
 import { Check } from "lucide-react";
-
-const CODE_LENGTH = 6;
+import { VERIFICATION_CODE_LENGTH } from "@/lib/constants";
 
 const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
   const [email, setEmail] = useState<string>("");
@@ -20,8 +20,9 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
   const [showAlert, setShowAlert] = useState<string>("");
   const [confirmationCode, setConfirmationCode] = useState<string>("");
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const btnClass =
-    "w-full p-2 bg-green-500 text-white rounded btn-animated-form btn-back";
+  const [isSendingRecoveryCode, setIsSendingRecoveryCode] =
+    useState<boolean>(false);
+  const btnClass = "p-2 bg-green-500 text-white rounded btn-animated-form";
   const alertStyles = {
     style: { whiteSpace: "pre-line" as const },
     className: "text-red-500 text-base",
@@ -38,7 +39,10 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
 
   // Auto-submit verification code when complete
   useEffect(() => {
-    if (currentStep === 1 && confirmationCode.length === CODE_LENGTH) {
+    if (
+      currentStep === 1 &&
+      confirmationCode.length === VERIFICATION_CODE_LENGTH
+    ) {
       checkCodeAttempt();
     }
   }, [confirmationCode, currentStep]);
@@ -57,36 +61,42 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
   };
 
   const sendRecoveryCode = async () => {
-    // Basic validation
-    if (!email.trim() || !email.includes("@")) {
-      setShowAlert("Please enter a valid email address");
-      return;
-    }
+    setIsSendingRecoveryCode(true);
+    try {
+      // Basic validation
+      if (!email.trim() || !email.includes("@")) {
+        setShowAlert("Please enter a valid email address");
+        return;
+      }
 
-    // Check if email is in use
-    const emailCheckResult = await isEmailInUse(email);
-    if (!emailCheckResult.ok) {
-      setShowAlert(
-        emailCheckResult.errorMessage || "Server is having trouble...",
-      );
-      return;
-    }
-    if (!emailCheckResult.data) {
-      setShowAlert("This email is not registered");
-      return;
-    }
+      // Check if email is in use
+      const emailCheckResult = await isEmailInUse(email);
+      if (!emailCheckResult.ok) {
+        setShowAlert(
+          emailCheckResult.errorMessage || "Server is having trouble...",
+        );
+        return;
+      }
+      if (!emailCheckResult.data) {
+        setShowAlert("This email is not registered");
+        return;
+      }
 
-    // If email is in use, send verification code
-    const codeResult = await sendVerificationCode(
-      email,
-      "password_reset" as ValidationCodePurpose,
-    );
-    if (codeResult.ok) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      setShowAlert(
-        codeResult.errorMessage || "There was a problem validating your email",
+      // If email is in use, send verification code
+      const codeResult = await sendVerificationCode(
+        email,
+        "password_reset" as ValidationCodePurpose,
       );
+      if (codeResult.ok) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        setShowAlert(
+          codeResult.errorMessage ||
+            "There was a problem validating your email",
+        );
+      }
+    } finally {
+      setIsSendingRecoveryCode(false);
     }
   };
 
@@ -134,7 +144,7 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
           </p>
           <div className="flex flex-col gap-2 mt-5 mb-3 mx-0 justify-start">
             <input
-              className="w-full p-2 mb-2 border rounded form-blank bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-neutral-700 placeholder:text-gray-500 dark:placeholder:text-gray-400"
+              className="w-full p-2 mb-2 border rounded form-blank bg-white dark:bg-neutral-900 text-gray-900 border-gray-300 dark:border-neutral-700 placeholder:text-gray-500"
               type="text"
               value={email}
               placeholder="Email"
@@ -153,10 +163,10 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
 
       {currentStep === 1 && (
         <>
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-            Check your mailbox
+          <h3 className="text-lg font-semibold  text-gray-900 dark:text-gray-100">
+            📫 Check your mailbox
           </h3>
-          <h4 className="text-lg mb-2 text-gray-700 dark:text-gray-300">
+          <h4 className="text-md mb-2 text-gray-700 dark:text-gray-300">
             We sent you a verification code...
           </h4>
           <div className="flex flex-col gap-2 mt-5 mb-3 mx-0 justify-start">
@@ -177,23 +187,21 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
             Ok! Set a new password
           </h3>
           <InputPass
-            styles="w-full p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
+            styles="w-full p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 mb-2"
             onChange={(pass) => {
               setPassword(pass);
               setShowAlert("");
             }}
-            label="Enter new password"
             placeholder="New password"
             wrongPassword={false}
           />
           <InputPass
-            styles="w-full mb-4 p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
+            styles="w-full mb-4 p-0 border rounded form-blank focus-visible:ring-[0px] text-gray-900 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
             onChange={(pass) => {
               setConfirmPassword(pass);
               setShowAlert("");
             }}
-            label="Confirm password"
-            placeholder="New password"
+            placeholder="Confirm password"
             wrongPassword={false}
             onEnter={handleNextStep}
           />
@@ -220,24 +228,36 @@ const ResetPasswordForm = ({ goBack }: { goBack: () => void }) => {
               className={`w-8 h-8 ${iconConfig.iconColorClass}`}
             />
           </motion.div>
-          <p className="text-gray-900 dark:text-gray-100">
+          <p className="text-gray-900 dark:text-gray-100 font-semibold">
             Password changed succesfully
           </p>
         </div>
       ) : (
-        <div className="back-go mt-0 pt-0">
-          <button
+        <div className="mt-0 pt-0 back-go">
+          <motion.button
             onClick={goBack}
-            className={`${btnClass} dark:bg-neutral-700 dark:text-gray-100`}
+            className={`${btnClass} dark:bg-neutral-700 dark:text-gray-100 btn-back`}
+            disabled={isSendingRecoveryCode}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
             ← Back
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={handleNextStep}
-            className={`${btnClass} flex flex-row gap-1 justify-center items-center dark:bg-dark-bg-secondary dark:text-white`}
+            className={`${btnClass} flex flex-row gap-1 justify-center items-center dark:bg-dark-bg-secondary dark:text-white btn-go`}
+            disabled={isSendingRecoveryCode}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
-            {currentStep === 2 ? "Confirm" : "Next"}
-          </button>
+            {currentStep === 0 && isSendingRecoveryCode ? (
+              <Spinner size={16} color="white" />
+            ) : currentStep === 2 ? (
+              "Confirm"
+            ) : (
+              "Next"
+            )}
+          </motion.button>
         </div>
       )}
     </motion.div>

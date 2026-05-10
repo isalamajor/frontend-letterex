@@ -1,5 +1,5 @@
 import React from "react";
-import { Spinner } from "@/components/ui/spinner-1";
+import { Spinner } from "@/components/ui/spinner";
 import clsx from "clsx";
 
 const sizes = [

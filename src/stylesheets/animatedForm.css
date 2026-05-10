@@ -174,6 +174,11 @@ h2 {
   width: 38%;
   background-color: black;
   color: white;
+  border: 1px solid white;
+}
+.btn-finish:hover {
+  border: 1px solid rgb(67, 138, 111);
+  color: rgb(67, 138, 111);
 }
 
 .languages-profile {

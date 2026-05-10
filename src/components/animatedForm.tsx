@@ -5,7 +5,7 @@ import { MdOutlineSensorDoor } from "react-icons/md";
 import { RiPlantLine } from "react-icons/ri";
 import { motion } from "framer-motion";
 import { Typewriter } from "./ui/typeWriter";
-import FrogAnimation from "@/components/frogAnimation1";
+import FrogAnimation from "@/components/frogAnimation";
 import RegisterForm from "./registerForm";
 import LoginForm from "./loginForm";
 import ResetPasswordForm from "./resetPasswordForm";

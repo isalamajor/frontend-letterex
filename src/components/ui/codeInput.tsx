@@ -18,7 +18,7 @@ const CodeInput = ({ setCode }: { setCode: (inputCode: string) => void }) => {
           inputMode="numeric"
           pattern="[0-9]*"
           maxLength={1}
-          className="form-blank form-blank-code"
+          className="form-blank form-blank-code text-gray-900"
           value={confirmationCode[index] || ""}
           ref={(el) => {
             if (el) inputRefs.current[index] = el;

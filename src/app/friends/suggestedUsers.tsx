@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getSuggestedUsers, getNonFriendsByFilter } from "@/services/api";
 import { Ghost, Search } from "lucide-react";
-import AddFriendCard from "@/components/addFriendCard";
+import AddFriendCard from "./addFriendCard";
 import { useDialog } from "@/context/dialogContext";
 
 interface NonAddedList {

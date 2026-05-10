@@ -18,7 +18,7 @@ import { useDialog } from "@/context/dialogContext";
 import { logout } from "@/services/api";
 import { UserContext } from "@/context/userContext";
 
-export function SidebarDemo({ children }: { children: React.ReactNode }) {
+export function Sidebarex({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const router = useRouter();

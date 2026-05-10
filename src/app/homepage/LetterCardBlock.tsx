@@ -6,7 +6,7 @@ import Link from "next/link";
 import LetterCardList from "./LetterCardList";
 import { AnimatePresence, motion } from "framer-motion";
 import { fadeInOut } from "@/lib/constants";
-import { Spinner } from "@/components/ui/spinner-1";
+import { Spinner } from "@/components/ui/spinner";
 
 interface settingsLetterList {
   orderByDiaries: boolean;

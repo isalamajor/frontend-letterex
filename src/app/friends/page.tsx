@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { getFriends, getFriendRequests } from "@/services/api";
-import FriendCard from "@/components/friendCard";
+import FriendCard from "./friendCard";
 import { MessageCircleDashed, Frown } from "lucide-react";
-import FriendRequestCard from "@/components/friendRequestCard";
+import FriendRequestCard from "./friendRequestCard";
 import Pagination from "@mui/material/Pagination";
 import dynamic from "next/dynamic";
-import { Spinner } from "@/components/ui/spinner-1";
+import { Spinner } from "@/components/ui/spinner";
 
 const SuggestedUsers = dynamic(() => import("./suggestedUsers"), {
   loading: () => (
