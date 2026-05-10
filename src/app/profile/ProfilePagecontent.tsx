@@ -11,6 +11,7 @@ import {
   Settings,
   Loader,
 } from "lucide-react";
+import Image from "next/image";
 import {
   uploadProfilePicture,
   deleteProfilePicture,
@@ -494,10 +495,14 @@ const ProfilePageContent = ({ id }: { id: string }) => {
                     <div className="flex flex-row gap-3">
                       {getLearningLanguages().map((lang, index) => (
                         <div key={index} className="relative">
-                          <img
-                            src={`/flags/${lang}.svg`}
-                            className="h-7 w-7 sm:h-10 sm:w-10 rounded-full object-cover shadow"
-                          />
+                          <div className="relative h-7 w-7 sm:h-10 sm:w-10 rounded-full overflow-hidden shadow">
+                            <Image
+                              src={`/flags/${lang}.svg`}
+                              alt={lang}
+                              fill
+                              className="object-cover rounded-full"
+                            />
+                          </div>
                           {editing && (
                             <Trash2
                               className="absolute h-7 w-7 sm:h-10 sm:w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white cursor-pointer"
@@ -527,10 +532,14 @@ const ProfilePageContent = ({ id }: { id: string }) => {
                     <div className="flex flex-row gap-3">
                       {getMasterLanguages().map((lang, index) => (
                         <div key={index} className="relative">
-                          <img
-                            src={`/flags/${lang}.svg`}
-                            className="h-7 w-7 sm:h-10 sm:w-10 rounded-full object-cover shadow"
-                          />
+                          <div className="relative h-7 w-7 sm:h-10 sm:w-10 rounded-full overflow-hidden shadow">
+                            <Image
+                              src={`/flags/${lang}.svg`}
+                              alt={lang}
+                              fill
+                              className="object-cover rounded-full"
+                            />
+                          </div>
                           {editing && (
                             <Trash2
                               className="absolute h-7 w-7 sm:h-10 sm:w-10 rounded-full p-2 inset-0 hover:bg-black/50 text-transparent hover:text-white cursor-pointer"
@@ -571,11 +580,9 @@ const ProfilePageContent = ({ id }: { id: string }) => {
                     {!addingLanguage && <h2>Available languages</h2>}
                     <div className="grid grid-flow-col auto-cols-max gap-2 justify-center">
                       {availableLanguages.map((lang) => (
-                        <motion.img
+                        <motion.div
                           key={lang}
-                          src={`/flags/${lang}.svg`}
-                          alt={lang}
-                          className="cursor-pointer rounded-full shadow h-7 w-7 sm:h-10 sm:w-10 "
+                          className="cursor-pointer rounded-full shadow h-7 w-7 sm:h-10 sm:w-10"
                           whileHover={{ scale: 1.1 }}
                           onClick={() => {
                             if (!addingLanguage) return;
@@ -585,7 +592,16 @@ const ProfilePageContent = ({ id }: { id: string }) => {
                               addLearningLanguage(lang);
                             }
                           }}
-                        />
+                        >
+                          <div className="relative h-full w-full rounded-full overflow-hidden">
+                            <Image
+                              src={`/flags/${lang}.svg`}
+                              alt={lang}
+                              fill
+                              className="object-cover rounded-full"
+                            />
+                          </div>
+                        </motion.div>
                       ))}
                     </div>
                   </>
@@ -625,10 +641,14 @@ const ProfilePageContent = ({ id }: { id: string }) => {
                           Object.entries(data.userData.countLetters).map(
                             ([lang, count]) => (
                               <li key={lang} className="flex flex-row gap-3">
-                                <img
-                                  src={`/flags/${lang}.svg`}
-                                  className="h-7 w-7 rounded-full"
-                                ></img>
+                                <div className="relative h-7 w-7 rounded-full overflow-hidden">
+                                  <Image
+                                    src={`/flags/${lang}.svg`}
+                                    alt={lang}
+                                    fill
+                                    className="object-cover rounded-full"
+                                  />
+                                </div>
                                 {count} in {lang}
                               </li>
                             ),
@@ -651,10 +671,14 @@ const ProfilePageContent = ({ id }: { id: string }) => {
                             data.userData.countCorrectedLetter,
                           ).map(([lang, count]) => (
                             <li key={lang} className="flex flex-row gap-3">
-                              <img
-                                src={`/flags/${lang}.svg`}
-                                className="h-7 w-7 rounded-full"
-                              ></img>
+                              <div className="relative h-7 w-7 rounded-full overflow-hidden">
+                                <Image
+                                  src={`/flags/${lang}.svg`}
+                                  alt={lang}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
                               {count} in {lang}
                             </li>
                           ))}

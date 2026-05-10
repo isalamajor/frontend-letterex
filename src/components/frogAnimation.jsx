@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function FrogAnimation({ toggle, velocidad = 150 }) {
   const frames = [
@@ -46,14 +47,15 @@ export default function FrogAnimation({ toggle, velocidad = 150 }) {
   }
 
   return (
-    <img
-      src={displayFrame}
-      alt="logo-frog"
-      className="block w-full h-auto object-contain"
-      draggable={false}
-      width={50}
-      height={50}
-      onError={() => setImageFailed(true)}
-    />
+    <div style={{ width: 150, height: 150 }} className="relative">
+      <Image
+        src={displayFrame}
+        alt="logo-frog"
+        fill
+        className="object-contain"
+        draggable={false}
+        onError={() => setImageFailed(true)}
+      />
+    </div>
   );
 }

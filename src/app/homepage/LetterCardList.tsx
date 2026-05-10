@@ -12,6 +12,7 @@ import {
 import { BookCopy, BookX } from "lucide-react";
 import { useDialog } from "@/context/dialogContext";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import { fadeInOut } from "@/lib/constants";
 import type { Letter } from "@/lib/types";
 import TablePagination from "@mui/material/TablePagination";
@@ -386,10 +387,14 @@ const LetterCardList = ({
                     <div className="px-8 py-4 rounded-r-lg bg-gray-50 dark:bg-neutral-850 shadow-md w-full max-w-5xl text-black dark:text-gray-200">
                       <div className="flex flex-row justify-between">
                         <div className="flex flex-row gap-2 text-gray-500 items-center">
-                          <img
-                            src={`/flags/${letter.language}.svg`}
-                            className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600"
-                          />
+                          <div className="relative w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden">
+                            <Image
+                              src={`/flags/${letter.language}.svg`}
+                              alt={letter.language}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
                           <p>{letter.language}</p>
                         </div>
                         <p className="dark:text-green-100">

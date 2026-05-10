@@ -23,6 +23,7 @@ import { isQuillContentEmpty } from "@/lib/utils";
 import { LetterFormErrors, NewLetter } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { UserContext } from "@/context/userContext";
+import Image from "next/image";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
@@ -447,11 +448,14 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                 className="flex items-center gap-1 cursor-pointer"
                 onClick={() => goToProfile(letter.sharedWith[0].id)}
               >
-                <img
-                  src={letter.sharedWith[0].image || "/default.png"}
-                  alt={letter.sharedWith[0].nickname}
-                  className="w-5 h-5 rounded-full border border-gray-300"
-                />
+                <div className="relative w-5 h-5 rounded-full border border-gray-300 overflow-hidden">
+                  <Image
+                    src={letter.sharedWith[0].image || "/default.png"}
+                    alt={letter.sharedWith[0].nickname}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 {letter.sharedWith[0].nickname}
               </div>
               {letter.sharedWith[1] && (
@@ -461,11 +465,14 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                   onClick={() => goToProfile(letter.sharedWith[1].id)}
                 >
                   <span className="text-gray-600 dark:text-gray-300">and</span>
-                  <img
-                    src={letter.sharedWith[1].image || "/default.png"}
-                    alt={letter.sharedWith[1].nickname}
-                    className="w-5 h-5 rounded-full border border-gray-300"
-                  />
+                  <div className="relative w-5 h-5 rounded-full border border-gray-300 overflow-hidden">
+                    <Image
+                      src={letter.sharedWith[1].image || "/default.png"}
+                      alt={letter.sharedWith[1].nickname}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                   {letter.sharedWith[1].nickname}
                 </div>
               )}

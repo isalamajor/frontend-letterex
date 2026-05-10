@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Tooltip } from "react-tooltip";
 import type { Letter } from "@/lib/types";
 
@@ -95,18 +96,26 @@ const LetterCard: React.FC<LetterCardProps> = ({
           <div className="flex items-center gap-2">
             {/* Usuarios que corrigieron */}
             {(sharedWith || []).map((user, index) => (
-              <img
+              <div
                 key={index}
-                src={`${user.image || "default.png"}`}
-                alt={user.image}
-                className="w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600"
-              />
+                className="relative w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden"
+              >
+                <Image
+                  src={`${user.image || "/default.png"}`}
+                  alt={user.nickname}
+                  fill
+                  className="object-cover"
+                />
+              </div>
             ))}
-            <img
-              src={`/flags/${language}.svg`}
-              alt={language}
-              className="w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600"
-            />
+            <div className="relative w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden">
+              <Image
+                src={`/flags/${language}.svg`}
+                alt={language}
+                fill
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { getLetterToCorrect } from "@/services/api";
 import { HeartCrack, X } from "lucide-react";
+import Image from "next/image";
 import { use } from "react";
 import TextCorrections from "@/components/textCorrections";
 import { CorrectedLetter } from "../../../lib/types";
@@ -91,10 +92,14 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           {letter.reviewer.nickname && (
             <p className="flex flex-row justify-end items-center">
               Corrected by
-              <img
-                className="rounded-full w-6 h-6 border border-1 border-gray-500 ml-2 mr-0.5"
-                src={`${process.env.NEXT_PUBLIC_PICTURES_BASE_URL}/${letter.reviewer.image}`}
-              />
+              <div className="relative rounded-full w-6 h-6 border border-1 border-gray-500 ml-2 mr-0.5 overflow-hidden">
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_PICTURES_BASE_URL}/${letter.reviewer.image}`}
+                  alt={letter.reviewer.nickname || "Reviewer"}
+                  fill
+                  className="object-cover"
+                />
+              </div>
               <span
                 className="text-blue-500 cursor-pointer"
                 onClick={() => router.push(`/profile/${letter.reviewer.id}`)}

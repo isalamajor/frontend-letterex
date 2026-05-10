@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { Check, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { deleteCorrectedLetter } from "@/services/api";
 import { useDialog } from "@/context/dialogContext";
 import { useRouter } from "next/navigation";
@@ -110,16 +111,22 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
           {/* Usuario que la manda e Idioma */}
           <div className="flex items-center gap-2 text-gray-800 dark:text-gray">
             <p className="text-md">By {sender.nickname}</p>
-            <img
-              src={`${sender.image || "default.png"}`}
-              alt={sender.nickname}
-              className="w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600"
-            />
-            <img
-              src={`/flags/${language}.svg`}
-              alt={language}
-              className="w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600"
-            />
+            <div className="relative w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden">
+              <Image
+                src={`${sender.image || "/default.png"}`}
+                alt={sender.nickname}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden">
+              <Image
+                src={`/flags/${language}.svg`}
+                alt={language}
+                fill
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
       </div>

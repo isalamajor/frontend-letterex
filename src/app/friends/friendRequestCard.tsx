@@ -3,6 +3,7 @@ import React from "react";
 import { Check, X } from "lucide-react";
 import { acceptFriendRequest, declineFriendRequest } from "@/services/api";
 import { useDialog } from "@/context/dialogContext";
+import Image from "next/image";
 
 interface User {
   id: string;
@@ -53,11 +54,14 @@ const FriendRequestCard: React.FC<User> = ({
 
   return (
     <div className="px-8 pt-4 rounded-lg bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 dark:border-neutral-700 shadow-md w-full flex flex-row gap-4">
-      <img
-        src={`${image || "default.png"}`}
-        alt={image}
-        className="w-14 h-14 rounded-full border border-gray-200 dark:border-gray-600"
-      />
+      <div className="relative w-14 h-14 rounded-full border border-gray-200 dark:border-gray-600 overflow-hidden">
+        <Image
+          src={`${image || "/default.png"}`}
+          alt={nickname || "user"}
+          fill
+          className="object-cover"
+        />
+      </div>
       {/* Fecha y Diario */}
       <div className="flex flex-col gap-2 items-start justify-between mb-4">
         <h4

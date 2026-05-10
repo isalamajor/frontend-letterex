@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Image from "next/image";
 import { UserRoundPlus, Dot, UserRoundCheck } from "lucide-react";
 import { sendFollowRequest } from "@/services/api";
 import { useState } from "react";
@@ -56,11 +57,14 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
   return (
     <div className="px-6 pt-4 rounded-lg bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 dark:border-neutral-700 shadow-md w-full flex flex-row justify-between gap-4">
       <div className="flex flex-row gap-7 items-center">
-        <img
-          src={`${image || "default.png"}`}
-          alt={image}
-          className="w-15 h-15 rounded-full border border-gray-200 dark:border-gray-600"
-        />
+        <div className="relative w-15 h-15 rounded-full border border-gray-200 dark:border-gray-600 overflow-hidden">
+          <Image
+            src={`${image || "/default.png"}`}
+            alt={nickname || "user"}
+            fill
+            className="object-cover"
+          />
+        </div>
         <div className="flex flex-col gap-2 items-start mb-4">
           {/* Fecha y Diario */}
           <h4
@@ -70,24 +74,33 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
             {nickname}
           </h4>
           <div className="flex flex-row mt-2 items-center justify-center">
-            <img
-              src={`/flags/${masterLanguage}.svg`}
-              alt={masterLanguage}
-              className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow"
-            ></img>
+            <div className="relative h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow">
+              <Image
+                src={`/flags/${masterLanguage}.svg`}
+                alt={masterLanguage}
+                fill
+                className="object-cover rounded-full"
+              />
+            </div>
             {masterLanguage2 && (
-              <img
-                src={`/flags/${masterLanguage2}.svg`}
-                alt={masterLanguage2}
-                className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1"
-              ></img>
+              <div className="relative h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1">
+                <Image
+                  src={`/flags/${masterLanguage2}.svg`}
+                  alt={masterLanguage2}
+                  fill
+                  className="object-cover rounded-full"
+                />
+              </div>
             )}
             {masterLanguage3 && (
-              <img
-                src={`/flags/${masterLanguage3}.svg`}
-                alt={masterLanguage3}
-                className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1"
-              ></img>
+              <div className="relative h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1">
+                <Image
+                  src={`/flags/${masterLanguage3}.svg`}
+                  alt={masterLanguage3}
+                  fill
+                  className="object-cover rounded-full"
+                />
+              </div>
             )}
             <Dot
               className="text-gray-700 dark:text-gray-300 h-6 w-6"
@@ -96,24 +109,33 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
             >
               |
             </Dot>
-            <img
-              src={`/flags/${learningLanguage}.svg`}
-              alt={learningLanguage}
-              className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow"
-            ></img>
+            <div className="relative h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow">
+              <Image
+                src={`/flags/${learningLanguage}.svg`}
+                alt={learningLanguage}
+                fill
+                className="object-cover rounded-full"
+              />
+            </div>
             {learningLanguage2 && (
-              <img
-                src={`/flags/${learningLanguage2}.svg`}
-                alt={learningLanguage2}
-                className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1"
-              ></img>
+              <div className="relative h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1">
+                <Image
+                  src={`/flags/${learningLanguage2}.svg`}
+                  alt={learningLanguage2}
+                  fill
+                  className="object-cover rounded-full"
+                />
+              </div>
             )}
             {learningLanguage3 && (
-              <img
-                src={`/flags/${learningLanguage3}.svg`}
-                alt={learningLanguage3}
-                className="h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1"
-              ></img>
+              <div className="relative h-6 w-6 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow ml-1">
+                <Image
+                  src={`/flags/${learningLanguage3}.svg`}
+                  alt={learningLanguage3}
+                  fill
+                  className="object-cover rounded-full"
+                />
+              </div>
             )}
           </div>
         </div>

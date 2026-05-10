@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useContext } from "react";
 import LetterCardBlock from "./LetterCardBlock";
+import Image from "next/image";
 import ReceivedLetterBlock from "./ReceivedLetterBlock";
 import { UserContext } from "@/context/userContext";
 import { isUserComplete } from "@/lib/utils";
@@ -39,7 +40,6 @@ const HomepageContent = () => {
     };
 
     selectSectionVisible();
-     
   }, []);
 
   return (
@@ -48,11 +48,15 @@ const HomepageContent = () => {
       h-screen custom-scroll box-border overflow-auto overflow-x-hidden
       sm:h-full sm:overflow-hidden pb-6 sm:pb-2"
     >
-      <img
-        src="/letter-logo-2.png"
-        alt="Letterex"
-        className="h-15 m-2 sm:h-20 mx-auto object-cover transition-transform duration-300 hover:-translate-y-1 hover:scale-105"
-      />
+      <div className="relative h-15 m-2 sm:h-20 mx-auto flex w-full justify-center">
+        <Image
+          src="/letter-logo-2.png"
+          alt="Letterex"
+          width={350}
+          height={200}
+          className="object-cover transition-transform duration-300 hover:-translate-y-1 hover:scale-105"
+        />
+      </div>
 
       <div className="flex flex-col pb-10 sm:pb-0 sm:flex-row gap-2 flex-1 sm:scrolling-auto h-[90%]">
         <div className="flex flex-row gap-2 justify-center sm:hidden">

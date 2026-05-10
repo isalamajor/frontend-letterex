@@ -11,6 +11,7 @@ import {
   SquareDashed,
   HeartCrack,
 } from "lucide-react";
+import Image from "next/image";
 import { use } from "react";
 import AppPageSkeleton from "@/components/appPageSkeleton";
 import TextCorrections from "@/components/textCorrections";
@@ -301,10 +302,14 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
           {letter.reviewer.nickname && (
             <p className="flex flex-row justify-end items-center">
               By
-              <img
-                className="rounded-full w-6 h-6 border border-1 border-gray-500 ml-2 mr-0.5"
-                src={letter.sender.image || "/default.png"}
-              />
+              <div className="relative rounded-full w-6 h-6 border border-1 border-gray-500 ml-2 mr-0.5 overflow-hidden">
+                <Image
+                  src={letter.sender.image || "/default.png"}
+                  alt={letter.sender.nickname || "sender"}
+                  fill
+                  className="object-cover"
+                />
+              </div>
               <span
                 className="text-blue-500 cursor-pointer"
                 onClick={() => router.push(`/profile/${letter.sender.id}`)}

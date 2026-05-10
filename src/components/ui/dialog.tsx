@@ -14,6 +14,7 @@ import {
   Handshake,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import {
   getFriendsList,
   shareLetter,
@@ -683,7 +684,14 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                           }}
                           className={`flex items-center justify-center w-30 h-30 rounded-full`}
                         >
-                          <img src="/logo-frog.png" alt="Success" />
+                          <div className="relative w-20 h-20">
+                            <Image
+                              src="/logo-frog.png"
+                              alt="Success"
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
                         </motion.div>
                       ) : (
                         <motion.div
@@ -854,11 +862,14 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                       className={`flex items-center justify-center rounded-full ${currentConfig.iconBgClass} ${type === "bye" ? "w-24 h-24" : "w-16 h-16"}`}
                     >
                       {type === "bye" ? (
-                        <img
-                          src="/logo-frog.png"
-                          alt="Letterex logo"
-                          className="w-40 h-40 object-contain"
-                        />
+                        <div className="relative w-40 h-40">
+                          <Image
+                            src="/logo-frog.png"
+                            alt="Letterex logo"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
                       ) : (
                         <IconComponent
                           className={`w-8 h-8 ${currentConfig.iconColorClass}`}
