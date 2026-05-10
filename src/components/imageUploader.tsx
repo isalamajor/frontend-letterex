@@ -70,7 +70,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             normalizedCurrentPic ??
             "/default.png"
           }
-          alt="Error al cargar la imagen :("
+          alt="Error loading the image :("
           className="w-full h-full object-cover rounded-full border-2 border-gray-200 transition-opacity duration-300"
         />
         {/* overlay */}

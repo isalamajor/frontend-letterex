@@ -37,7 +37,19 @@ export default function FrogAnimation({ toggle, velocidad = 150 }) {
     return () => clearInterval(interval);
   }, [toggle, velocidad]);
 
-  // Mostrar el frame correcto
+  // Preload all frames once to ensure quick switching
+  useEffect(() => {
+    try {
+      frames.forEach((f) => {
+        const img = new window.Image();
+        img.src = f;
+      });
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  // Show the correct frame
   const safeFrameIndex = Math.max(0, Math.min(frameIndex, frames.length - 1));
   const displayFrame = frames[safeFrameIndex] || frames[0];
   console.log("frame", displayFrame);
@@ -47,11 +59,13 @@ export default function FrogAnimation({ toggle, velocidad = 150 }) {
   }
 
   return (
-    <div style={{ width: 150, height: 150 }} className="relative">
+    <div style={{ width: 200, height: 200 }} className="relative">
       <Image
         src={displayFrame}
         alt="logo-frog"
         fill
+        priority
+        loading="eager"
         className="object-contain"
         draggable={false}
         onError={() => setImageFailed(true)}

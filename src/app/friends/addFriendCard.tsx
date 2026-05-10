@@ -66,7 +66,7 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
           />
         </div>
         <div className="flex flex-col gap-2 items-start mb-4">
-          {/* Fecha y Diario */}
+          {/* Date and diary */}
           <h4
             className="cursor-pointer hover:text-purple-400 dark:hover:text-indigo-400 hover:underline items-center text-gray-800 font-bold dark:text-indigo-100"
             onClick={goToProfile}

@@ -57,7 +57,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
   }, [confirmationCode, currentStep]);
 
   const handleImageUpload = (imageFile: File | null) => {
-    setProfileImage(imageFile); // Guardar imagen en el estado del padre
+    setProfileImage(imageFile); // Save uploaded image in the parent state
   };
 
   const showAlertMessage = (message: string) => {
@@ -81,7 +81,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
       checkCodeAttempt();
       return;
     }
-    // Idiomas hablados
+    // Languages spoken
     else if (currentStep === 4) {
       if (languagesSpoken.length < 1) {
         showAlertMessage("Please select at least one language you master");
@@ -89,7 +89,7 @@ const RegisterForm = ({ goBack, goLogin, moveFrog }: RegisterFormProps) => {
       }
       setCurrentStep(currentStep + 1);
     }
-    // Idiomas aprendidos
+    // Languages learning
     else if (currentStep === 5) {
       if (languagesLearning.length < 1) {
         showAlertMessage(

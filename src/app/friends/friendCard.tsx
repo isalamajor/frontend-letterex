@@ -32,7 +32,7 @@ const FriendCard: React.FC<Friend> = ({
           className="object-cover"
         />
       </div>
-      {/* Fecha y Diario */}
+      {/* Date and diary */}
       <div className="flex flex-col gap-2 items-start justify-between mb-4">
         <h4 className="items-center text-gray-800 font-bold dark:text-purple-100">
           {nickname}

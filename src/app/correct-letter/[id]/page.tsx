@@ -110,7 +110,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     const { startIndex } = selectionInfo;
     let { text, endIndex } = selectionInfo;
 
-    // Eliminar espacio al final
+    // Remove trailing space
     if (text.endsWith(" ")) {
       text = text.slice(0, -1);
       endIndex -= 1;
@@ -584,7 +584,7 @@ function EmojiCursor() {
     <div
       className="fixed pointer-events-none z-[9999] text-red-500 select-none"
       style={{
-        left: position.x + 3, // Offset para que no tape el cursor
+        left: position.x + 3, // Offset so it doesn't cover the cursor
         top: position.y - 20,
         fontSize: "20px",
       }}

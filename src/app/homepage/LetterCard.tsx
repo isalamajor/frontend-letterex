@@ -76,7 +76,7 @@ const LetterCard: React.FC<LetterCardProps> = ({
       group transition-all duration-300 group-hover:w-[80%] ${deleteMode || swipeOpen ? "w-[80%]" : "w-full"}`}
         onClick={goToEditLetter(id)}
       >
-        {/* Fecha y Diario */}
+        {/* Date and diary */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-s text-gray-500 dark:text-gray mb-2">
             {created_at.slice(0, 10)}
@@ -92,9 +92,9 @@ const LetterCard: React.FC<LetterCardProps> = ({
             {title}
           </h4>
 
-          {/* Idioma */}
+          {/* Language */}
           <div className="flex items-center gap-2">
-            {/* Usuarios que corrigieron */}
+            {/* Users who corrected */}
             {(sharedWith || []).map((user, index) => (
               <div
                 key={index}

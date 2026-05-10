@@ -60,7 +60,7 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
         className={`mb-2 w-full h-full sm:h-[12vh] px-8 py-4 rounded-lg bg-gray-50 dark:bg-neutral-850 shadow-md relative group
       ${deleted ? "hover:bg-red-100 dark:hover:bg-red-950/40" : sentBack ? "hover:bg-green-100 dark:hover:bg-gray-900/50" : "hover:bg-blue-100 dark:hover:bg-blue-500/20"}`}
       >
-        {/* Fecha */}
+        {/* Date */}
         <div className="flex flex-row align-center items-center justify-between mb-6">
           <p className="text-gray-500 dark:text-gray">
             {"Received " + formatReceivedDate(received_at)}
@@ -108,7 +108,7 @@ const ReceivedLetterCard: React.FC<ReceivedLetterCardProps> = ({
             )}
           </div>
 
-          {/* Usuario que la manda e Idioma */}
+          {/* Sender and language */}
           <div className="flex items-center gap-2 text-gray-800 dark:text-gray">
             <p className="text-md">By {sender.nickname}</p>
             <div className="relative w-8 h-8 sm:w-[3.5vh] sm:h-[3.5vh] rounded-full border border-gray-300 dark:border-gray-600 overflow-hidden">
@@ -138,7 +138,7 @@ function formatReceivedDate(received_at: string): string {
   const date = new Date(received_at);
   const now = new Date();
 
-  // Calcular diferencia en milisegundos
+  // Calculate difference in milliseconds
   const diff = now.getTime() - date.getTime();
   const diffInMinutes = Math.floor(diff / 60000);
   const diffInHours = Math.floor(diff / 3600000);

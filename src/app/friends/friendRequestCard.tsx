@@ -62,7 +62,7 @@ const FriendRequestCard: React.FC<User> = ({
           className="object-cover"
         />
       </div>
-      {/* Fecha y Diario */}
+      {/* Date and diary */}
       <div className="flex flex-col gap-2 items-start justify-between mb-4">
         <h4
           className="cursor-pointer hover:text-purple-400 dark:hover:text-purple-400 hover:underline items-center text-gray-800 font-bold dark:text-purple-100"
