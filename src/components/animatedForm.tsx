@@ -28,52 +28,58 @@ export default function AnimatedForm() {
   useEffect(() => {
     const updateWidth = () => {
       const w = window.innerWidth;
-      if (w < 480)
+      if (w < 480) {
         setFrogSettings({
           register: { top: "20%", left: "50%", width: 150 },
           login: { top: "20%", left: "50%", width: 150 },
           other: { top: "20%", left: "50%", width: 200 },
         });
-      // small mobile devices
-      else if (w < 768)
+      } else if (w < 768) {
         setFrogSettings({
           register: { top: "25%", left: "50%", width: 150 },
           login: { top: "25%", left: "50%", width: 150 },
           other: { top: "30%", left: "50%", width: 250 },
         });
-      // mobile / small tablets
-      else if (w < 1024)
+      } else if (w < 1024) {
         setFrogSettings({
           register: { top: "32%", left: "50%", width: 180 },
           login: { top: "33%", left: "50%", width: 180 },
           other: { top: "30%", left: "50%", width: 250 },
         });
-      // tablets / pantallas medias
-      else
+      } else {
         setFrogSettings({
           register: { top: "30%", left: "50%", width: 180 },
           login: { top: "30%", left: "50%", width: 180 },
           other: { top: "30%", left: "50%", width: 210 },
-        }); // desktop
+        });
+      }
     };
+
     updateWidth();
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
+  const currentFrogSettings =
+    formShowing === "LOGIN" || formShowing === "RESET_PASSWORD"
+      ? frogSettings.login
+      : formShowing === "REGISTER"
+        ? frogSettings.register
+        : frogSettings.other;
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[80dvh] sm:h-screen relative">
       <motion.div
-        className="w-40 z-99"
-        animate={
-          formShowing === "LOGIN" || formShowing === "RESET_PASSWORD"
-            ? frogSettings.login
-            : formShowing === "REGISTER"
-              ? frogSettings.register
-              : frogSettings.other
-        }
+        className="z-99"
+        animate={{
+          ...currentFrogSettings,
+          x: -90, // O -50 según necesites
+          y: -100,
+        }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
-        style={{ position: "absolute", transform: "translate(-50%, -50%)" }}
+        style={{
+          position: "absolute",
+        }}
       >
         <FrogAnimation toggle={toggleFrog} velocidad={50} />
       </motion.div>
@@ -102,7 +108,7 @@ export default function AnimatedForm() {
         />
       )}
 
-      {/* Formulario de registro */}
+      {/* Registration form */}
       {formShowing === "REGISTER" && (
         <RegisterForm
           goBack={() => {

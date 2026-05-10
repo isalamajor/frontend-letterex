@@ -27,13 +27,7 @@ const LoginForm = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const btnClass =
     "w-full p-2 mx-1 bg-green-500 text-white rounded btn-animated-form btn-back";
-  const routesToPrefetch = [
-    "/homepage",
-    "/new-letter",
-    "/friends",
-    "/community",
-    "/profile/yours",
-  ];
+
   const alertStyles = {
     style: { whiteSpace: "pre-line" as const },
     className: "text-red-500 text-base",
@@ -56,10 +50,8 @@ const LoginForm = ({
     console.log("login", result.data);
     if (result.ok) {
       setUserData(result.data as SetStateAction<UserData>);
-      for (const route of routesToPrefetch) {
-        router.prefetch(route);
-      }
-      router.push("/homepage");
+      //window.location.href = "/homepage";
+      router.replace("/homepage");
     } else {
       setShowAlert(result.errorMessage || "Server is having trouble...");
       setIsLoading(false);
