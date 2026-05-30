@@ -56,8 +56,7 @@ const LoginForm = ({
       }
 
       setUserData(loginData.userData);
-      router.replace("/homepage");
-      setIsLoading(false);
+      window.location.assign("/homepage");
     } else {
       setShowAlert(result.errorMessage || "Server is having trouble...");
       setIsLoading(false);
