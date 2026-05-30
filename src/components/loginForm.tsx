@@ -57,6 +57,7 @@ const LoginForm = ({
 
       setUserData(loginData.userData);
       router.replace("/homepage");
+      setIsLoading(false);
     } else {
       setShowAlert(result.errorMessage || "Server is having trouble...");
       setIsLoading(false);
