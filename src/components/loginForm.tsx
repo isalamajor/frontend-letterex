@@ -1,4 +1,4 @@
-import { useState, useContext, SetStateAction } from "react";
+import { useState, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/services/api";
 import { InputPass } from "./ui/inputPass";
@@ -7,7 +7,6 @@ import { Spinner } from "./ui/spinner";
 import { KeyRound } from "lucide-react";
 import axios from "axios";
 import { UserContext } from "@/context/userContext";
-import { UserData } from "@/lib/types";
 
 // Configure Axios to automatically send cookies
 axios.defaults.withCredentials = true;
@@ -48,9 +47,15 @@ const LoginForm = ({
       password: password,
     });
     console.log("login", result.data);
+    const loginData = result.data;
     if (result.ok) {
-      setUserData(result.data as SetStateAction<UserData>);
-      //window.location.href = "/homepage";
+      if (!loginData) {
+        setShowAlert("Server is having trouble...");
+        setIsLoading(false);
+        return;
+      }
+
+      setUserData(loginData.userData);
       router.replace("/homepage");
     } else {
       setShowAlert(result.errorMessage || "Server is having trouble...");
