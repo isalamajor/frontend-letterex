@@ -12,26 +12,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/user";
 
 axios.defaults.withCredentials = true;
 
-const setAuthTokenCookie = (token: string) => {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  const secureAttribute =
-    window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `authToken=${encodeURIComponent(token)}; Path=/; SameSite=Lax${secureAttribute}`;
-};
-
-const clearAuthTokenCookie = () => {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  const secureAttribute =
-    window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `authToken=; Path=/; Max-Age=0; SameSite=Lax${secureAttribute}`;
-};
-
 const getUserData = async (id?: string): Promise<ApiResponse<UserData>> => {
   try {
     let response;
@@ -143,10 +123,6 @@ const login = async (
     });
     if (response.status === 200) {
       console.log("api", response);
-
-      if (response.data?.token) {
-        setAuthTokenCookie(response.data.token);
-      }
 
       /*if (response.data.userData.id) {
         SavePPicInSessionStorage(
@@ -427,7 +403,6 @@ const logout = async (): Promise<ApiResponse<void>> => {
   try {
     const response = await axios.post(`${API_URL}/logout`);
     if (response.status === 200) {
-      clearAuthTokenCookie();
       sessionStorage.clear();
       return { ok: true };
     }
