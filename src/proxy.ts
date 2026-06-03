@@ -7,19 +7,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Obtener el token de las cookies
-  const authToken = request.cookies.get("authToken");
-
-  // Si es ruta protegida y no tiene token, redirigir a login
-  if (pathname !== "/" && !authToken) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  // If at login ('/') and has token, redirect to homepage
-  if (pathname === "/" && authToken) {
-    return NextResponse.redirect(new URL("/homepage", request.url));
-  }
-
   return NextResponse.next();
 }
 
