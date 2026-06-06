@@ -4,16 +4,12 @@ import { getFriends, getFriendRequests } from "@/services/api";
 import FriendCard from "./friendCard";
 import { MessageCircleDashed, Frown } from "lucide-react";
 import FriendRequestCard from "./friendRequestCard";
-import Pagination from "@mui/material/Pagination";
+import TablePagination from "@mui/material/TablePagination";
 import dynamic from "next/dynamic";
-import { Spinner } from "@/components/ui/spinner";
+import FriendsPageSkeleton from "./FriendsPageSkeleton";
 
 const SuggestedUsers = dynamic(() => import("./suggestedUsers"), {
-  loading: () => (
-    <div className="bg-white dark:bg-neutral-900 rounded-lg p-4 h-full flex items-center justify-center text-gray-500 dark:text-gray-300">
-      <Spinner />
-    </div>
-  ),
+  loading: () => null,
 });
 
 const ITEMS_PER_PAGE = 6;
@@ -45,32 +41,32 @@ export default function Home() {
 }
 
 const SocialPageContent = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [friends, setFriends] = useState<FriendList["friends"]>([]);
   const [friendRequests, setFriendRequests] = useState<
     FriendRequestList["senders"]
   >([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Function to refresh all data in parallel
   const refreshData = async () => {
     setIsLoading(true);
-    try {
-      const [friendsRes, requestsRes] = await Promise.all([
-        getFriends(),
-        getFriendRequests(),
-      ]);
-      setFriends(friendsRes || []);
-      console.log(friendsRes);
-      setFriendRequests(requestsRes || []);
-    } finally {
-      setIsLoading(false);
-    }
+    const [friendsRes, requestsRes] = await Promise.all([
+      getFriends(),
+      getFriendRequests(),
+    ]);
+    setFriends(friendsRes || []);
+    setFriendRequests(requestsRes || []);
+    setIsLoading(false);
   };
 
   useEffect(() => {
     refreshData();
   }, []);
+
+  if (isLoading) {
+    return <FriendsPageSkeleton />;
+  }
 
   return (
     <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-850 flex flex-col gap-2 flex-1 w-full h-full">
@@ -78,91 +74,117 @@ const SocialPageContent = () => {
         Friends
       </h1>
 
-      {isLoading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <Spinner />
-        </div>
-      ) : (
-        <div className="flex gap-2 flex-1 h-[95%] text-xl">
-          {/* Bloque pantalla */}
-          <div className="h-full w-full rounded-lg mt-2 text-black dark:text-gray-100 flex flex-col">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full h-full">
-              {/* Columna izquierda: dos filas iguales */}
-              <div className="col-span-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-4 flex flex-col gap-4 h-full">
-                <div className="items-center px-8 py-5 justify-center bg-white dark:bg-neutral-850 rounded-lg p-2 h-[35%]">
-                  {/* Fila superior */}
-                  <h2 className="text-3xl text-end text-indigo-500 dark:text-[#b63aff] h-[20%]">
-                    Friend requests
-                  </h2>
-                  {friendRequests.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-4 h-[80%] overflow-auto w-full pb-15">
-                      {friendRequests.map((request) => (
-                        <div key={request.sender.id} className="col-span-1">
-                          <FriendRequestCard
-                            {...request.sender}
-                            onAcceptSuccess={refreshData}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex sm:h-[80%] overflow-auto items-center justify-center w-full sm:pb-15">
-                      <MessageCircleDashed className="mr-2" color="gray" />
-                      <p className="text-gray-500 dark:text-gray my-10">
-                        No friend requests received...
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex-1 bg-white dark:bg-neutral-850 rounded-lg px-8 py-5 sm:h-[70%]">
-                  {/* Fila inferior */}
-                  <h2 className="text-3xl text-start mb-2 text-indigo-500 dark:text-[#b63aff]">
-                    My friends
-                  </h2>
-                  {friends.length > 0 ? (
-                    <div className="flex flex-col justify-between sm:h-[90%]">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 content-start">
-                        {friends
-                          .slice(
-                            (currentPage - 1) * ITEMS_PER_PAGE,
-                            currentPage * ITEMS_PER_PAGE,
-                          )
-                          .map((friend) => (
-                            <div key={friend.id} className="col-span-1">
-                              <FriendCard {...friend} />
-                            </div>
-                          ))}
-                      </div>
-                      {friends.length > ITEMS_PER_PAGE && (
-                        <Pagination
-                          count={Math.ceil(friends.length / ITEMS_PER_PAGE)}
-                          variant="outlined"
-                          shape="rounded"
-                          onChange={(event, page) => setCurrentPage(page)}
-                          size="large"
-                          className="mt-2"
+      <div className="flex gap-2 flex-1 h-[95%] text-xl">
+        <div className="h-full w-full rounded-lg mt-2 text-black dark:text-gray-100 flex flex-col">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full h-full">
+            <div className="col-span-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-4 flex flex-col gap-4 h-full">
+              <div className="items-center px-8 py-5 justify-center bg-white dark:bg-neutral-850 rounded-lg p-2 h-[35%]">
+                <h2 className="text-3xl text-end text-indigo-500 dark:text-[#b63aff] h-[20%]">
+                  Friend requests
+                </h2>
+                {friendRequests.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-4 h-[80%] overflow-auto w-full pb-15">
+                    {friendRequests.map((request) => (
+                      <div key={request.sender.id} className="col-span-1">
+                        <FriendRequestCard
+                          {...request.sender}
+                          onAcceptSuccess={refreshData}
                         />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex h-[80%] overflow-auto items-center gap-2 justify-center w-full pb-15">
-                      <p className="text-gray-500 dark:text-gray">
-                        No friends yet
-                      </p>
-                      <Frown color="gray" />
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex sm:h-[80%] overflow-auto items-center justify-center w-full sm:pb-15">
+                    <MessageCircleDashed className="mr-2" color="gray" />
+                    <p className="text-gray-500 dark:text-gray my-10">
+                      No friend requests received...
+                    </p>
+                  </div>
+                )}
               </div>
-              {/* Center column (larger) */}
-              <div className="col-span-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-4">
-                <SuggestedUsers />
+
+              <div className="flex-1 bg-white dark:bg-neutral-850 rounded-lg px-8 py-5 sm:h-[70%]">
+                <h2 className="text-3xl text-start mb-2 text-indigo-500 dark:text-[#b63aff]">
+                  My friends
+                </h2>
+                {friends.length > 0 ? (
+                  <div className="flex flex-col justify-between sm:h-[90%]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 content-start">
+                      {friends
+                        .slice(
+                          (currentPage - 1) * ITEMS_PER_PAGE,
+                          currentPage * ITEMS_PER_PAGE,
+                        )
+                        .map((friend) => (
+                          <div key={friend.id} className="col-span-1">
+                            <FriendCard {...friend} />
+                          </div>
+                        ))}
+                    </div>
+                    {friends.length > ITEMS_PER_PAGE && (
+                      <div className="flex justify-end mt-2">
+                        <TablePagination
+                          component="div"
+                          count={friends.length}
+                          page={currentPage - 1}
+                          onPageChange={(_event, newPage) =>
+                            setCurrentPage(newPage + 1)
+                          }
+                          rowsPerPage={ITEMS_PER_PAGE}
+                          rowsPerPageOptions={[]}
+                          className="text-gray-700 dark:text-gray-200"
+                          sx={{
+                            color: "rgb(55 65 81)",
+                            "& .MuiTablePagination-toolbar": {
+                              color: "inherit",
+                            },
+                            "& .MuiTablePagination-selectLabel": {
+                              color: "inherit",
+                            },
+                            "& .MuiTablePagination-displayedRows": {
+                              color: "inherit",
+                            },
+                            "& .MuiTablePagination-actions": {
+                              color: "inherit",
+                            },
+                            "& .MuiSvgIcon-root": { color: "inherit" },
+                            ".dark &": { color: "rgb(243 244 246)" },
+                            ".dark & .MuiTablePagination-toolbar": {
+                              color: "rgb(243 244 246)",
+                            },
+                            ".dark & .MuiTablePagination-selectLabel": {
+                              color: "rgb(243 244 246)",
+                            },
+                            ".dark & .MuiTablePagination-displayedRows": {
+                              color: "rgb(243 244 246)",
+                            },
+                            ".dark & .MuiTablePagination-actions": {
+                              color: "rgb(243 244 246)",
+                            },
+                            ".dark & .MuiSvgIcon-root": {
+                              color: "rgb(243 244 246)",
+                            },
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex h-[80%] overflow-auto items-center gap-2 justify-center w-full pb-15">
+                    <p className="text-gray-500 dark:text-gray">
+                      No friends yet
+                    </p>
+                    <Frown color="gray" />
+                  </div>
+                )}
               </div>
+            </div>
+            <div className="col-span-1 bg-gray-100 dark:bg-neutral-800 rounded-lg p-4">
+              <SuggestedUsers />
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
