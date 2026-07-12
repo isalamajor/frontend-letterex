@@ -1,5 +1,4 @@
 import { useState, useContext } from "react";
-import { useRouter } from "next/navigation";
 import { login } from "@/services/api";
 import { InputPass } from "./ui/inputPass";
 import { motion } from "framer-motion";
@@ -18,7 +17,6 @@ const LoginForm = ({
   goBack: () => void;
   goResetPassword: () => void;
 }) => {
-  const router = useRouter();
   const { setUserData } = useContext(UserContext);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -99,7 +97,7 @@ const LoginForm = ({
           wrongPassword={false}
         />
 
-        <p {...alertStyles}>{showAlert}</p>
+        <div {...alertStyles}>{showAlert}</div>
         <p
           className="text-[color:var(--background)] dark:text-[#00f386]/90 hover:underline cursor-pointer text-sm flex flex-row gap-1 justify-end items-center"
           onClick={goResetPassword}
@@ -108,7 +106,7 @@ const LoginForm = ({
           Forgot password
         </p>
       </div>
-      <div className="mt-4 flex justify-between back-go">
+      <div className="mt-2 flex justify-between back-go">
         <motion.button
           onClick={goBack}
           className={btnClass}

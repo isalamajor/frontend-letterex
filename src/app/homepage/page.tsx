@@ -24,6 +24,7 @@ export default function Home() {
   };
   useEffect(() => {
     fetchUserData();
+    setTimeout(() => {}, 30000);
   }, []);
 
   return <HomepageContent />;
@@ -54,6 +55,7 @@ const HomepageContent = () => {
           alt="Letterex"
           width={350}
           height={200}
+          sizes="350x200"
           className="object-cover transition-transform duration-300 hover:-translate-y-1 hover:scale-105"
         />
       </div>

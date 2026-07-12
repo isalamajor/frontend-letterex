@@ -204,7 +204,7 @@ const saveLetter = async (title, content, diary, language, created_at) => {
 };
 
 const getUserLetters = async () => {
-  const response = await axios.get(`${API_URL}/list/`);
+  const response = await axios.get(`${API_URL}/list/search`);
   console.log("getUserLetters", response.data.letters);
   if (response.status === 200) {
     return response.data.letters;
@@ -214,7 +214,7 @@ const getUserLetters = async () => {
 
 const searchLetters = async (query, page = 1, itemsPerPage = 10) => {
   try {
-    const response = await axios.get(`${API_URL}/list/`, {
+    const response = await axios.get(`${API_URL}/list/search`, {
       params: {
         q: query,
         page: page,

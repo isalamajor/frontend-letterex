@@ -20,7 +20,12 @@ import { isQuillContentEmpty } from "@/lib/utils";
 import { LetterFormErrors } from "@/lib/types";
 import { UserContext } from "@/context/userContext";
 
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+const ReactQuill = dynamic(() => import("react-quill-new"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[65vh] w-full bg-white animate-pulse dark:bg-neutral-700 rounded" />
+  ),
+});
 
 const NewLetterPageContent = () => {
   const quillRef = useRef<{
@@ -44,7 +49,11 @@ const NewLetterPageContent = () => {
   ]);
   const [title, setTitle] = useState("");
   const [letterContent, setLetterContent] = useState("");
-  const [diaryList, setDiaryList] = useState<string[]>([]);
+  const [diaryList, setDiaryList] = useState<string[]>([
+    "Brasil Tales",
+    "Secret Diary",
+    "Spanish Tales",
+  ]);
   const [diaryAddedPreviously, setDiaryAddedPreviously] = useState<
     string | undefined
   >(undefined);
@@ -194,9 +203,9 @@ const NewLetterPageContent = () => {
             type="text"
             value={title}
             onChange={handleTitleChange}
-            className={`placeholder-gray-500 dark:placeholder-gray text-center text-2xl font-bold text-gray-700 dark:text-gray-200 p-4 w-full focus:border-blue-500 outline-none caret-[#60a5fa] ${
+            className={`placeholder-gray-500 dark:placeholder-gray text-center font-bold text-gray-700 dark:text-gray-200  text-gray-800 dark:text-gray-200 p-4 w-full focus:border-blue-500 outline-none caret-[#60a5fa] ${
               errors.title ? "placeholder-red-500" : "border-none"
-            }`}
+            } text-2xl`}
             placeholder="Title of the letter! Edit this, ganster..."
             autoFocus
           />
@@ -309,7 +318,7 @@ const NewLetterPageContent = () => {
             <ReactQuill
               // @ts-expect-error: react-quill-new ref typing is not exposed here
               ref={quillRef}
-              className={`min-h-[62vh] sm:min-h-[65vh] border rounded-md bg-white dark:bg-neutral-850 text-gray-900 dark:text-gray-200
+              className={`min-h-[62vh] sm:min-h-[60vh] border rounded-md bg-white dark:bg-neutral-850 text-gray-900 dark:text-gray-200
               rounded-md p-2 space-y-1 ring-transparent ${
                 errors.content
                   ? "border-red-500"
@@ -330,7 +339,7 @@ const NewLetterPageContent = () => {
           {/* Buttons */}
           <div className="flex justify-between h-[5%] items-end gap-4 mt-4">
             <Link href={"/homepage"}>
-              <button className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] dark:bg-red-700 dark:hover:bg-red-800">
+              <button className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] dark:bg-red-700 dark:hover:bg-red-800 cursor-pointer">
                 Back
               </button>
             </Link>
@@ -338,7 +347,7 @@ const NewLetterPageContent = () => {
               onClick={() => {
                 SaveLetterOnClick();
               }}
-              className="h-[100%] w-auto flex items-center justify-center bg-[#3b82f6] text-white rounded py-2 px-4 hover:bg-[#2563eb] dark:bg-dark-green-500 dark:hover:bg-dark-green-600"
+              className="h-[100%] w-auto flex items-center justify-center bg-[#3b82f6] text-white rounded py-2 px-4 hover:bg-[#2563eb] dark:bg-dark-green-500 dark:hover:bg-dark-green-600 cursor-pointer"
             >
               💾 Save Letter
             </button>

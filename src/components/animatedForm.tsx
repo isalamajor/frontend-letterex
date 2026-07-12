@@ -48,9 +48,9 @@ export default function AnimatedForm() {
         });
       } else {
         setFrogSettings({
-          register: { top: "30%", left: "50%", width: 180 },
-          login: { top: "30%", left: "50%", width: 180 },
-          other: { top: "30%", left: "50%", width: 210 },
+          register: { top: "29%", left: "50%", width: 180 },
+          login: { top: "29%", left: "50%", width: 180 },
+          other: { top: "29%", left: "50%", width: 210 },
         });
       }
     };

@@ -13,33 +13,19 @@ const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/user";
 axios.defaults.withCredentials = true;
 
 const getUserData = async (id?: string): Promise<ApiResponse<UserData>> => {
-  try {
-    let response;
-    if (id) {
-      response = await axios.get(`${API_URL}/profile/${id}`);
-    } else {
-      response = await axios.get(`${API_URL}/profile`);
-    }
-    if (response.status === 200) {
-      return { ok: true, data: response.data.user };
-    } else {
-      console.error("Error fetching user data:", response.data);
-      return { ok: false, errorMessage: "Error fetching user data" };
-    }
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Axios error:", error.response?.data);
-      return {
-        ok: false,
-        errorMessage: error.response?.data?.message || "Network error",
-      };
-    } else {
-      console.error("Unknown error:", error);
-      return { ok: false, errorMessage: "Unknown error occurred" };
-    }
+  let response;
+  if (id) {
+    response = await axios.get(`${API_URL}/profile/${id}`);
+  } else {
+    response = await axios.get(`${API_URL}/profile`);
+  }
+  if (response.status === 200) {
+    return { ok: true, data: response.data.user };
+  } else {
+    console.error("Error fetching user data:", response.data);
+    return { ok: false, errorMessage: "Error fetching user data" };
   }
 };
-
 const sendVerificationCode = async (
   email: string,
   purpose: ValidationCodePurpose,
@@ -400,22 +386,12 @@ const resetPassword = async (
 };
 
 const logout = async (): Promise<ApiResponse<void>> => {
-  try {
-    const response = await axios.post(`${API_URL}/logout`);
-    if (response.status === 200) {
-      sessionStorage.clear();
-      return { ok: true };
-    }
-    return { ok: false, errorMessage: "Failed to logout" };
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      return {
-        ok: false,
-        errorMessage: error.response?.data?.message || "Logout failed",
-      };
-    }
-    return { ok: false, errorMessage: "Network error" };
+  const response = await axios.post(`${API_URL}/logout`);
+  if (response.status === 200) {
+    sessionStorage.clear();
+    return { ok: true };
   }
+  return { ok: false, errorMessage: "Failed to logout" };
 };
 
 export {

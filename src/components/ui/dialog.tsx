@@ -510,7 +510,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                       <div className="flex justify-center items-center gap-4 pt-4">
                         <Button
                           onClick={handlePrimaryAction}
-                          className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
+                          className={`min-w-[120px] bg-[#acb0ac] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
                           size="default"
                         >
                           {" "}
@@ -550,7 +550,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                       <div className="flex justify-center items-center gap-4 pt-4">
                         <Button
                           onClick={handlePrimaryAction}
-                          className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
+                          className={`min-w-[120px] bg-[#acb0ac] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
                           size="default"
                         >
                           {" "}
@@ -650,7 +650,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                                 setNewPassword("");
                                 setConfirmPassword("");
                               }}
-                              className={`min-w-[120px] bg-[#ACB0AC] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
+                              className={`min-w-[120px] bg-[#acb0ac] text-white rounded py-2 px-4 hover:bg-[#537dc9] transition-colors`}
                               size="default"
                             >
                               {" "}

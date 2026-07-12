@@ -314,7 +314,7 @@ const LetterCardList = ({
                     }
                   }}
                 >
-                  <p className="flex rounded-l-lg bg-yellow-200 dark:bg-dark-green-800 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
+                  <p className="flex rounded-l-lg bg-yellow-200 dark:bg-green-800 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
                     <span className="block group-hover:hidden transition-opacity duration-900">
                       {diary.diary === "Unclassified"
                         ? diary.diary === diarySelected
@@ -376,7 +376,7 @@ const LetterCardList = ({
                     }
                     onClick={goToEditLetter(letter.id)}
                   >
-                    <p className="flex rounded-l-lg bg-blue-200 dark:bg-dark-green-600 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
+                    <p className="flex rounded-l-lg bg-blue-200 dark:bg-green-300 shadow-md w-[20%] text-2xl items-center justify-center align-middle">
                       <span className="block group-hover:hidden transition-opacity duration-900">
                         ✉️
                       </span>

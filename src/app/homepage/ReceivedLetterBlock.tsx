@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Spinner } from "@/components/ui/spinner";
+import { SkeletonBlock } from "./loading";
 import TablePagination from "@mui/material/TablePagination";
 
 const ITEMS_PER_PAGE = 5;
@@ -73,7 +73,7 @@ export default function ReceivedLetterBlock() {
         sentBack,
         sender,
       );
-      console.log("letters rec:", result);
+
       if (!result || !result.letters) {
         setData({
           receivedLetters: [],
@@ -214,116 +214,129 @@ export default function ReceivedLetterBlock() {
             Letters received
           </h2>
         </div>
-        {data.totalLettersCount > 0 && (
-          <div className="flex flex-col sm:flex-row justify-between mb-2 sm:mb-4">
-            <div className="flex flex-row gap-2 cursor-pointer border border-lightblack dark:border-neutral-700 mb-2 sm:mb-0 rounded-sm py-2 px-4 bg-gray-50 dark:bg-neutral-850 text-gray-800 dark:text-gray-200">
-              <Search className="text-gray-500" />
-              <input
-                placeholder="Search a letter..."
-                className="w-full outline-none bg-transparent text-gray-800 dark:text-white placeholder:text-gray-500"
-                value={filters.received}
-                onChange={handleReceivedSearchChange}
-              ></input>
-            </div>
-            <div className="flex justify-center sm:justify-end gap-2">
-              <Switch
-                name="full-width"
-                style={{ width: "40%" }}
-                onChange={handlePendingSwitchChange}
-              >
-                <Switch.Control
-                  defaultChecked
-                  label="All"
-                  size="large"
-                  value="all"
-                />
-                <Switch.Control label="Pending" size="large" value="pending" />
-              </Switch>
-              {/* Sender select*/}
-              <div className="space-y-2 min-w-[200px]">
-                <Select
-                  value={filters.senders}
-                  onValueChange={(sender) => {
-                    trySetFilterSenders(sender);
-                  }}
-                >
-                  <SelectTrigger className="text-black dark:text-gray-100 bg-white dark:bg-neutral-900 h-10 rounded-md ring-transparent border border-neutral-300 dark:border-neutral-700">
-                    <SelectValue placeholder="🙋 (Select a friend)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filters.senders !== "" && (
-                      <SelectItem
-                        key={"None"}
-                        value={"None"}
-                        className="text-gray-500"
-                      >
-                        {" "}
-                        (Clear selection)
-                      </SelectItem>
-                    )}
-                    {data.sendersList.map((sender) => (
-                      <SelectItem key={sender} value={sender}>
-                        {sender}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        )}
-        {data.isLoading && data.receivedLetters.length === 0 ? (
+
+        {data.isLoading ? (
           <div className="flex justify-center items-center h-[70vh]">
-            <Spinner size={40} color="gray" />
-          </div>
-        ) : data.serverError ? (
-          <div className="flex justify-center items-center h-[70vh] text-gray-500">
-            A Server Error occurred. Please try again later
+            <SkeletonBlock />
           </div>
         ) : (
           <>
-            {/* Pagination */}
-            {data.totalFilteredCount > 0 && (
-              <div className="flex justify-end mt-2 mb-2">
-                <TablePagination
-                  component="div"
-                  count={data.totalFilteredCount}
-                  page={currentPage - 1}
-                  onPageChange={handlePageChange}
-                  rowsPerPage={ITEMS_PER_PAGE}
-                  rowsPerPageOptions={[]}
-                  className="text-gray-700 dark:text-gray-200"
-                  sx={{
-                    color: "rgb(55 65 81)",
-                    "& .MuiTablePagination-toolbar": { color: "inherit" },
-                    "& .MuiTablePagination-selectLabel": { color: "inherit" },
-                    "& .MuiTablePagination-displayedRows": { color: "inherit" },
-                    "& .MuiTablePagination-actions": { color: "inherit" },
-                    "& .MuiSvgIcon-root": { color: "inherit" },
-                    ".dark &": { color: "rgb(243 244 246)" },
-                    ".dark & .MuiTablePagination-toolbar": {
-                      color: "rgb(243 244 246)",
-                    },
-                    ".dark & .MuiTablePagination-selectLabel": {
-                      color: "rgb(243 244 246)",
-                    },
-                    ".dark & .MuiTablePagination-displayedRows": {
-                      color: "rgb(243 244 246)",
-                    },
-                    ".dark & .MuiTablePagination-actions": {
-                      color: "rgb(243 244 246)",
-                    },
-                    ".dark & .MuiSvgIcon-root": {
-                      color: "rgb(243 244 246)",
-                    },
-                  }}
-                />
+            {data.totalLettersCount > 0 && (
+              <div className="flex flex-col sm:flex-row justify-between mb-2 sm:mb-4">
+                <div className="flex flex-row gap-2 cursor-pointer border border-lightblack dark:border-neutral-700 mb-2 sm:mb-0 rounded-sm py-2 px-4 bg-gray-50 dark:bg-neutral-850 text-gray-800 dark:text-gray-200">
+                  <Search className="text-gray-500" />
+                  <input
+                    placeholder="Search a letter..."
+                    className="w-full outline-none bg-transparent text-gray-800 dark:text-white placeholder:text-gray-500"
+                    value={filters.received}
+                    onChange={handleReceivedSearchChange}
+                  ></input>
+                </div>
+                <div className="flex justify-center sm:justify-end gap-2">
+                  <Switch
+                    name="full-width"
+                    style={{ width: "40%" }}
+                    onChange={handlePendingSwitchChange}
+                  >
+                    <Switch.Control
+                      defaultChecked
+                      label="All"
+                      size="large"
+                      value="all"
+                    />
+                    <Switch.Control
+                      label="Pending"
+                      size="large"
+                      value="pending"
+                    />
+                  </Switch>
+                  {/* Sender select*/}
+                  <div className="space-y-2 min-w-[200px]">
+                    <Select
+                      value={filters.senders}
+                      onValueChange={(sender) => {
+                        trySetFilterSenders(sender);
+                      }}
+                    >
+                      <SelectTrigger className="text-black dark:text-gray-100 bg-white dark:bg-neutral-900 h-10 rounded-md ring-transparent border border-neutral-300 dark:border-neutral-700">
+                        <SelectValue placeholder="🙋 (Select a friend)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filters.senders !== "" && (
+                          <SelectItem
+                            key={"None"}
+                            value={"None"}
+                            className="text-gray-500"
+                          >
+                            {" "}
+                            (Clear selection)
+                          </SelectItem>
+                        )}
+                        {data.sendersList.map((sender) => (
+                          <SelectItem key={sender} value={sender}>
+                            {sender}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
             )}
-            <ReceivedLetterList
-              letters={data.receivedLetters}
-              noLetters={data.totalLettersCount === 0}
-            />
+            {data.serverError ? (
+              <div className="flex justify-center items-center h-[70vh] text-gray-500">
+                A Server Error occurred. Please try again later
+              </div>
+            ) : (
+              <>
+                {/* Pagination */}
+                {data.totalFilteredCount > 0 && (
+                  <div className="flex justify-end mt-2 mb-2">
+                    <TablePagination
+                      component="div"
+                      count={data.totalFilteredCount}
+                      page={currentPage - 1}
+                      onPageChange={handlePageChange}
+                      rowsPerPage={ITEMS_PER_PAGE}
+                      rowsPerPageOptions={[]}
+                      className="text-gray-700 dark:text-gray-200"
+                      sx={{
+                        color: "rgb(55 65 81)",
+                        "& .MuiTablePagination-toolbar": { color: "inherit" },
+                        "& .MuiTablePagination-selectLabel": {
+                          color: "inherit",
+                        },
+                        "& .MuiTablePagination-displayedRows": {
+                          color: "inherit",
+                        },
+                        "& .MuiTablePagination-actions": { color: "inherit" },
+                        "& .MuiSvgIcon-root": { color: "inherit" },
+                        ".dark &": { color: "rgb(243 244 246)" },
+                        ".dark & .MuiTablePagination-toolbar": {
+                          color: "rgb(243 244 246)",
+                        },
+                        ".dark & .MuiTablePagination-selectLabel": {
+                          color: "rgb(243 244 246)",
+                        },
+                        ".dark & .MuiTablePagination-displayedRows": {
+                          color: "rgb(243 244 246)",
+                        },
+                        ".dark & .MuiTablePagination-actions": {
+                          color: "rgb(243 244 246)",
+                        },
+                        ".dark & .MuiSvgIcon-root": {
+                          color: "rgb(243 244 246)",
+                        },
+                      }}
+                    />
+                  </div>
+                )}
+                <ReceivedLetterList
+                  letters={data.receivedLetters}
+                  noLetters={data.totalLettersCount === 0}
+                />
+              </>
+            )}
           </>
         )}
       </div>

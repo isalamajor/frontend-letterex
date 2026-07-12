@@ -53,13 +53,13 @@ const FriendRequestCard: React.FC<User> = ({
   };
 
   return (
-    <div className="px-8 pt-4 rounded-lg bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 dark:border-neutral-700 shadow-md w-full flex flex-row gap-4">
-      <div className="relative w-14 h-14 rounded-full border border-gray-200 dark:border-gray-600 overflow-hidden">
+    <div className="px-8 pt-4 rounded-lg bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 dark:border-neutral-700 shadow-md w-full flex flex-row gap-4 overflow-hidden w-full flex flex-row gap-4">
+      <div className="relative w-14 h-14 rounded-full border border-gray-200 dark:border-gray-600 overflow-hidden ">
         <Image
           src={`${image || "/default.png"}`}
           alt={nickname || "user"}
           fill
-          className="object-cover"
+          className="object-cover "
         />
       </div>
       {/* Date and diary */}

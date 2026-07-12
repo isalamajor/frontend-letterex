@@ -9,6 +9,7 @@ import Image from "next/image";
 import { use } from "react";
 import TextCorrections from "@/components/textCorrections";
 import { CorrectedLetter } from "../../../lib/types";
+import ViewLetterSkeleton from "./loading";
 
 export default function Home({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -28,16 +29,17 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     endIndex: number;
   } | null>(null);
   const [letter, setLetter] = useState<CorrectedLetter | null>(null);
+  const [loading, setLoading] = useState<Boolean>(true);
 
   useEffect(() => {
     (async () => {
       const letterData = await getLetterToCorrect(id);
-      console.log("letterData component", letterData);
       if (!letterData) {
         console.error("No letter data found for ID:", id);
         return;
       }
       setLetter(letterData);
+      setLoading(false);
     })();
   }, [id]);
 
@@ -63,6 +65,9 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     };
   }, [selectionInfo]);
 
+  if (loading) {
+    return <ViewLetterSkeleton />;
+  }
   if (!letter) {
     return (
       <div className="rounded-tl-2xl bg-white border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-full h-full flex justify-center align-center items-stretch h-screen">
@@ -77,7 +82,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     <div className="rounded-tl-2xl bg-white border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-full h-full flex justify-center align-center items-stretch h-screen">
       <div className="my-4 w-[95%] rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-10 sm:px-20 flex flex-col justify-around">
         {/* Title field */}
-        <h1 className="placeholder-gray-400 text-center font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#60a5fa]">
+        <h1 className="placeholder-gray-400 text-center font-bold text-gray-800 dark:text-gray-200 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#60a5fa] text-2xl">
           {letter.title}
         </h1>
 
@@ -94,7 +99,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
               Corrected by
               <div className="relative rounded-full w-6 h-6 border border-1 border-gray-500 ml-2 mr-0.5 overflow-hidden">
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_PICTURES_BASE_URL}/${letter.reviewer.image}`}
+                  src={`${letter.reviewer.image || "/default.png"}`}
                   alt={letter.reviewer.nickname || "Reviewer"}
                   fill
                   className="object-cover"
@@ -175,7 +180,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
             placeholder={"No additional comments"}
             value={letter.comments}
             disabled={true}
-            className="px-5 py-4 w-full text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-neutral-900 rounded-lg outline-none
+            className="px-5 py-4 w-full text-xl text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-neutral-900 rounded-lg outline-none
                   resize-none
                   opacity-100"
           />

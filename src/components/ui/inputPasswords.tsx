@@ -49,13 +49,13 @@ function InputPasswords({ onSave }: InputPassProps) {
   }, [password, NewPassword, ConfirmPassword, onSave]);
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 ml-10">
       <div className="space-y-2 min-w-[300px]">
         <Label htmlFor={id}>Enter your current password</Label>
         <div className="relative">
           <Input1
             id={id}
-            className="w-full p-2 mb-2 border rounded text-black/80 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700"
+            className="w-full p-2 mb-2 border rounded text-black/80 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-100 dark:border-neutral-700"
             placeholder={"Current password"}
             type={isVisibleCurrent ? "text" : "password"}
             value={password}
@@ -85,7 +85,7 @@ function InputPasswords({ onSave }: InputPassProps) {
         <div className="relative">
           <Input1
             id={id}
-            className={`w-full p-2 mb-2 border rounded text-black/80 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 ${
+            className={`w-full p-2 mb-2 border rounded text-black/80 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-100 dark:border-neutral-700 ${
               isNewPasswordTooShort || isNewPasswordSameAsCurrent
                 ? "border-red-500 text-red-500"
                 : ""
@@ -129,7 +129,7 @@ function InputPasswords({ onSave }: InputPassProps) {
         <div className="relative">
           <Input1
             id={id}
-            className={`w-full p-2 mb-2 border rounded text-black/80 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 ${
+            className={`w-full p-2 mb-2 border rounded text-black/80 dark:text-gray-100 bg-white dark:bg-neutral-900 border-gray-100 dark:border-neutral-700 ${
               isConfirmPasswordTooShort || isConfirmPasswordMismatch
                 ? "border-red-500 text-red-500"
                 : ""

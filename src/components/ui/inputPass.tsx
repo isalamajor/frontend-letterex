@@ -42,7 +42,7 @@ function InputPass({
       <div className="relative">
         <Input1
           id={id}
-          className={`${styles ? styles : `w-full p-2 border rounded text-black/80  placeholder:text-gray-600 ${markRed ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-gray-300 dark:focus:border-green-300"}`}
+          className={`${styles ? styles : `w-full p-2 border rounded text-black/80   ${markRed ? "border-red-500 focus:border-red-500" : "border-gray-100 focus:border-gray-300 dark:focus:border-green-300 bg-white"} placeholder:text-gray-500`}
           `}
           placeholder={placeholder ? placeholder : "Password"}
           type={isVisible ? "text" : "password"}

@@ -35,12 +35,11 @@ const SuggestedUsers = () => {
 
   useEffect(() => {
     if (!query) return;
-    const timeout = setTimeout(async () => {
+    const getUsers = async () => {
       const res = await getNonFriendsByFilter(query);
       setQueryResults(res);
-    }, 400);
-
-    return () => clearTimeout(timeout);
+    };
+    getUsers();
   }, [query]);
 
   return (

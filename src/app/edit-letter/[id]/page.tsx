@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/field";
 import { getLetter, getDiaries, editLetter } from "@/services/api";
 import { Check, HeartCrack } from "lucide-react";
 import { use } from "react";
-import AppPageSkeleton from "@/components/appPageSkeleton";
 import {
   Select,
   SelectContent,
@@ -24,6 +23,7 @@ import { LetterFormErrors, NewLetter } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { UserContext } from "@/context/userContext";
 import Image from "next/image";
+import EditLetterSkeleton from "./loading";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
@@ -295,12 +295,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
   };
 
   if (isLoading) {
-    return (
-      <AppPageSkeleton
-        titleWidthClass="w-2/3 mx-auto"
-        contentHeightClass="h-[60vh]"
-      />
-    );
+    return <EditLetterSkeleton />;
   }
 
   if (letterNotFound) {
@@ -322,7 +317,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
           value={letter.title}
           disabled={letter.sharedWith.length > 0}
           onChange={handleTitleChange}
-          className={`placeholder-gray-500 dark:placeholder-gray text-center text-2xl font-bold text-gray-850 dark:text-gray-200 p-4 w-full focus:border-blue-500 outline-none caret-[#60a5fa] ${
+          className={`placeholder-gray-500 dark:placeholder-gray text-center text-2xl font-bold text-gray-800 dark:text-gray-200 p-4 w-full focus:border-blue-500 outline-none caret-[#60a5fa] ${
             errors.title ? "placeholder-red-500" : "border-none"
           }`}
           placeholder="Title of the letter! Edit this, ganster..."
@@ -530,7 +525,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                   });
                 }}
               >
-                <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] dark:bg-[#ffff4d] dark:text-gray-900 text-white rounded py-2 px-4 hover:bg-[#537dc9] dark:hover:bg-[#c8c800]">
+                <div className="cursor-pointer h-[100%] w-auto flex items-center justify-center bg-[#6495ED] dark:bg-[#ffff4d] dark:text-gray-900 text-white rounded py-2 px-4 hover:bg-[#537dc9] dark:hover:bg-[#c8c800]">
                   📬 Send Letter
                 </div>
               </button>
@@ -543,7 +538,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
                   SaveLetterOnClick();
                 }}
               >
-                <div className="h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] hover:bg-[#708e0b] dark:bg-border dark:hover:bg-card text-white rounded py-2 px-4">
+                <div className="cursor-pointer h-[100%] w-auto flex items-center justify-center bg-[#8EBA03] hover:bg-[#708e0b] dark:bg-border dark:hover:bg-card text-white rounded py-2 px-4">
                   💾 Save Letter
                 </div>
               </button>
@@ -575,7 +570,7 @@ const BackButton = () => {
   return (
     <Link href={"/homepage"}>
       <button>
-        <div className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
+        <div className="cursor-pointer h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
           Back
         </div>
       </button>

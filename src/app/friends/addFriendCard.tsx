@@ -55,8 +55,8 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
     window.location.href = `/profile/${id}`;
   };
   return (
-    <div className="px-6 pt-4 rounded-lg bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 dark:border-neutral-700 shadow-md w-full flex flex-row justify-between gap-4">
-      <div className="flex flex-row gap-7 items-center">
+    <div className="overflow-hidden px-6 pt-4 rounded-lg bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-200 dark:border-neutral-700 shadow-md w-max-[2rem] flex flex-row justify-between gap-4">
+      <div className="flex flex-row gap-7 items-center ">
         <div className="relative w-15 h-15 rounded-full border border-gray-200 dark:border-gray-600 overflow-hidden">
           <Image
             src={`${image || "/default.png"}`}
@@ -141,7 +141,7 @@ const AddFriendCard: React.FC<AddFriendCardProps> = ({
         </div>
       </div>
       {/* Add friend buttons */}
-      <div className="flex flex-col justify-start h-full">
+      <div className="flex flex-col justify-start h-full flex-shrink-0 min-w-0">
         {friendRequestJustSent || friendRequestSent ? (
           <UserRoundCheck className="h-6 w-6 text-green-400" />
         ) : (

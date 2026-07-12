@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { use } from "react";
-import AppPageSkeleton from "@/components/appPageSkeleton";
 import TextCorrections from "@/components/textCorrections";
 import {
   updateLetterCorrections,
@@ -21,6 +20,7 @@ import {
   getLetterToCorrect,
   deleteCorrectedLetter,
 } from "@/services/api";
+import CorrectLetterSkeleton from "./loading";
 
 import { CorrectedLetter, Correction } from "../../../lib/types";
 import { useDialog } from "@/context/dialogContext";
@@ -270,12 +270,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
   };
 
   if (isLoading) {
-    return (
-      <AppPageSkeleton
-        titleWidthClass="w-2/3 mx-auto"
-        contentHeightClass="h-[55vh]"
-      />
-    );
+    return <CorrectLetterSkeleton />;
   }
 
   if (!letter) {
@@ -293,7 +288,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
     <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-screen overflow-hidden">
       <div className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 py-10 px-10 sm:px-20 flex flex-col">
         {/* Title field */}
-        <p className="placeholder-gray-400 text-center text-2xl font-bold text-gray-700 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#60a5fa]">
+        <p className="placeholder-gray-400 text-center font-bold text-gray-800 dark:text-gray-200 bg-clip-text bg-gradient-to-r from-[#242424] via-[#333333] to-[#4d4d4d] p-4 transition-transform duration-300 animate-gradient-dark w-full focus:border-blue-500 outline-none caret-[#60a5fa] text-2xl">
           {letter.title}
         </p>
 
@@ -502,7 +497,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
         <div className="flex justify-between h-[5%] col items-center gap-4 mt-4">
           <Link href={"/homepage"}>
             <button>
-              <div className="h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
+              <div className="cursor-pointer h-[100%] w-auto flex items-center justify-center bg-[#FF6347] text-white rounded py-2 px-4 hover:bg-[#c75945] transition-colors">
                 Back
               </div>
             </button>
@@ -514,7 +509,7 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                 {valuesChanged ||
                 (letter.corrections.length === 0 && !letter.comments) ? (
                   <button onClick={saveCorrectionOnClick}>
-                    <div className="h-[100%] w-auto flex items-center justify-center bg-[#3b82f6] text-white rounded py-2 px-4 hover:bg-[#2563eb] transition-colors">
+                    <div className="cursor-pointer h-[100%] w-auto flex items-center justify-center bg-[#3b82f6] text-white rounded py-2 px-4 hover:bg-[#2563eb] transition-colors">
                       💾 Save correction
                     </div>
                   </button>
@@ -522,13 +517,13 @@ const CorrectLetterPageContent = ({ id }: { id: string }) => {
                   <>
                     {letter.deleted ? (
                       <button onClick={deleteLetterForMe}>
-                        <div className="h-[100%] w-auto flex gap-1 items-center justify-center bg-white dark:bg-neutral-900 text-red-400 border-1 border-red-400 rounded py-2 px-4 hover:bg-red-100 dark:hover:bg-red-950/30 ">
+                        <div className="cursor-pointer h-[100%] w-auto flex gap-1 items-center justify-center bg-white dark:bg-neutral-900 text-red-400 border-1 border-red-400 rounded py-2 px-4 hover:bg-red-100 dark:hover:bg-red-950/30 ">
                           <Trash2 size={16} /> Delete for me
                         </div>
                       </button>
                     ) : (
                       <button onClick={sendBackOnClick}>
-                        <div className="h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
+                        <div className="cursor-pointer h-[100%] w-auto flex items-center justify-center bg-[#6495ED] text-white rounded py-2 px-4 hover:bg-[#537dc9] ">
                           📬 Send Back
                         </div>
                       </button>

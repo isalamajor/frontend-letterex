@@ -56,9 +56,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  if (isCheckingAuth) {
+  /*if (isCheckingAuth) {
     return <AppPageSkeleton />;
-  }
+  }*/
 
   return <Sidebarex>{children}</Sidebarex>;
 }

@@ -22,7 +22,7 @@ import {
 import { UserData } from "@/lib/types";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import AppPageSkeleton from "@/components/appPageSkeleton";
+import { ProfileSkeleton } from "./[id]/loading";
 import rawLanguages from "@/lib/languages.json";
 import { useDialog } from "@/context/dialogContext";
 import { UserContext } from "@/context/userContext";
@@ -331,9 +331,7 @@ const ProfilePageContent = ({ id }: { id: string }) => {
   };
 
   if (!data || data.isLoading) {
-    return (
-      <AppPageSkeleton titleWidthClass="w-64" contentHeightClass="h-[52vh]" />
-    );
+    return <ProfileSkeleton />;
   }
   if (data.fetchError || !data.userData) {
     return (
@@ -578,7 +576,7 @@ const ProfilePageContent = ({ id }: { id: string }) => {
                       </h2>
                     )}
                     {!addingLanguage && <h2>Available languages</h2>}
-                    <div className="grid grid-flow-col auto-cols-max gap-2 justify-center">
+                    <div className="grid grid-flow-col grid-rows-2 auto-cols-max gap-2 justify-center">
                       {availableLanguages.map((lang) => (
                         <motion.div
                           key={lang}
@@ -595,8 +593,8 @@ const ProfilePageContent = ({ id }: { id: string }) => {
                         >
                           <div className="relative h-full w-full rounded-full overflow-hidden">
                             <Image
-                              src={`/flags/${lang}.svg`}
-                              alt={lang}
+                              src={`/flags/${lang.toLowerCase()}.svg`}
+                              alt={lang.toLowerCase()}
                               fill
                               className="object-cover rounded-full"
                             />

@@ -1,13 +1,10 @@
 "use client";
 import dynamic from "next/dynamic";
 import { Spinner } from "@/components/ui/spinner";
+import NewLetterSkeleton from "./loading";
 
 const NewLetterPageContent = dynamic(() => import("./NewLetterPageContent"), {
-  loading: () => (
-    <div className="bg-white rounded-lg p-4 h-full flex items-center justify-center text-gray-500">
-      <Spinner />
-    </div>
-  ),
+  loading: () => <NewLetterSkeleton />,
 });
 
 export default function Home() {

@@ -163,7 +163,7 @@ const LetterCard: React.FC<LetterCardProps> = ({
                     disabled={!user.correctionSentBack}
                   >
                     {user.correctionSentBack ? (
-                      <p className="text-sm max-w-[100px] truncate overflow-hidden whitespace-nowrap dark:text-gray-900">
+                      <p className="cursor-pointer text-sm max-w-[100px] truncate overflow-hidden whitespace-nowrap dark:text-gray-900">
                         {user.nickname}
                       </p>
                     ) : (
@@ -174,14 +174,14 @@ const LetterCard: React.FC<LetterCardProps> = ({
                     )}
                   </button>
 
-                  <Tooltip
+                  {/*<Tooltip
                     id={btnId}
                     place="top"
                     variant={isDarkMode ? "light" : "dark"}
                     positionStrategy="fixed"
                     className="z-[2147483647]"
                     style={{ zIndex: 2147483647 }}
-                  ></Tooltip>
+                  ></Tooltip>*/}
                 </div>
               );
             })
