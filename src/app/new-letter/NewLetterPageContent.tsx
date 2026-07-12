@@ -48,7 +48,7 @@ const NewLetterPageContent = () => {
     "German",
   ]);
   const [title, setTitle] = useState("");
-  const [letterContent, setLetterContent] = useState("");
+  const [content, setLetterContent] = useState("");
   const [diaryList, setDiaryList] = useState<string[]>([
     "Brasil Tales",
     "Secret Diary",
@@ -118,7 +118,7 @@ const NewLetterPageContent = () => {
       title: !title.trim(),
       date: !date,
       language: !language,
-      content: isQuillContentEmpty(letterContent),
+      content: isQuillContentEmpty(content),
     };
 
     setErrors(nextErrors);
@@ -143,7 +143,14 @@ const NewLetterPageContent = () => {
     }
 
     // Save letter
-    const res = await saveLetter(title, letterContent, diary, language, date);
+    console.log("date", date);
+    const res = await saveLetter({
+      title,
+      content,
+      diary,
+      language,
+      created_at: date,
+    });
 
     if (res) {
       router.push("/edit-letter/" + res.id);
@@ -325,7 +332,7 @@ const NewLetterPageContent = () => {
                   : "border-neutral-300 dark:border-neutral-700"
               }`}
               theme="bubble"
-              value={letterContent}
+              value={content}
               onChange={(content) => {
                 setLetterContent(content);
                 setErrors((prev) => ({
@@ -347,7 +354,7 @@ const NewLetterPageContent = () => {
               onClick={() => {
                 SaveLetterOnClick();
               }}
-              className="h-[100%] w-auto flex items-center justify-center bg-[#3b82f6] text-white rounded py-2 px-4 hover:bg-[#2563eb] dark:bg-dark-green-500 dark:hover:bg-dark-green-600 cursor-pointer"
+              className="h-[100%] w-auto flex items-center justify-center bg-[#3b82f6] text-white rounded py-2 px-4 hover:bg-[#2563eb] dark:bg-border dark:hover:bg-card cursor-pointer"
             >
               💾 Save Letter
             </button>

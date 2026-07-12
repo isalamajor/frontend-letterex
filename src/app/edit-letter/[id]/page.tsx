@@ -169,15 +169,15 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
       return;
     }
 
-    const res = await editLetter(
+    const res = await editLetter({
       id,
-      letter.title,
-      letter.letterContent,
-      letter.diary,
-      letter.language,
-      letter.date,
-      letter.sharedWith,
-    );
+      title: letter.title,
+      content: letter.letterContent,
+      diary: letter.diary,
+      language: letter.language,
+      created_at: letter.date,
+      sharedWith: letter.sharedWith,
+    });
 
     if (res === 0) {
       setValuesChanged(false);
@@ -435,15 +435,15 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
           {letter.sharedWith && letter.sharedWith[0] && (
             <div className="col-span-5 text-[#6495ED] m-4 flex flex-row gap-2 justify-end">
-              <span className="text-gray-600 dark:text-gray-300">
+              <span className="text-gray-600 dark:text-border">
                 Shared with
               </span>
               <div
                 key={letter.sharedWith[0].id}
-                className="flex items-center gap-1 cursor-pointer"
+                className="flex items-center gap-1 cursor-pointer dark:text-border"
                 onClick={() => goToProfile(letter.sharedWith[0].id)}
               >
-                <div className="relative w-5 h-5 rounded-full border border-gray-300 overflow-hidden">
+                <div className="relative w-5 h-5 rounded-full border border-gray-300 overflow-hidden ">
                   <Image
                     src={letter.sharedWith[0].image || "/default.png"}
                     alt={letter.sharedWith[0].nickname}
@@ -546,7 +546,7 @@ const NewLetterPageContent = ({ id }: { id: string }) => {
 
             {/* Letter sent indicator - show if sent to at least 1 person */}
             {letter.sharedWith.length > 0 && (
-              <div className="text-[#60a5fa] display flex items-center gap-2">
+              <div className="text-[#60a5fa] display flex items-center gap-2 dark:text-border">
                 Letter sent
                 <Check className="w-5 h-5" />
               </div>

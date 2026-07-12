@@ -550,7 +550,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                       <div className="flex justify-center items-center gap-4 pt-4">
                         <Button
                           onClick={handlePrimaryAction}
-                          className={`min-w-[120px] bg-[#acb0ac] text-white rounded py-2 px-4 hover:bg-[#537dc9]`}
+                          className={`min-w-[120px] bg-[#acb0ac] text-white rounded py-2 px-4 hover:bg-[#537dc9]  dark:text-gray-900`}
                           size="default"
                         >
                           {" "}
@@ -558,7 +558,7 @@ const SuccessDialog: React.FC<DialogConfig> = ({
                         </Button>
                         <Button
                           onClick={handleShareLetter}
-                          className={`min-w-[120px] bg-[#6495ED] dark:bg-[#ffff4d] text-white dark:text-gray-100 rounded py-2 px-4 hover:bg-[#537dc9] dark:hover:bg-[#c8c800]`}
+                          className={`min-w-[120px] bg-[#6495ED] dark:bg-[#ffff4d] text-white dark:text-gray-900 rounded py-2 px-4 hover:bg-[#537dc9] dark:hover:bg-[#c8c800]`}
                           size="default"
                         >
                           {" "}

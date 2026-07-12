@@ -1,8 +1,10 @@
 import axios from "axios";
+import { CalendarDate } from "@internationalized/date";
+import { SharedWithUser, EditLetter } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + "/letter";
 
-const deleteLetters = async (letterIds) => {
+const deleteLetters = async (letterIds: string[]) => {
   console.log("API - Deleting letters with IDs:", letterIds);
   try {
     const response = await axios.delete(`${API_URL}/delete`, {
@@ -15,7 +17,7 @@ const deleteLetters = async (letterIds) => {
     console.error("Error deleting letters:", response.data.message);
     return -1;
   } catch (error) {
-    console.error("Axios error: ", error.message);
+    console.error("Axios error: ", error);
     return -1;
   }
 };
@@ -30,7 +32,6 @@ const getDiaries = async () => {
     console.error("Error obtaining diaries:", response.data.message);
     return -1;
   } catch (error) {
-    console.error("Error obtaining diaries:", error.message);
     if (axios.isAxiosError(error)) {
       console.error("Axios error:", error.response?.data);
     } else {
@@ -50,17 +51,16 @@ const getDiariesWithCount = async () => {
     console.error("Error obtaining diaries:", response.data.message);
     return { ok: false, message: response.data.message };
   } catch (error) {
-    console.error("Error obtaining diaries:", error.message);
     if (axios.isAxiosError(error)) {
       console.error("Axios error:", error.response?.data);
     } else {
       console.error("Unknown error:", error);
     }
-    return { ok: false, message: error?.message || "Error obtaining diaries" };
+    return { ok: false, message: error || "Error obtaining diaries" };
   }
 };
 
-const getCountLetters = async (userId) => {
+const getCountLetters = async (userId: string) => {
   try {
     let response;
     if (userId) {
@@ -83,7 +83,7 @@ const getCountLetters = async (userId) => {
   }
 };
 
-const shareLetter = async (letterId, sharedWith) => {
+const shareLetter = async (letterId: string, sharedWith: string[]) => {
   try {
     const response = await axios.post(`${API_URL}/share/${letterId}`, {
       sharedWith: sharedWith,
@@ -102,7 +102,7 @@ const shareLetter = async (letterId, sharedWith) => {
   }
 };
 
-const getLetter = async (id) => {
+const getLetter = async (id: string) => {
   if (!id) return null;
   try {
     const response = await axios.get(`${API_URL}/view/${id}`);
@@ -122,29 +122,14 @@ const getLetter = async (id) => {
   }
 };
 
-const editLetter = async (
-  id,
-  title,
-  content,
-  diary,
-  language,
-  created_at,
-  sharedWith,
-) => {
+const editLetter = async (letter: EditLetter) => {
   try {
-    const response = await axios.put(`${API_URL}/edit/${id}`, {
-      title: title,
-      content: content,
-      diary: diary,
-      language: language,
-      created_at: created_at,
-      sharedWith: sharedWith,
-    });
+    const response = await axios.put(`${API_URL}/edit/${letter.id}`, letter);
 
     if (response.status === 200) {
       return 0;
     } else {
-      console.error("Error saving letter:", data);
+      console.error("Error saving letter:", response);
       return -1;
     }
   } catch (error) {
@@ -156,7 +141,7 @@ const editLetter = async (
   }
 };
 
-const changeLetterDiary = async (letterId, diary) => {
+const changeLetterDiary = async (letterId: string, diary: string) => {
   try {
     const response = await axios.put(`${API_URL}/edit-diary`, {
       letterId: letterId,
@@ -166,7 +151,7 @@ const changeLetterDiary = async (letterId, diary) => {
     if (response.status === 200) {
       return 0;
     } else {
-      console.error("Error saving letter:", data);
+      console.error("Error saving letter");
       return -1;
     }
   } catch (error) {
@@ -178,20 +163,15 @@ const changeLetterDiary = async (letterId, diary) => {
   }
 };
 
-const saveLetter = async (title, content, diary, language, created_at) => {
+type SaveLetter = Omit<EditLetter, "id" | "sharedWith">;
+const saveLetter = async (letter: SaveLetter) => {
   try {
-    const response = await axios.post(`${API_URL}/new`, {
-      title: title,
-      content: content,
-      diary: diary,
-      language: language,
-      created_at: created_at,
-    });
+    const response = await axios.post(`${API_URL}/new`, letter);
 
     if (response.status === 200) {
       return response.data.letter;
     } else {
-      console.error("Error saving letter:", data);
+      console.error("Error saving letter");
       return null;
     }
   } catch (error) {
@@ -212,7 +192,7 @@ const getUserLetters = async () => {
   return [];
 };
 
-const searchLetters = async (query, page = 1, itemsPerPage = 10) => {
+const searchLetters = async (query: string, page = 1, itemsPerPage = 10) => {
   try {
     const response = await axios.get(`${API_URL}/list/search`, {
       params: {
@@ -243,7 +223,12 @@ const searchLetters = async (query, page = 1, itemsPerPage = 10) => {
   }
 };
 
-const searchDiaryLetters = async (query, page = 1, itemsPerPage = 6, diary) => {
+const searchDiaryLetters = async (
+  query: string,
+  page = 1,
+  itemsPerPage = 6,
+  diary: string,
+) => {
   try {
     if (!diary) return;
     const response = await axios.get(`${API_URL}/list/diary`, {

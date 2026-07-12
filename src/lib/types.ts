@@ -158,3 +158,13 @@ export enum ValidationCodePurpose {
   PASSWORD_RESET = "password_reset",
   REGISTER = "register",
 }
+
+export interface EditLetter {
+  id: string;
+  title: string;
+  content: string;
+  diary: string;
+  language: string;
+  created_at: CalendarDate;
+  sharedWith: SharedWithUser[];
+}

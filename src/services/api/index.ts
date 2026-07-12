@@ -1,4 +1,4 @@
 export * from "./user.ts";
-export * from "./letter.js";
+export * from "./letter.ts";
 export * from "./corrected.ts";
-export * from "./follow.js";
+export * from "./follow.ts";

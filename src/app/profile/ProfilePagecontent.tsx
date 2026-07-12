@@ -310,7 +310,8 @@ const ProfilePageContent = ({ id }: { id: string }) => {
       primaryActionText: "Cancel",
       autoDismiss: false,
       onConfirmationPositive: async () => {
-        const success = await deleteFriend(data.userData?.id);
+        if (!data.userData?.id) return;
+        const success = await deleteFriend(data.userData.id);
         if (success) {
           updateData({
             userData: data.userData
